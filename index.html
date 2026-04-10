@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ABSOLUTE // AI Automation Portfolio</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABRElEQVR4nO2Wv0vEMBSAv5SicKCToKCg+He4BP8FEcTBVdDRRTcHHZwcFBc3f4yuLkIWN1dHnRTUQYVTHHR4krt4tIUOueTawX4QyEua5EtfhgcNDf8d1euJ3gVG87NmPcopog8KI22U2SoKPAPjBQEVSUAKIy8oM2E7adlEVLIX6V60R+q9mehV4MhFX8AdcArso8yP73aJtwDcAoeuXbh3swdcItr7Qqn38cpcA7Z1ET0EnAELwBJwMug/kEeZb2DHRfN4khCX4eoFpJP3TRfdDP4N/CF6G5gB5oBZ4B44pjIBWAGmgXfgHNhAmXaVApZXlBkjgDRg7SPQCjk8TEAZm/tgkr5Xip5E9FQ9AqIXXQoeEL1cRwregE+rAjzFFBjJFQ9lBYkyV51v+ytI7LqPMoEWsJaJ41RE+T3JCjQ0NFA3v7FOSnR3aaFyAAAAAElFTkSuQmCC">
+  <meta name="description" content="AI automation portfolio: n8n, Claude, Supabase, VAPI. Multimodal RAG, Voice AI agents, and more. Available for remote freelance.">
+  <meta property="og:title" content="ABSOLUTE // AI Automation Portfolio">
+  <meta property="og:description" content="AI-powered automation projects. n8n · Claude · Supabase · VAPI.">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#000000">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=block" rel="stylesheet">
+  <style>
+    /* === BASE (from multimodal_rag) === */
+    :root {
+      --bg-void: #000000;
+      --bg-surface: #040804;
+      --bg-elevated: #0a120a;
+      --bg-input: #060e06;
+      --border: #0d3a0d;
+      --border-hover: #137a13;
+      --green: #00ff41;
+      --green-mid: #00cc33;
+      --green-dim: #009922;
+      --green-muted: #00992a;
+      --green-ghost: rgba(0, 255, 65, 0.08);
+      --green-glow: rgba(0, 255, 65, 0.12);
+      --green-glow-strong: rgba(0, 255, 65, 0.25);
+      --text-primary: #00ff41;
+      --text-secondary: #00cc33;
+      --text-muted: #00aa30;
+      --font: 'JetBrains Mono', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    ::selection {
+      background: rgba(0, 255, 65, 0.3);
+      color: #ccffcc;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg-void);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #matrix-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      opacity: 0.25;
+    }
+
+    .scanlined { position: relative; }
+    .scanlined::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 1px,
+        rgba(0, 0, 0, 0.12) 1px,
+        rgba(0, 0, 0, 0.12) 2px
+      );
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .overlay-vignette {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.6) 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes fadeSlideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeSlideOut {
+      from { opacity: 1; transform: translateY(0); }
+      to   { opacity: 0; transform: translateY(-10px); }
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    header {
+      position: relative;
+      z-index: 1;
+      padding: 16px 32px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-void);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      animation: fadeSlideDown 0.6s ease-out both;
+    }
+
+    .header-left h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--green);
+      text-shadow: 0 0 10px var(--green-glow-strong), 0 0 30px var(--green-ghost);
+    }
+
+    .header-left h1 .cursor {
+      display: inline-block;
+      width: 5px;
+      height: 20px;
+      background: var(--green);
+      margin-left: 4px;
+      vertical-align: middle;
+      animation: blink 1s step-end infinite;
+    }
+
+    .header-left p {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text-muted);
+      margin-top: 4px;
+      letter-spacing: 0.02em;
+    }
+
+    .stack-badges { display: flex; gap: 6px; }
+
+    .badge {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      color: var(--green-dim);
+      background: transparent;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: border-color 0.3s, color 0.3s, text-shadow 0.3s;
+    }
+
+    .badge:hover {
+      border-color: var(--green-dim);
+      color: var(--green-mid);
+      text-shadow: 0 0 8px var(--green-ghost);
+    }
+
+    /* === BOOT SCREEN === */
+    #boot-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: var(--bg-void);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 10vw;
+      cursor: pointer;
+    }
+
+    #boot-screen.done {
+      animation: fadeSlideOut 0.5s ease-in forwards;
+      pointer-events: none;
+    }
+
+    .boot-line {
+      font-size: 13px;
+      color: var(--green-dim);
+      line-height: 2.2;
+      opacity: 0;
+      animation: fadeSlideUp 0.25s ease-out forwards;
+    }
+
+    .boot-line.bright { color: var(--green); font-weight: 700; }
+
+    #boot-skip {
+      margin-top: 28px;
+      font-size: 11px;
+      color: var(--border-hover);
+      animation: blink 2s step-end infinite;
+    }
+
+    /* === KEYBOARD HINT === */
+    #keyboard-hint {
+      position: relative;
+      z-index: 1;
+      padding: 5px 32px;
+      font-size: 11px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-void);
+      flex-shrink: 0;
+      letter-spacing: 0.04em;
+    }
+
+    #keyboard-hint kbd {
+      display: inline-block;
+      padding: 1px 6px;
+      border: 1px solid var(--border);
+      font-size: 10px;
+      color: var(--green-dim);
+      font-family: var(--font);
+    }
+
+    /* === HUB MAIN === */
+    #hub {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    #hub::-webkit-scrollbar { width: 4px; }
+    #hub::-webkit-scrollbar-track { background: transparent; }
+    #hub::-webkit-scrollbar-thumb { background: var(--green-muted); border-radius: 2px; }
+
+    .project-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    /* === PROJECT CARDS === */
+    .project-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .project-grid.ready .project-card          { animation: fadeSlideUp 0.4s ease-out forwards; }
+    .project-grid.ready .project-card:nth-child(1) { animation-delay: 0.00s; }
+    .project-grid.ready .project-card:nth-child(2) { animation-delay: 0.10s; }
+    .project-grid.ready .project-card:nth-child(3) { animation-delay: 0.20s; }
+    .project-grid.ready .project-card:nth-child(4) { animation-delay: 0.30s; }
+
+    .project-card:hover   { border-color: var(--green-dim); box-shadow: 0 0 20px var(--green-ghost); }
+    .project-card.selected { border-color: var(--green);     box-shadow: 0 0 30px var(--green-glow); }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-id {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+    }
+
+    .card-status            { font-size: 11px; letter-spacing: 0.06em; }
+    .card-status.live       { color: var(--green); }
+    .card-status.private    { color: var(--green-dim); }
+    .card-status.wip        { color: var(--border-hover); }
+
+    .card-body { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--green);
+      text-shadow: 0 0 8px var(--green-ghost);
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    .card-stack { display: flex; flex-wrap: wrap; gap: 6px; }
+    .card-stack .badge { font-size: 10px; padding: 3px 8px; }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      margin-top: auto;
+    }
+
+    .card-meta {
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+
+    .card-launch {
+      padding: 6px 16px;
+      border: 1px solid var(--green-dim);
+      color: var(--green);
+      background: transparent;
+      font-family: var(--font);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      flex-shrink: 0;
+    }
+
+    .card-launch:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      border-color: var(--border);
+      color: var(--text-muted);
+    }
+
+    .card-launch:not(:disabled):hover {
+      border-color: var(--green);
+      box-shadow: 0 0 12px var(--green-glow);
+    }
+
+    /* === FOOTER === */
+    .hub-footer {
+      position: relative;
+      z-index: 1;
+      padding: 10px 32px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      background: var(--bg-void);
+    }
+
+    .footer-links { display: flex; gap: 12px; align-items: center; }
+    .footer-sep { color: var(--border-hover); }
+    .hub-footer a { color: var(--green-dim); text-decoration: none; transition: color 0.2s; }
+    .hub-footer a:hover { color: var(--green); }
+
+    /* === MOBILE === */
+    @media (max-width: 640px) {
+      header { padding: 12px 16px; flex-direction: column; gap: 10px; align-items: flex-start; }
+      .stack-badges { flex-wrap: wrap; }
+      #keyboard-hint { display: none; }
+      #hub { padding: 16px; }
+      .project-grid { grid-template-columns: 1fr; }
+      .hub-footer { padding: 10px 16px; flex-direction: column; gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrix-bg"></canvas>
+  <div class="overlay-vignette"></div>
+
+  <div id="boot-screen">
+    <div id="boot-lines"></div>
+    <div id="boot-skip">// click or press any key to skip</div>
+  </div>
+
+  <header class="scanlined">
+    <div class="header-left">
+      <h1><span id="logo-text"></span><span class="cursor"></span></h1>
+      <p>// n8n · Claude · Supabase · VAPI</p>
+    </div>
+    <div class="stack-badges">
+      <!-- STATUS: update manually when availability changes -->
+      <div class="badge">AVAILABLE</div>
+      <div class="badge">REMOTE</div>
+      <div class="badge">CET</div>
+    </div>
+  </header>
+
+  <div id="keyboard-hint">
+    <kbd>1–4</kbd> select &nbsp;&nbsp; <kbd>Enter</kbd> launch &nbsp;&nbsp; <kbd>Esc</kbd> clear
+  </div>
+
+  <main id="hub">
+    <div class="project-grid">
+
+      <!-- [ 001 ] MULTIMODAL_RAG -->
+      <div class="project-card" data-index="1" data-url="#">
+        <div class="card-header">
+          <span class="card-id">[ 001 ]</span>
+          <span class="card-status live">● LIVE</span>
+        </div>
+        <div class="card-body">
+          <h2 class="card-title">MULTIMODAL_RAG</h2>
+          <p class="card-desc">5-modal RAG pipeline — query documents, images, audio, video, and PDF through natural language. Built with n8n, Gemini Embeddings, Pinecone vector search, and OpenRouter LLM routing.</p>
+          <div class="card-stack">
+            <span class="badge">n8n</span>
+            <span class="badge">Gemini</span>
+            <span class="badge">Pinecone</span>
+            <span class="badge">OpenRouter</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="card-meta">5 modalities · RAG · Vector DB</span>
+          <button class="card-launch">[ LAUNCH ]</button>
+        </div>
+      </div>
+
+      <!-- [ 002 ] VOICE_AGENT -->
+      <div class="project-card" data-index="2" data-url="#">
+        <div class="card-header">
+          <span class="card-id">[ 002 ]</span>
+          <span class="card-status private">◌ PRIVATE</span>
+        </div>
+        <div class="card-body">
+          <h2 class="card-title">VOICE_AGENT</h2>
+          <p class="card-desc">AI voice agent deployed for a B2B HVAC startup. Handles inbound calls, qualifies leads, and schedules appointments — fully automated with VAPI, n8n, and Claude.</p>
+          <div class="card-stack">
+            <span class="badge">VAPI</span>
+            <span class="badge">n8n</span>
+            <span class="badge">Claude</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="card-meta">B2B · Voice AI · Lead Qualification</span>
+          <button class="card-launch">[ CONTACT ]</button>
+        </div>
+      </div>
+
+      <!-- [ 003 ] COMING SOON -->
+      <div class="project-card" data-index="3">
+        <div class="card-header">
+          <span class="card-id">[ 003 ]</span>
+          <span class="card-status wip">◌ WIP</span>
+        </div>
+        <div class="card-body">
+          <h2 class="card-title">COMING_SOON</h2>
+          <p class="card-desc">Next project in development.</p>
+          <div class="card-stack"></div>
+        </div>
+        <div class="card-footer">
+          <span class="card-meta">—</span>
+          <button class="card-launch" disabled>[ LOCKED ]</button>
+        </div>
+      </div>
+
+      <!-- [ 004 ] COMING SOON -->
+      <div class="project-card" data-index="4">
+        <div class="card-header">
+          <span class="card-id">[ 004 ]</span>
+          <span class="card-status wip">◌ WIP</span>
+        </div>
+        <div class="card-body">
+          <h2 class="card-title">COMING_SOON</h2>
+          <p class="card-desc">Next project in development.</p>
+          <div class="card-stack"></div>
+        </div>
+        <div class="card-footer">
+          <span class="card-meta">—</span>
+          <button class="card-launch" disabled>[ LOCKED ]</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="hub-footer">
+    <span>© 2026 ABSOLUTE</span>
+    <div class="footer-links">
+      <!-- TODO: replace # with real URLs -->
+      <a href="#" target="_blank" rel="noopener">GitHub</a>
+      <span class="footer-sep">·</span>
+      <a href="#" target="_blank" rel="noopener">Upwork</a>
+      <span class="footer-sep">·</span>
+      <a href="#" target="_blank" rel="noopener">Telegram</a>
+    </div>
+  </footer>
+
+  <script>
+    /* --- Matrix rain (1:1 from multimodal_rag) --- */
+    const canvas = document.getElementById('matrix-bg');
+    const ctx = canvas.getContext('2d');
+    const chars = '01';
+    const fontSize = 14;
+    let columns, drops;
+
+    function initMatrix() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const rows = Math.ceil(canvas.height / fontSize);
+      columns = Math.floor(canvas.width / fontSize);
+      drops = Array.from({ length: columns }, () => -Math.floor(Math.random() * rows));
+    }
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.font = `${fontSize}px JetBrains Mono, monospace`;
+      for (let i = 0; i < drops.length; i++) {
+        if (drops[i] < 0) { drops[i]++; continue; }
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        const y = drops[i] * fontSize;
+        ctx.fillStyle = '#00ff41';
+        ctx.fillText(char, i * fontSize, y);
+        if (y > 0) {
+          ctx.fillStyle = 'rgba(0, 255, 65, 0.4)';
+          ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * fontSize, y - fontSize);
+        }
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = -Math.floor(Math.random() * 30);
+        }
+        drops[i]++;
+      }
+    }
+
+    initMatrix();
+    window.addEventListener('resize', initMatrix);
+    setInterval(drawMatrix, 80);
+
+    /* --- Boot sequence --- */
+    const bootScreen = document.getElementById('boot-screen');
+    const bootLinesEl = document.getElementById('boot-lines');
+    const grid = document.querySelector('.project-grid');
+
+    const bootSequence = [
+      { text: 'INITIALIZING SYSTEM...',                         bright: false },
+      { text: 'LOADING MODULES: [n8n] [Claude] [Supabase] [VAPI]', bright: false },
+      { text: 'SCANNING PROJECTS...',                           bright: false },
+      { text: 'ALL SYSTEMS NOMINAL.',                           bright: false },
+      { text: '> READY',                                        bright: true  },
+    ];
+
+    let bootDone = false;
+
+    function endBoot() {
+      if (bootDone) return;
+      bootDone = true;
+      bootScreen.classList.add('done');
+      grid.classList.add('ready');
+    }
+
+    function runBoot() {
+      let i = 0;
+      function addLine() {
+        if (bootDone) return;
+        if (i >= bootSequence.length) { setTimeout(endBoot, 400); return; }
+        const el = document.createElement('div');
+        el.className = 'boot-line' + (bootSequence[i].bright ? ' bright' : '');
+        el.textContent = bootSequence[i].text;
+        bootLinesEl.appendChild(el);
+        i++;
+        setTimeout(addLine, 300);
+      }
+      addLine();
+    }
+
+    runBoot();
+    bootScreen.addEventListener('click', endBoot);
+    document.addEventListener('keydown', endBoot, { once: true });
+
+    /* --- Logo typewriter --- */
+    const logoText = 'ABSOLUTE // AI AUTOMATION';
+    const logoEl = document.getElementById('logo-text');
+    let typeInterval = null;
+
+    function typeLogo() {
+      if (typeInterval) clearInterval(typeInterval);
+      logoEl.textContent = '';
+      let i = 0;
+      typeInterval = setInterval(() => {
+        logoEl.textContent += logoText[i];
+        i++;
+        if (i >= logoText.length) { clearInterval(typeInterval); typeInterval = null; }
+      }, 70);
+    }
+
+    typeLogo();
+    setInterval(typeLogo, 20000);
+
+    /* --- Card selection & keyboard navigation --- */
+    const cards = document.querySelectorAll('.project-card');
+    let selectedCard = null;
+
+    function selectCard(card) {
+      if (selectedCard) selectedCard.classList.remove('selected');
+      selectedCard = card || null;
+      if (selectedCard) selectedCard.classList.add('selected');
+    }
+
+    function launchSelected() {
+      if (!selectedCard) return;
+      const btn = selectedCard.querySelector('.card-launch');
+      if (btn && btn.disabled) return;
+      const url = selectedCard.dataset.url;
+      if (url && url !== '#') window.open(url, '_blank');
+    }
+
+    cards.forEach(card => {
+      card.addEventListener('click', e => {
+        selectCard(card);
+        if (e.target.closest('.card-launch')) launchSelected();
+      });
+    });
+
+    document.addEventListener('keydown', e => {
+      if (!bootDone) return;
+      if (['1', '2', '3', '4'].includes(e.key)) {
+        const idx = parseInt(e.key) - 1;
+        if (cards[idx]) selectCard(cards[idx]);
+      } else if (e.key === 'Enter') {
+        launchSelected();
+      } else if (e.key === 'Escape') {
+        selectCard(null);
+      }
+    });
+  </script>
+</body>
+</html>
