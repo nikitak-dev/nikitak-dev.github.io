@@ -150,26 +150,25 @@
       text-transform: uppercase;
     }
 
-    .btn-hire {
-      padding: 8px 20px;
-      border: 1px solid var(--green-dim);
-      color: var(--green);
-      background: transparent;
-      font-family: var(--font);
+    .social-links { display: flex; gap: 6px; }
+
+    .social-links a {
       font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
+      font-weight: 500;
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      color: var(--green-dim);
+      background: transparent;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       text-decoration: none;
-      cursor: pointer;
-      transition: border-color 0.3s, box-shadow 0.3s, color 0.3s;
-      display: inline-block;
+      transition: border-color 0.3s, color 0.3s, text-shadow 0.3s;
     }
 
-    .btn-hire:hover {
-      border-color: var(--green);
-      box-shadow: 0 0 16px var(--green-glow);
-      color: var(--green);
+    .social-links a:hover {
+      border-color: var(--green-dim);
+      color: var(--green-mid);
+      text-shadow: 0 0 8px var(--green-ghost);
     }
 
     /* === BOOT SCREEN === */
@@ -398,7 +397,11 @@
       <h1><span id="logo-text"></span><span class="cursor"></span></h1>
       <p>// n8n · Claude · Supabase · VAPI</p>
     </div>
-    <a class="btn-hire" href="https://t.me/nikitadev001" target="_blank" rel="noopener">[ HIRE ME ]</a>
+    <div class="social-links">
+      <a href="https://github.com/nikitak-dev" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/nikita-kurdybailo-b0438a333" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://t.me/nikitadev001" target="_blank" rel="noopener">Telegram</a>
+    </div>
   </header>
 
   <div id="keyboard-hint">
@@ -490,14 +493,6 @@
 
   <footer class="hub-footer">
     <span>© 2026 ABSOLUTE</span>
-    <div class="footer-links">
-      <!-- TODO: replace # with real URLs -->
-      <a href="#" target="_blank" rel="noopener">GitHub</a>
-      <span class="footer-sep">·</span>
-      <a href="#" target="_blank" rel="noopener">Upwork</a>
-      <span class="footer-sep">·</span>
-      <a href="#" target="_blank" rel="noopener">Telegram</a>
-    </div>
   </footer>
 
   <script>
