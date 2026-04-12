@@ -220,6 +220,16 @@
       color: var(--green-dim);
     }
 
+    .status-block-live {
+      color: var(--green);
+      animation: connPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes connPulse {
+      0%, 100% { color: var(--green); }
+      50%       { color: var(--text-muted); }
+    }
+
     /* === HUB MAIN === */
     #hub {
       position: relative;
@@ -518,7 +528,7 @@
       <span>[ SYS: NOMINAL ]</span>
       <span>[ UPTIME: <span id="uptime-val">0d 0h</span> ]</span>
       <span>[ PROC: 2/4 LIVE ]</span>
-      <span>[ CONN: ESTABLISHED ]</span>
+      <span class="status-block-live">[ CONN: ESTABLISHED ]</span>
     </div>
   </footer>
 
