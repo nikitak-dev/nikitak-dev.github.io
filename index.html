@@ -268,6 +268,36 @@
     .project-card:hover   { border-color: var(--green-dim); box-shadow: 0 0 20px var(--green-ghost); }
     .project-card.selected { border-color: var(--green);     box-shadow: 0 0 30px var(--green-glow); }
 
+    /* === RED THEME (non-AI cards) === */
+    .theme-red { border-color: #3a0d0d; background: #0d0404; }
+    .theme-red:hover   { border-color: #991a00; box-shadow: 0 0 20px rgba(255,51,51,0.08); }
+    .theme-red.selected { border-color: #ff3333; box-shadow: 0 0 30px rgba(255,51,51,0.15); }
+    .theme-red .card-id   { color: #661000; }
+    .theme-red .card-title { color: #ff3333; text-shadow: 0 0 8px rgba(255,51,51,0.08); }
+    .theme-red .card-status.wip { color: #991a00; }
+    .theme-red .card-desc { color: #cc2200; }
+    .theme-red .card-footer { border-top-color: #3a0d0d; }
+    .theme-red .card-meta { color: #661000; }
+    .theme-red .card-launch { border-color: #991a00; color: #ff3333; }
+    .theme-red .card-launch:disabled { border-color: #661000; color: #cc2200; }
+    .theme-red .card-launch:not(:disabled):hover { border-color: #ff3333; box-shadow: 0 0 12px rgba(255,51,51,0.2); }
+
+    /* === GRID LEGEND === */
+    .grid-legend {
+      display: flex;
+      gap: 20px;
+      max-width: 1000px;
+      margin: 0 auto 16px;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-dot { width: 8px; height: 8px; border-radius: 1px; display: inline-block; }
+    .legend-ai   .legend-dot { background: var(--green); box-shadow: 0 0 6px var(--green-glow); }
+    .legend-auto .legend-dot { background: #ff3333;      box-shadow: 0 0 6px rgba(255,51,51,0.3); }
+    .legend-ai   { color: var(--green-dim); }
+    .legend-auto { color: #991a00; }
+
     .card-header {
       display: flex;
       justify-content: space-between;
@@ -399,6 +429,10 @@
   </header>
 
   <main id="hub">
+    <div class="grid-legend">
+      <span class="legend-item legend-ai"><span class="legend-dot"></span>AI-POWERED</span>
+      <span class="legend-item legend-auto"><span class="legend-dot"></span>AUTOMATION</span>
+    </div>
     <div class="project-grid">
 
       <!-- [ 001 ] MULTIMODAL_RAG -->
@@ -445,7 +479,7 @@
       </div>
 
       <!-- [ 003 ] COMING SOON -->
-      <div class="project-card" data-index="3">
+      <div class="project-card theme-red" data-index="3">
         <div class="card-header">
           <span class="card-id">[ 003 ]</span>
           <span class="card-status wip">◌ WIP</span>
@@ -462,7 +496,7 @@
       </div>
 
       <!-- [ 004 ] COMING SOON -->
-      <div class="project-card" data-index="4">
+      <div class="project-card theme-red" data-index="4">
         <div class="card-header">
           <span class="card-id">[ 004 ]</span>
           <span class="card-status wip">◌ WIP</span>
