@@ -333,8 +333,8 @@
       flex: 1;
     }
 
-    .card-stack { display: flex; flex-wrap: wrap; gap: 6px; }
-    .card-stack .badge { font-size: 10px; padding: 3px 8px; }
+    .card-stack { display: flex; }
+    .stack-comment { font-size: 11px; color: var(--green-dim); letter-spacing: 0.04em; }
 
     .card-footer {
       display: flex;
@@ -450,10 +450,7 @@
           <h2 class="card-title">MULTIMODAL_RAG</h2>
           <p class="card-desc">What if you could Google your own files? Upload anything — docs, images, audio, video, PDFs — ask in plain language, get the answer. Built on vector embeddings and semantic retrieval.</p>
           <div class="card-stack">
-            <span class="badge">n8n</span>
-            <span class="badge">Gemini</span>
-            <span class="badge">Pinecone</span>
-            <span class="badge">OpenRouter</span>
+            <span class="stack-comment">// n8n | Gemini | Pinecone | OpenRouter</span>
           </div>
         </div>
         <div class="card-footer">
@@ -472,9 +469,7 @@
           <h2 class="card-title">VOICE_AGENT</h2>
           <p class="card-desc">Never miss a lead because no one picked up the phone. An AI agent handles inbound calls 24/7 — asks the right questions, qualifies prospects and schedules meetings automatically. Built on voice AI infrastructure.</p>
           <div class="card-stack">
-            <span class="badge">VAPI</span>
-            <span class="badge">n8n</span>
-            <span class="badge">Claude</span>
+            <span class="stack-comment">// VAPI | n8n | Claude</span>
           </div>
         </div>
         <div class="card-footer">
