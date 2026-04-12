@@ -590,13 +590,13 @@
       let i = 0;
       function addLine() {
         if (bootDone) return;
-        if (i >= bootSequence.length) { setTimeout(endBoot, 400); return; }
+        if (i >= bootSequence.length) { setTimeout(endBoot, 1500); return; }
         const el = document.createElement('div');
         el.className = 'boot-line' + (bootSequence[i].bright ? ' bright' : '');
         el.textContent = bootSequence[i].text;
         bootLinesEl.appendChild(el);
         i++;
-        setTimeout(addLine, 300);
+        setTimeout(addLine, 500);
       }
       addLine();
     }
