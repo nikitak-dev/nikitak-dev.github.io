@@ -257,6 +257,7 @@
       transition: border-color 0.3s, box-shadow 0.3s;
       opacity: 0;
       cursor: pointer;
+      user-select: none;
     }
 
     .project-grid.ready .project-card          { animation: fadeSlideUp 0.4s ease-out forwards; }
@@ -362,6 +363,8 @@
       cursor: pointer;
       transition: border-color 0.3s, box-shadow 0.3s;
       flex-shrink: 0;
+      user-select: none;
+      outline: none;
     }
 
     .card-launch:disabled {
@@ -419,7 +422,7 @@
   <header class="scanlined">
     <div class="header-left">
       <h1><span id="logo-text"></span><span class="cursor"></span></h1>
-      <p>// n8n · Claude · Supabase · VAPI</p>
+      <p>// Every repetitive task is a bug I can fix</p>
     </div>
     <div class="social-links">
       <a href="https://github.com/nikitak-dev" target="_blank" rel="noopener">GitHub</a>
