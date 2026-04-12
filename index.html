@@ -59,10 +59,9 @@
       opacity: 0.25;
     }
 
-    .scanlined, .card-title, .card-launch { position: relative; }
-    .scanlined::after, .card-title::after, .card-launch::after {
+    body::after {
       content: '';
-      position: absolute;
+      position: fixed;
       inset: 0;
       background: repeating-linear-gradient(
         0deg,
@@ -72,7 +71,7 @@
         rgba(0, 0, 0, 0.12) 2px
       );
       pointer-events: none;
-      z-index: 1;
+      z-index: 9999;
     }
 
     .overlay-vignette {
@@ -132,7 +131,7 @@
     }
 
     .header-left p {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 400;
       color: var(--text-muted);
       margin-top: 4px;
@@ -162,13 +161,15 @@
       letter-spacing: 0.06em;
       text-transform: uppercase;
       text-decoration: none;
-      transition: border-color 0.3s, color 0.3s, text-shadow 0.3s;
+      transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s, text-shadow 0.2s;
     }
 
     .social-links a:hover {
+      background: rgba(0, 255, 65, 0.08);
       border-color: var(--green-dim);
       color: var(--green-mid);
-      text-shadow: 0 0 8px var(--green-ghost);
+      box-shadow: 0 0 10px rgba(0, 255, 65, 0.15), inset 0 0 6px rgba(0, 255, 65, 0.05);
+      text-shadow: 0 0 6px var(--green-glow);
     }
 
     /* === BOOT SCREEN === */
@@ -210,7 +211,7 @@
     .sys-status {
       display: flex;
       gap: 16px;
-      font-size: 11px;
+      font-size: 12px;
       color: var(--text-muted);
       letter-spacing: 0.04em;
     }
@@ -313,7 +314,7 @@
     }
 
     .card-id {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--text-muted);
       letter-spacing: 0.1em;
     }
@@ -326,7 +327,7 @@
     .card-body { display: flex; flex-direction: column; gap: 10px; flex: 1; }
 
     .card-title {
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 700;
       letter-spacing: 0.06em;
       color: var(--green);
@@ -335,13 +336,19 @@
 
     .card-desc {
       font-size: 12px;
-      color: var(--text-secondary);
+      color: var(--text-muted);
       line-height: 1.7;
       flex: 1;
     }
 
     .card-stack { display: flex; }
-    .stack-comment { font-size: 11px; color: var(--green-dim); letter-spacing: 0.04em; }
+    .stack-comment {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: 0.06em;
+      text-shadow: 0 0 8px var(--green-ghost);
+    }
 
     .card-footer {
       display: flex;
@@ -365,12 +372,12 @@
       color: var(--green);
       background: transparent;
       font-family: var(--font);
-      font-size: 11px;
-      font-weight: 700;
+      font-size: 12px;
+      font-weight: 400;
       letter-spacing: 0.06em;
       text-transform: uppercase;
       cursor: pointer;
-      transition: border-color 0.3s, box-shadow 0.3s;
+      transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s, text-shadow 0.2s;
       flex-shrink: 0;
       user-select: none;
       outline: none;
@@ -384,8 +391,11 @@
     }
 
     .card-launch:not(:disabled):hover {
+      background: rgba(0, 255, 65, 0.15);
       border-color: var(--green);
-      box-shadow: 0 0 12px var(--green-glow);
+      color: #ccffcc;
+      box-shadow: 0 0 20px rgba(0, 255, 65, 0.3), inset 0 0 10px rgba(0, 255, 65, 0.1);
+      text-shadow: 0 0 8px var(--green-glow-strong);
     }
 
     /* === FOOTER === */
@@ -397,7 +407,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 11px;
+      font-size: 12px;
       color: var(--text-muted);
       flex-shrink: 0;
       background: var(--bg-void);
@@ -428,7 +438,7 @@
     <div id="boot-skip">// click or press any key to skip</div>
   </div>
 
-  <header class="scanlined">
+  <header>
     <div class="header-left">
       <h1><span id="logo-text"></span><span class="cursor"></span></h1>
       <p>// Every repetitive task is a bug I can fix</p>
@@ -470,7 +480,7 @@
       <div class="project-card" data-index="2" data-url="#">
         <div class="card-header">
           <span class="card-id">[ 002 ]</span>
-          <span class="card-status private">◌ PRIVATE</span>
+          <span class="card-status private">○ PRIVATE</span>
         </div>
         <div class="card-body">
           <h2 class="card-title">VOICE_AGENT</h2>
@@ -489,7 +499,7 @@
       <div class="project-card theme-red" data-index="3">
         <div class="card-header">
           <span class="card-id">[ 003 ]</span>
-          <span class="card-status wip">◌ WIP</span>
+          <span class="card-status wip">○ WIP</span>
         </div>
         <div class="card-body">
           <h2 class="card-title">COMING_SOON</h2>
@@ -506,7 +516,7 @@
       <div class="project-card theme-red" data-index="4">
         <div class="card-header">
           <span class="card-id">[ 004 ]</span>
-          <span class="card-status wip">◌ WIP</span>
+          <span class="card-status wip">○ WIP</span>
         </div>
         <div class="card-body">
           <h2 class="card-title">COMING_SOON</h2>
