@@ -194,11 +194,11 @@
       font-size: 13px;
       color: var(--green-dim);
       line-height: 2.2;
-      opacity: 0;
-      animation: fadeSlideUp 0.25s ease-out forwards;
     }
 
     .boot-line.bright { color: var(--green); font-weight: 700; }
+    .boot-cursor { color: var(--green); }
+    .boot-cursor.blinking { animation: blink 1s step-end infinite; }
 
     #boot-skip {
       margin-top: 28px;
@@ -592,10 +592,30 @@
         if (i >= bootSequence.length) { setTimeout(endBoot, 1500); return; }
         const el = document.createElement('div');
         el.className = 'boot-line' + (bootSequence[i].bright ? ' bright' : '');
-        el.textContent = bootSequence[i].text;
         bootLinesEl.appendChild(el);
+        const text = bootSequence[i].text;
         i++;
-        setTimeout(addLine, 500);
+        const textNode = document.createTextNode('');
+        const cursorSpan = document.createElement('span');
+        cursorSpan.className = 'boot-cursor';
+        cursorSpan.textContent = '|';
+        el.appendChild(textNode);
+        el.appendChild(cursorSpan);
+        let c = 0;
+        const type = setInterval(() => {
+          if (bootDone) { clearInterval(type); cursorSpan.remove(); return; }
+          textNode.textContent = text.slice(0, ++c);
+          if (c >= text.length) {
+            clearInterval(type);
+            if (i >= bootSequence.length) {
+              cursorSpan.classList.add('blinking');
+              setTimeout(addLine, 200);
+            } else {
+              cursorSpan.remove();
+              setTimeout(addLine, 200);
+            }
+          }
+        }, 25);
       }
       addLine();
     }
