@@ -668,7 +668,7 @@
       const btn = selectedCard.querySelector('.card-launch');
       if (btn && btn.disabled) return;
       const url = selectedCard.dataset.url;
-      if (url && url !== '#') window.open(url, '_blank');
+      if (url && url !== '#') window.location.href = url;
     }
 
     cards.forEach(card => {
