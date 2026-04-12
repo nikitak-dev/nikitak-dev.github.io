@@ -64,3 +64,40 @@ Key structural elements follow a **4px grid**. Content elements follow a **2px g
 - Border style: `border-left: 2px solid var(--green-dim)` for message blocks
 - All interactive elements: `transition` on color + box-shadow
 - Animations: `fadeSlideUp`, `fadeSlideDown` for page load elements
+
+## Effects
+
+### Scanline (global CRT effect)
+
+Apply via `body::after` — covers entire viewport with a single fixed overlay:
+
+```css
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    rgba(0, 0, 0, 0.12) 1px,
+    rgba(0, 0, 0, 0.12) 2px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+```
+
+Do NOT apply `.scanlined` per-element — use the global body overlay instead.
+
+### Section labels
+
+Section labels (`// LABEL:`) use bold + brighter color + glow to stand out from content:
+
+```css
+font-weight: 700;
+color: var(--green-mid);
+text-shadow: 0 0 10px rgba(0, 255, 65, 0.35);
+```
+
+Content under labels: `10px`, `color: var(--text-muted)` or `var(--green-muted)`.
