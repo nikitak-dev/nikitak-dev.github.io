@@ -139,24 +139,37 @@
       letter-spacing: 0.02em;
     }
 
-    .stack-badges { display: flex; gap: 6px; }
-
     .badge {
-      font-size: 12px;
+      font-size: 10px;
       font-weight: 500;
-      padding: 5px 12px;
+      padding: 3px 8px;
       border: 1px solid var(--border);
       color: var(--green-dim);
       background: transparent;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      transition: border-color 0.3s, color 0.3s, text-shadow 0.3s;
     }
 
-    .badge:hover {
-      border-color: var(--green-dim);
-      color: var(--green-mid);
-      text-shadow: 0 0 8px var(--green-ghost);
+    .btn-hire {
+      padding: 8px 20px;
+      border: 1px solid var(--green-dim);
+      color: var(--green);
+      background: transparent;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      transition: border-color 0.3s, box-shadow 0.3s, color 0.3s;
+      display: inline-block;
+    }
+
+    .btn-hire:hover {
+      border-color: var(--green);
+      box-shadow: 0 0 16px var(--green-glow);
+      color: var(--green);
     }
 
     /* === BOOT SCREEN === */
@@ -385,12 +398,7 @@
       <h1><span id="logo-text"></span><span class="cursor"></span></h1>
       <p>// n8n · Claude · Supabase · VAPI</p>
     </div>
-    <div class="stack-badges">
-      <!-- STATUS: update manually when availability changes -->
-      <div class="badge">AVAILABLE</div>
-      <div class="badge">REMOTE</div>
-      <div class="badge">CET</div>
-    </div>
+    <a class="btn-hire" href="https://t.me/nikitadev001" target="_blank" rel="noopener">[ HIRE ME ]</a>
   </header>
 
   <div id="keyboard-hint">
