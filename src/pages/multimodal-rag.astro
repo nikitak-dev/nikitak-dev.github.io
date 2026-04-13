@@ -1,0 +1,984 @@
+---
+import '../styles/global.css';
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MULTIMODAL_RAG // AI Document Intelligence</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABRElEQVR4nO2Wv0vEMBSAv5SicKCToKCg+He4BP8FEcTBVdDRRTcHHZwcFBc3f4yuLkIWN1dHnRTUQYVTHHR4krt4tIUOueTawX4QyEua5EtfhgcNDf8d1euJ3gVG87NmPcopog8KI22U2SoKPAPjBQEVSUAKIy8oM2E7adlEVLIX6V60R+q9mehV4MhFX8AdcArso8yP73aJtwDcAoeuXbh3swdcItr7Qqn38cpcA7Z1ET0EnAELwBJwMug/kEeZb2DHRfN4khCX4eoFpJP3TRfdDP4N/CF6G5gB5oBZ4B44pjIBWAGmgXfgHNhAmXaVApZXlBkjgDRg7SPQCjk8TEAZm/tgkr5Xip5E9FQ9AqIXXQoeEL1cRwregE+rAjzFFBjJFQ9lBYkyV51v+ytI7LqPMoEWsJaJ41RE+T3JCjQ0NFA3v7FOSnR3aaFyAAAAAElFTkSuQmCC">
+  <meta name="description" content="Multimodal RAG pipeline: query documents, images, and files through natural language. Built with n8n, Gemini, Pinecone, OpenRouter.">
+  <meta property="og:title" content="MULTIMODAL_RAG // AI Document Intelligence">
+  <meta property="og:description" content="AI-powered document intelligence with multimodal retrieval. n8n + Gemini Embedding 2 + Pinecone + OpenRouter.">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#000000">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=block" rel="stylesheet">
+</head>
+<body>
+  <canvas id="matrix-bg"></canvas>
+  <div class="overlay-vignette"></div>
+
+  <header>
+    <div class="header-left">
+      <div class="nav-breadcrumb"><a href="/">&#60;&#60; ABSOLUTE_AUTOMATIONS</a></div>
+      <h1><a href=""><span id="logo-text"></span><span class="cursor"></span></a></h1>
+      <p>// query your documents, images &amp; files through natural language</p>
+    </div>
+    <div class="stack-badges">
+      <span class="badge">n8n</span>
+      <span class="badge">Gemini</span>
+      <span class="badge">Pinecone</span>
+      <span class="badge">OpenRouter</span>
+    </div>
+  </header>
+
+  <div id="chat">
+    <div id="chat-spacer"></div>
+    <div id="empty-state">
+      <div class="empty-panel">
+        <div class="kb-section">
+          <div class="empty-panel-label">// KNOWLEDGE BASE</div>
+          <div class="empty-panel-desc">Answers grounded in 13 indexed files.<br>Sources cited in every reply.</div>
+        </div>
+        <div class="empty-panel-divider"></div>
+        <div class="kb-section">
+          <div class="empty-panel-queries-label">// TOPICS:</div>
+          <div class="empty-panel-topics">
+            CYBERSECURITY &nbsp;|&nbsp; AGILE<br>
+            API DESIGN &nbsp;|&nbsp; DEVOPS<br>
+            CLOUD ARCHITECTURE &nbsp;|&nbsp; SQL
+          </div>
+        </div>
+        <div class="empty-panel-divider"></div>
+        <div class="kb-section">
+          <div class="empty-panel-queries-label">// FILE TYPES:</div>
+          <div class="empty-panel-formats">TEXT &nbsp;|&nbsp; IMAGE &nbsp;|&nbsp; AUDIO<br>VIDEO &nbsp;|&nbsp; PDF</div>
+        </div>
+        <div class="empty-panel-divider"></div>
+        <div class="kb-section">
+          <div class="empty-panel-queries-label">// CLICK TO TRY:</div>
+          <div class="empty-panel-queries">
+            <span class="boot-query">&gt; What is symmetric encryption?</span>
+            <span class="boot-query">&gt; Explain the Agile sprint cycle</span>
+            <span class="boot-query">&gt; What SQL join types are covered?</span>
+          </div>
+        </div>
+      </div>
+      <div class="empty-main">
+        <div class="empty-icon" data-text="[?]">[?]</div>
+        <h2><span id="scramble-text">Awaiting input</span><span class="await-cursor"></span></h2>
+      </div>
+    </div>
+  </div>
+
+  <div id="input-bar">
+    <div class="input-status">
+      <span class="input-status-left">// QUERY INTERFACE</span>
+      <span class="input-status-right">
+        <span class="status-block">[ VDB: PINECONE ]</span>
+        <span class="status-block">[ LLM: CLAUDE ]</span>
+        <span class="status-block-live">[ CONN: ESTABLISHED ]</span>
+      </span>
+    </div>
+    <div class="input-row">
+      <div class="input-wrap">
+        <input type="text" id="question" placeholder="enter query..." autocomplete="off">
+      </div>
+      <button id="send">EXEC</button>
+      <button id="clear">CLR</button>
+    </div>
+    <div class="input-hint"><span class="hint-key">[ ENTER ]</span> transmit &nbsp;&nbsp;|&nbsp;&nbsp; <span class="hint-key">[ ESC ]</span> clear</div>
+  </div>
+</body>
+</html>
+
+<style is:global>
+  /* Override: global.css adds full-page scanline via body::after.
+     This page applies scanlines per-section instead. */
+  body::after { display: none; }
+
+  /* Per-section scanlines */
+  header::after,
+  #input-bar::after,
+  #empty-state::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1px,
+      rgba(0, 0, 0, 0.12) 1px,
+      rgba(0, 0, 0, 0.12) 2px
+    );
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* Additional CSS variables not in global.css */
+  :root {
+    --user-bg: rgba(0, 255, 65, 0.05);
+    --user-border: rgba(0, 255, 65, 0.15);
+    --error: #ff3333;
+  }
+
+  /* Nav breadcrumb */
+  .nav-breadcrumb {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+  }
+
+  .nav-breadcrumb a {
+    color: var(--green-dim);
+    text-decoration: none;
+    transition: color 0.2s, text-shadow 0.2s;
+  }
+
+  .nav-breadcrumb a:hover {
+    color: var(--green);
+    text-shadow: 0 0 8px var(--green-ghost);
+  }
+
+  .nav-breadcrumb .sep {
+    margin: 0 6px;
+    color: var(--border-hover);
+  }
+
+  /* Logo link */
+  .header-left h1 a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* Stack badges */
+  .stack-badges {
+    display: flex;
+    gap: 6px;
+  }
+
+  .badge {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 12px;
+    transition: border-color 0.3s, color 0.3s, text-shadow 0.3s;
+  }
+
+  .badge:hover {
+    border-color: var(--green-dim);
+    color: var(--green-mid);
+    text-shadow: 0 0 8px var(--green-ghost);
+  }
+
+  /* Chat area */
+  #chat {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 20px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  #chat::-webkit-scrollbar { width: 4px; }
+  #chat::-webkit-scrollbar-track { background: transparent; }
+  #chat::-webkit-scrollbar-thumb { background: var(--green-muted); border-radius: 2px; }
+
+  #chat-spacer { flex: 1 1 auto; min-height: 0; }
+
+  /* Empty state */
+  #empty-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: row;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeSlideUp 0.8s ease-out 0.3s both;
+    z-index: 1;
+  }
+
+  .empty-panel {
+    width: 296px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    padding: 24px 24px 32px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .empty-panel-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.10em;
+    color: var(--green-mid);
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.35);
+  }
+
+  .empty-panel-desc {
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+
+  .empty-panel-divider { height: 1px; background: var(--border); }
+
+  .empty-panel-topics {
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    line-height: 2;
+  }
+
+  .empty-panel-formats {
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: var(--green-muted);
+    line-height: 1.9;
+  }
+
+  .kb-section { display: flex; flex-direction: column; gap: 6px; }
+
+  .empty-panel-queries-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.10em;
+    color: var(--green-mid);
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.35);
+  }
+
+  .empty-panel-queries { display: flex; flex-direction: column; gap: 6px; }
+
+  .empty-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  #empty-state .empty-icon,
+  #empty-state h2 { user-select: none; }
+
+  #empty-state.hidden {
+    pointer-events: none;
+    animation: fadeSlideOut 0.5s ease-in forwards;
+  }
+
+  @keyframes fadeSlideOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-10px); }
+  }
+
+  .empty-icon {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--green);
+    text-shadow: 0 0 20px var(--green-glow-strong);
+    position: relative;
+    white-space: nowrap;
+    animation: rgbSplit 7s steps(1) 3780ms infinite;
+  }
+
+  @keyframes rgbSplit {
+    0%, 46%, 49%, 100% { filter: none; }
+    46.5% { filter: drop-shadow(-6px 0 rgba(255,0,64,0.9))  drop-shadow(6px 0 rgba(0,255,255,0.9)); }
+    47%   { filter: drop-shadow(-10px 0 rgba(255,0,64,0.8)) drop-shadow(4px 0 rgba(0,255,255,0.8)); }
+    47.5% { filter: drop-shadow(-4px 0 rgba(255,0,64,0.95)) drop-shadow(10px 0 rgba(0,255,255,0.95)); }
+    48%   { filter: drop-shadow(-8px 0 rgba(255,0,64,0.7))  drop-shadow(7px 0 rgba(0,255,255,0.7)); }
+    48.5% { filter: drop-shadow(-12px 0 rgba(255,0,64,0.9)) drop-shadow(3px 0 rgba(0,255,255,0.9)); }
+    48.9% { filter: drop-shadow(-3px 0 rgba(255,0,64,0.4))  drop-shadow(8px 0 rgba(0,255,255,0.4)); }
+  }
+
+  .empty-icon::before,
+  .empty-icon::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    color: var(--green);
+    text-shadow: 0 0 20px var(--green-glow-strong);
+    opacity: 0;
+  }
+
+  .empty-icon::before {
+    animation: glitchTop 7s steps(1) 3780ms infinite;
+    clip-path: inset(0 0 50% 0);
+  }
+
+  .empty-icon::after {
+    animation: glitchBottom 7s steps(1) 3780ms infinite;
+    clip-path: inset(50% 0 0 0);
+  }
+
+  @keyframes glitchTop {
+    0%, 46%, 49%, 100% { transform: none; opacity: 0; }
+    46.5% { transform: translateX(-8px); opacity: 1; }
+    47%   { transform: translateX(6px); opacity: 1; }
+    47.5% { transform: translateX(-3px); opacity: 1; }
+    48%   { transform: translateX(10px); opacity: 1; }
+    48.5% { transform: translateX(-5px); opacity: 1; }
+    48.9% { transform: translateX(2px); opacity: 1; }
+  }
+
+  @keyframes glitchBottom {
+    0%, 46%, 49%, 100% { transform: none; opacity: 0; }
+    46.5% { transform: translateX(7px); opacity: 1; }
+    47%   { transform: translateX(-10px); opacity: 1; }
+    47.5% { transform: translateX(4px); opacity: 1; }
+    48%   { transform: translateX(-6px); opacity: 1; }
+    48.5% { transform: translateX(8px); opacity: 1; }
+    48.9% { transform: translateX(-3px); opacity: 1; }
+  }
+
+  #empty-state h2 {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--green-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .await-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 14px;
+    background: var(--green);
+    margin-left: 3px;
+    vertical-align: middle;
+    box-shadow: 0 0 6px var(--green-glow-strong);
+    animation: cursorBlink 1s step-end infinite;
+  }
+
+  @keyframes cursorBlink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+
+  /* Messages */
+  .msg {
+    max-width: 700px;
+    line-height: 1.7;
+    animation: msgIn 0.4s ease-out both;
+    font-size: 12px;
+    font-weight: 400;
+  }
+
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg.user {
+    align-self: flex-end;
+    background: var(--bg-void);
+    border: 1px solid var(--user-border);
+    border-right: 2px solid var(--green-dim);
+    color: var(--green-mid);
+    padding: 10px 16px;
+    position: relative;
+    font-weight: 300;
+    text-shadow: 0 0 2px rgba(0, 204, 51, 0.4);
+  }
+
+  .msg.user::before {
+    content: 'YOU >';
+    display: block;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--green-dim);
+    margin-bottom: 4px;
+  }
+
+  .msg.user::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.12) 1px, rgba(0,0,0,0.12) 2px);
+    pointer-events: none;
+  }
+
+  .msg.assistant { align-self: flex-start; }
+
+  .msg.assistant .answer {
+    position: relative;
+    background: var(--bg-void);
+    padding: 16px 20px;
+    border: 1px solid var(--user-border);
+    border-left: 2px solid var(--green-dim);
+    color: var(--green-mid);
+    font-weight: 300;
+    text-shadow: 0 0 2px rgba(0, 204, 51, 0.4);
+  }
+
+  .msg.assistant .answer::before {
+    content: 'SYS >';
+    display: block;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--green-muted);
+    margin-bottom: 8px;
+  }
+
+  .msg.assistant .answer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.12) 1px, rgba(0,0,0,0.12) 2px);
+    pointer-events: none;
+  }
+
+  .msg.assistant .sources {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    padding-left: 40px;
+  }
+
+  .sources-label {
+    position: absolute;
+    left: 0;
+    top: 13px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+  }
+
+  .source-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: var(--green-dim);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .source-tag:hover { border-color: var(--green-dim); color: var(--green-mid); }
+
+  .score-bar { width: 28px; height: 3px; background: var(--border); overflow: hidden; }
+  .score-fill { height: 100%; background: var(--green-dim); transition: width 0.6s ease; box-shadow: 0 0 4px var(--green-ghost); }
+
+  .msg.error {
+    color: var(--error);
+    font-size: 12px;
+    padding: 10px 16px;
+    border: 1px solid rgba(255, 51, 51, 0.15);
+    border-left: 2px solid var(--error);
+    background: var(--bg-void);
+  }
+
+  .msg.error::before {
+    content: 'ERR >';
+    display: block;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+
+  /* Media in chat */
+  .msg-media { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+
+  .msg-media-item {
+    overflow: visible;
+    max-width: 400px;
+    padding: 0;
+    background: var(--bg-void);
+    position: relative;
+    outline: 1px solid var(--border);
+    transition: box-shadow 0.3s;
+  }
+
+  .msg-media-item::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border: 2px solid var(--green-dim);
+    mask:
+      linear-gradient(#fff, #fff) 0 0 / 24px 24px no-repeat,
+      linear-gradient(#fff, #fff) 100% 0 / 24px 24px no-repeat,
+      linear-gradient(#fff, #fff) 0 100% / 24px 24px no-repeat,
+      linear-gradient(#fff, #fff) 100% 100% / 24px 24px no-repeat;
+    -webkit-mask:
+      linear-gradient(#fff, #fff) 0 0 / 24px 24px no-repeat,
+      linear-gradient(#fff, #fff) 100% 0 / 24px 24px no-repeat,
+      linear-gradient(#fff, #fff) 0 100% / 24px 24px no-repeat,
+      linear-gradient(#fff, #fff) 100% 100% / 24px 24px no-repeat;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .msg-media-item:hover { box-shadow: 0 0 20px var(--green-ghost), 0 0 40px rgba(0, 255, 65, 0.04); }
+  .msg-media-item:hover::before { border-color: var(--green-mid); }
+
+  .msg-media-item img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    min-height: 80px;
+    background: var(--bg-elevated);
+    filter: saturate(0.85) brightness(0.95);
+    transition: filter 0.3s;
+  }
+
+  .msg-media-item img.loading { animation: imgLoad 1.5s ease-in-out infinite; }
+
+  @keyframes imgLoad {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.7; }
+  }
+
+  .msg-media-item:hover img { filter: saturate(1) brightness(1); }
+
+  .msg-media-item .media-label {
+    font-size: 12px;
+    color: var(--green-dim);
+    padding: 5px 10px;
+    background: var(--bg-void);
+    border-top: 1px solid var(--border);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .msg-media-item iframe { width: 400px; height: 225px; border: none; }
+  .msg-media-item .media-error { padding: 12px 8px; color: var(--error); font-size: 10px; letter-spacing: 0.06em; }
+
+  /* Typing indicator */
+  .typing {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 12px 16px;
+    animation: msgIn 0.3s ease-out both;
+    font-size: 12px;
+    color: var(--green-dim);
+  }
+
+  .typing::before {
+    content: 'SYS > ';
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--green-muted);
+    margin-right: 6px;
+  }
+
+  .typing-dot {
+    width: 6px;
+    height: 14px;
+    background: var(--green-dim);
+    animation: matrixPulse 1.4s ease-in-out infinite;
+    box-shadow: 0 0 4px var(--green-ghost);
+  }
+
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes matrixPulse {
+    0%, 80%, 100% { opacity: 0.2; transform: scaleY(0.6); }
+    40% { opacity: 1; transform: scaleY(1.4); }
+  }
+
+  /* Boot query suggestions */
+  .boot-query {
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: var(--green-dim);
+    cursor: pointer;
+    transition: color 0.2s, text-shadow 0.2s;
+    padding: 1px 0;
+    display: block;
+    padding-left: 2ch;
+    text-indent: -2ch;
+  }
+
+  .boot-query:hover { color: var(--green); text-shadow: 0 0 8px var(--green-ghost); }
+
+  /* Input bar */
+  #input-bar {
+    position: relative;
+    z-index: 1;
+    padding: 12px 32px 20px;
+    background: var(--bg-void);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+    animation: fadeSlideUp 0.5s ease-out 0.5s both;
+  }
+
+  .input-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+    padding: 0 2px;
+    user-select: none;
+  }
+
+  .input-status-left { color: var(--border-hover); }
+  .input-status-right { display: flex; gap: 10px; }
+  .status-block { color: var(--green-dim); }
+
+  .input-row { display: flex; gap: 8px; align-items: stretch; }
+
+  .input-wrap {
+    flex: 1;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    padding: 6px 16px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  .input-wrap::before {
+    content: '>';
+    color: var(--green-dim);
+    font-weight: 700;
+    font-size: 12px;
+    flex-shrink: 0;
+    transition: color 0.3s;
+  }
+
+  .input-wrap:focus-within {
+    border-color: var(--green-mid);
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.1), 0 0 40px rgba(0, 255, 65, 0.05), inset 0 0 20px rgba(0, 255, 65, 0.05);
+  }
+
+  .input-wrap:focus-within::before { color: var(--green); text-shadow: 0 0 8px var(--green-glow); }
+
+  #question {
+    flex: 1;
+    padding: 10px 0;
+    background: transparent;
+    border: none;
+    color: var(--green);
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 400;
+    outline: none;
+    caret-color: var(--green);
+  }
+
+  #question::placeholder { color: var(--green-muted); font-weight: 300; }
+
+  #send, #clear {
+    padding: 8px 18px;
+    background: var(--bg-input);
+    color: var(--green);
+    border: 1px solid var(--border);
+    font-family: var(--font);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s, text-shadow 0.2s;
+    flex-shrink: 0;
+  }
+
+  #send:hover, #clear:hover {
+    background: rgba(0, 255, 65, 0.15);
+    border-color: var(--green);
+    color: #ccffcc;
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.3), inset 0 0 10px rgba(0, 255, 65, 0.1);
+    text-shadow: 0 0 8px var(--green-glow-strong);
+  }
+
+  #send:disabled {
+    border-color: var(--border);
+    color: var(--green-muted);
+    cursor: not-allowed;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .input-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.07em;
+    margin-top: 10px;
+    padding: 0 2px;
+    user-select: none;
+  }
+
+  .input-hint .hint-key { color: var(--green-dim); }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .stack-badges { gap: 4px; }
+    .badge { font-size: 12px; padding: 4px 10px; }
+  }
+
+  @media (max-width: 640px) {
+    header { padding: 12px 16px; flex-direction: column; gap: 10px; align-items: flex-start; }
+    .stack-badges { flex-wrap: wrap; }
+    #chat { padding: 16px; }
+    #input-bar { padding: 12px 16px 16px; }
+    .msg { max-width: 100%; }
+    .msg.assistant .sources { padding-left: 0; }
+    .sources-label { position: static; width: 100%; margin-bottom: 4px; }
+    #empty-state { flex-direction: column; }
+    .empty-panel { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 20px 16px; }
+    .empty-main { padding: 32px 16px; }
+  }
+</style>
+
+<script is:inline>
+  /* --- Matrix rain --- */
+  const canvas = document.getElementById('matrix-bg');
+  const ctx = canvas.getContext('2d');
+  const chars = '01';
+  const fontSize = 14;
+  let columns, drops;
+
+  function initMatrix() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const rows = Math.ceil(canvas.height / fontSize);
+    columns = Math.floor(canvas.width / fontSize);
+    drops = Array.from({ length: columns }, () => -Math.floor(Math.random() * rows));
+  }
+
+  function drawMatrix() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.font = `${fontSize}px JetBrains Mono, monospace`;
+    for (let i = 0; i < drops.length; i++) {
+      if (drops[i] < 0) { drops[i]++; continue; }
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      const y = drops[i] * fontSize;
+      ctx.fillStyle = '#00ff41';
+      ctx.fillText(char, i * fontSize, y);
+      if (y > 0) {
+        ctx.fillStyle = 'rgba(0, 255, 65, 0.4)';
+        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * fontSize, y - fontSize);
+      }
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+        drops[i] = -Math.floor(Math.random() * 30);
+      }
+      drops[i]++;
+    }
+  }
+
+  initMatrix();
+  window.addEventListener('resize', initMatrix);
+  setInterval(drawMatrix, 80);
+
+  /* --- Scramble text --- */
+  (function () {
+    const el = document.getElementById('scramble-text');
+    if (!el) return;
+    const original = el.textContent;
+    const glyphSet = '#@!?/\\[]<>~|=%+^&*$0123456789';
+    let running = false;
+
+    function runScramble() {
+      if (running) return;
+      running = true;
+      const totalFrames = 16;
+      let frame = 0;
+      const iv = setInterval(() => {
+        frame++;
+        const resolved = Math.floor((frame / totalFrames) * original.length);
+        let out = '';
+        for (let i = 0; i < original.length; i++) {
+          if (i < resolved || original[i] === ' ') out += original[i];
+          else out += glyphSet[Math.floor(Math.random() * glyphSet.length)];
+        }
+        el.textContent = out;
+        if (frame >= totalFrames) {
+          clearInterval(iv);
+          el.textContent = original;
+          running = false;
+        }
+      }, 45);
+    }
+
+    setTimeout(() => {
+      runScramble();
+      let tick = 0;
+      setInterval(() => {
+        tick++;
+        runScramble();
+        if (tick % 2 === 1) typeLogo();
+      }, 7000);
+    }, 7000);
+  })();
+
+  /* --- Logo typewriter --- */
+  const logoText = 'MULTIMODAL_RAG';
+  const logoEl = document.getElementById('logo-text');
+  let typeInterval = null;
+
+  function typeLogo() {
+    if (typeInterval) clearInterval(typeInterval);
+    logoEl.textContent = '';
+    let i = 0;
+    typeInterval = setInterval(() => {
+      logoEl.textContent += logoText[i];
+      i++;
+      if (i >= logoText.length) { clearInterval(typeInterval); typeInterval = null; }
+    }, 80);
+  }
+
+  typeLogo();
+
+  /* --- Chat logic --- */
+  const WEBHOOK_URL = 'https://n8n.nikitakdev.uk/webhook/rag-chat';
+
+  const chat = document.getElementById('chat');
+  const input = document.getElementById('question');
+  const btn = document.getElementById('send');
+  const emptyState = document.getElementById('empty-state');
+
+  document.getElementById('clear').addEventListener('click', () => {
+    chat.querySelectorAll('.msg, .typing').forEach(el => el.remove());
+    if (emptyState) emptyState.classList.remove('hidden');
+    input.focus();
+  });
+
+  document.querySelectorAll('.boot-query').forEach(el => {
+    el.addEventListener('click', () => {
+      input.value = el.textContent.replace(/^>\s*/, '');
+      input.focus();
+    });
+  });
+
+  function addMsg(role, content) {
+    if (emptyState && !emptyState.classList.contains('hidden')) {
+      emptyState.classList.add('hidden');
+    }
+    const div = document.createElement('div');
+    div.className = `msg ${role}`;
+    div.innerHTML = content;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+    return div;
+  }
+
+  async function ask() {
+    const q = input.value.trim();
+    if (!q) return;
+
+    addMsg('user', q);
+    input.value = '';
+    btn.disabled = true;
+
+    const typing = document.createElement('div');
+    typing.className = 'typing';
+    typing.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+    chat.appendChild(typing);
+    chat.scrollTop = chat.scrollHeight;
+
+    try {
+      const res = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: q })
+      });
+
+      typing.remove();
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const data = await res.json();
+      let html = `<div class="answer">${formatAnswer(data.answer)}</div>`;
+
+      if (data.media && data.media.length > 0) {
+        const mediaHtml = data.media.map(m => {
+          const safeName = (m.filename || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          if (m.type === 'image') {
+            return `<div class="msg-media-item">
+              <a href="https://drive.google.com/file/d/${m.driveFileId}/view" target="_blank" rel="noopener">
+                <img class="loading" src="${m.url}" alt="${safeName}" loading="lazy" onload="this.classList.remove('loading')">
+              </a>
+              <div class="media-label">${safeName}</div>
+            </div>`;
+          } else if (m.type === 'video' || m.type === 'pdf') {
+            return `<div class="msg-media-item">
+              <iframe src="${m.url}" allowfullscreen></iframe>
+              <div class="media-label">${safeName}</div>
+            </div>`;
+          }
+          return '';
+        }).join('');
+        html += `<div class="msg-media">${mediaHtml}</div>`;
+      }
+
+      if (data.sources && data.sources.length > 0) {
+        const tags = data.sources.map(s => {
+          const pct = (s.score * 100).toFixed(0);
+          return `<div class="source-tag">
+            <span>${s.filename}</span>
+            <div class="score-bar"><div class="score-fill" style="width:${pct}%"></div></div>
+            <span>${pct}%</span>
+          </div>`;
+        }).join('');
+        html += `<div class="sources"><span class="sources-label">src</span>${tags}</div>`;
+      }
+
+      addMsg('assistant', html);
+    } catch (err) {
+      typing.remove();
+      addMsg('error', err.message);
+    }
+
+    btn.disabled = false;
+    input.focus();
+  }
+
+  function formatAnswer(text) {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\n/g, '<br>');
+  }
+
+  document.addEventListener('error', function(e) {
+    if (e.target.tagName === 'IMG' && e.target.closest('.msg-media-item')) {
+      const item = e.target.closest('.msg-media-item');
+      const label = item.querySelector('.media-label');
+      const name = label ? label.textContent : 'file';
+      item.innerHTML = `<div class="media-error">[ IMAGE UNAVAILABLE: ${name} ]</div>`;
+    }
+  }, true);
+
+  btn.addEventListener('click', ask);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') ask();
+    if (e.key === 'Escape') { input.value = ''; }
+  });
+  input.focus();
+</script>
