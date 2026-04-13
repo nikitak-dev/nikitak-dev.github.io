@@ -1,0 +1,125 @@
+---
+import '../styles/global.css';
+const { title = 'ABSOLUTE // Automations Portfolio' } = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title}</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABRElEQVR4nO2Wv0vEMBSAv5SicKCToKCg+He4BP8FEcTBVdDRRTcHHZwcFBc3f4yuLkIWN1dHnRTUQYVTHHR4krt4tIUOueTawX4QyEua5EtfhgcNDf8d1euJ3gVG87NmPcopog8KI22U2SoKPAPjBQEVSUAKIy8oM2E7adlEVLIX6V60R+q9mehV4MhFX8AdcArso8yP73aJtwDcAoeuXbh3swdcItr7Qqn38cpcA7Z1ET0EnAELwBJwMug/kEeZb2DHRfN4khCX4eoFpJP3TRfdDP4N/CF6G5gB5oBZ4B44pjIBWAGmgXfgHNhAmXaVApZXlBkjgDRg7SPQCjk8TEAZm/tgkr5Xip5E9FQ9AqIXXQoeEL1cRwregE+rAjzFFBjJFQ9lBYkyV51v+ytI7LqPMoEWsJaJ41RE+T3JCjQ0NFA3v7FOSnR3aaFyAAAAAElFTkSuQmCC">
+  <meta name="description" content="AI automation portfolio: n8n, Claude, Supabase, VAPI. Multimodal RAG, Voice AI agents, and more. Available for remote freelance.">
+  <meta property="og:title" content="ABSOLUTE // Automations Portfolio">
+  <meta property="og:description" content="AI-powered automation projects. n8n · Claude · Supabase · VAPI.">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#000000">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=block" rel="stylesheet">
+</head>
+<body>
+  <canvas id="matrix-bg"></canvas>
+  <div class="overlay-vignette"></div>
+
+  <header>
+    <div class="header-left">
+      <h1><span id="logo-text"></span><span class="cursor"></span></h1>
+      <p>// Every repetitive task is a bug I can fix</p>
+    </div>
+    <div class="social-links">
+      <a href="https://github.com/nikitak-dev" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/nikita-kurdybailo-b0438a333" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://t.me/nikitadev001" target="_blank" rel="noopener">Telegram</a>
+    </div>
+  </header>
+
+  <slot />
+
+  <footer class="hub-footer">
+    <span>© 2026 ABSOLUTE</span>
+    <div class="sys-status">
+      <span>[ SYS: NOMINAL ]</span>
+      <span>[ UPTIME: <span id="uptime-val">0d 0h</span> ]</span>
+      <span>[ PROC: 2/4 LIVE ]</span>
+      <span class="status-block-live">[ CONN: ESTABLISHED ]</span>
+    </div>
+  </footer>
+
+  <script is:inline>
+    /* --- Matrix rain --- */
+    const canvas = document.getElementById('matrix-bg');
+    const ctx = canvas.getContext('2d');
+    const chars = '01';
+    const fontSize = 14;
+    let columns, drops;
+
+    function initMatrix() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const rows = Math.ceil(canvas.height / fontSize);
+      columns = Math.floor(canvas.width / fontSize);
+      drops = Array.from({ length: columns }, () => -Math.floor(Math.random() * rows));
+    }
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.font = `${fontSize}px JetBrains Mono, monospace`;
+      for (let i = 0; i < drops.length; i++) {
+        if (drops[i] < 0) { drops[i]++; continue; }
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        const y = drops[i] * fontSize;
+        ctx.fillStyle = '#00ff41';
+        ctx.fillText(char, i * fontSize, y);
+        if (y > 0) {
+          ctx.fillStyle = 'rgba(0, 255, 65, 0.4)';
+          ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * fontSize, y - fontSize);
+        }
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = -Math.floor(Math.random() * 30);
+        }
+        drops[i]++;
+      }
+    }
+
+    initMatrix();
+    window.addEventListener('resize', initMatrix);
+    setInterval(drawMatrix, 80);
+
+    /* --- Logo typewriter --- */
+    const logoText = 'ABSOLUTE_AUTOMATIONS';
+    const logoEl = document.getElementById('logo-text');
+    let typeInterval = null;
+
+    function typeLogo() {
+      if (typeInterval) clearInterval(typeInterval);
+      logoEl.textContent = '';
+      let i = 0;
+      typeInterval = setInterval(() => {
+        logoEl.textContent += logoText[i];
+        i++;
+        if (i >= logoText.length) { clearInterval(typeInterval); typeInterval = null; }
+      }, 70);
+    }
+
+    typeLogo();
+    setInterval(typeLogo, 20000);
+
+    /* --- Footer uptime counter --- */
+    const BOOT_DATE = new Date('2026-04-12T14:00:00+02:00');
+    const uptimeEl = document.getElementById('uptime-val');
+
+    function updateUptime() {
+      const diff = Math.max(0, Date.now() - BOOT_DATE.getTime());
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const mins = Math.floor((diff % 3600000) / 60000);
+      uptimeEl.textContent = `${days}d ${hours}h ${mins}m`;
+    }
+
+    updateUptime();
+    setInterval(updateUptime, 60000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "portfolio",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nikitak-dev/nikitak-dev.github.io.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/nikitak-dev/nikitak-dev.github.io/issues"
+  },
+  "homepage": "https://github.com/nikitak-dev/nikitak-dev.github.io#readme",
+  "dependencies": {
+    "astro": "^6.1.5"
+  }
+}
