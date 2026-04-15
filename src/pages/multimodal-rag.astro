@@ -291,17 +291,20 @@ import MatrixRain from '../components/MatrixRain.astro';
     text-shadow: 0 0 20px var(--green-glow-strong);
     position: relative;
     white-space: nowrap;
-    animation: rgbSplit 7s steps(1) 3780ms infinite;
+  }
+
+  .empty-icon.is-glitching {
+    animation: rgbSplit 210ms steps(1) forwards;
   }
 
   @keyframes rgbSplit {
-    0%, 46%, 49%, 100% { filter: none; }
-    46.5% { filter: drop-shadow(-6px 0 rgba(255,0,64,0.9))  drop-shadow(6px 0 rgba(0,255,255,0.9)); }
-    47%   { filter: drop-shadow(-10px 0 rgba(255,0,64,0.8)) drop-shadow(4px 0 rgba(0,255,255,0.8)); }
-    47.5% { filter: drop-shadow(-4px 0 rgba(255,0,64,0.95)) drop-shadow(10px 0 rgba(0,255,255,0.95)); }
-    48%   { filter: drop-shadow(-8px 0 rgba(255,0,64,0.7))  drop-shadow(7px 0 rgba(0,255,255,0.7)); }
-    48.5% { filter: drop-shadow(-12px 0 rgba(255,0,64,0.9)) drop-shadow(3px 0 rgba(0,255,255,0.9)); }
-    48.9% { filter: drop-shadow(-3px 0 rgba(255,0,64,0.4))  drop-shadow(8px 0 rgba(0,255,255,0.4)); }
+    0%   { filter: drop-shadow(-6px 0 rgba(255,0,64,0.9))  drop-shadow(6px 0 rgba(0,255,255,0.9)); }
+    17%  { filter: drop-shadow(-10px 0 rgba(255,0,64,0.8)) drop-shadow(4px 0 rgba(0,255,255,0.8)); }
+    33%  { filter: drop-shadow(-4px 0 rgba(255,0,64,0.95)) drop-shadow(10px 0 rgba(0,255,255,0.95)); }
+    50%  { filter: drop-shadow(-8px 0 rgba(255,0,64,0.7))  drop-shadow(7px 0 rgba(0,255,255,0.7)); }
+    67%  { filter: drop-shadow(-12px 0 rgba(255,0,64,0.9)) drop-shadow(3px 0 rgba(0,255,255,0.9)); }
+    83%  { filter: drop-shadow(-3px 0 rgba(255,0,64,0.4))  drop-shadow(8px 0 rgba(0,255,255,0.4)); }
+    100% { filter: none; }
   }
 
   .empty-icon::before,
@@ -316,33 +319,39 @@ import MatrixRain from '../components/MatrixRain.astro';
   }
 
   .empty-icon::before {
-    animation: glitchTop 7s steps(1) 3780ms infinite;
     clip-path: inset(0 0 50% 0);
   }
 
   .empty-icon::after {
-    animation: glitchBottom 7s steps(1) 3780ms infinite;
     clip-path: inset(50% 0 0 0);
   }
 
+  .empty-icon.is-glitching::before {
+    animation: glitchTop 210ms steps(1) forwards;
+  }
+
+  .empty-icon.is-glitching::after {
+    animation: glitchBottom 210ms steps(1) forwards;
+  }
+
   @keyframes glitchTop {
-    0%, 46%, 49%, 100% { transform: none; opacity: 0; }
-    46.5% { transform: translateX(-8px); opacity: 1; }
-    47%   { transform: translateX(6px); opacity: 1; }
-    47.5% { transform: translateX(-3px); opacity: 1; }
-    48%   { transform: translateX(10px); opacity: 1; }
-    48.5% { transform: translateX(-5px); opacity: 1; }
-    48.9% { transform: translateX(2px); opacity: 1; }
+    0%   { transform: translateX(-8px); opacity: 1; }
+    17%  { transform: translateX(6px); opacity: 1; }
+    33%  { transform: translateX(-3px); opacity: 1; }
+    50%  { transform: translateX(10px); opacity: 1; }
+    67%  { transform: translateX(-5px); opacity: 1; }
+    83%  { transform: translateX(2px); opacity: 1; }
+    100% { transform: none; opacity: 0; }
   }
 
   @keyframes glitchBottom {
-    0%, 46%, 49%, 100% { transform: none; opacity: 0; }
-    46.5% { transform: translateX(7px); opacity: 1; }
-    47%   { transform: translateX(-10px); opacity: 1; }
-    47.5% { transform: translateX(4px); opacity: 1; }
-    48%   { transform: translateX(-6px); opacity: 1; }
-    48.5% { transform: translateX(8px); opacity: 1; }
-    48.9% { transform: translateX(-3px); opacity: 1; }
+    0%   { transform: translateX(7px); opacity: 1; }
+    17%  { transform: translateX(-10px); opacity: 1; }
+    33%  { transform: translateX(4px); opacity: 1; }
+    50%  { transform: translateX(-6px); opacity: 1; }
+    67%  { transform: translateX(8px); opacity: 1; }
+    83%  { transform: translateX(-3px); opacity: 1; }
+    100% { transform: none; opacity: 0; }
   }
 
   #empty-state h2 {
@@ -765,9 +774,19 @@ import MatrixRain from '../components/MatrixRain.astro';
     const glyphSet = '#@!?/\\[]<>~|=%+^&*$0123456789';
     let running = false;
 
+    function triggerIconGlitch() {
+      const icon = document.querySelector('.empty-icon');
+      if (!icon) return;
+      icon.classList.remove('is-glitching');
+      void icon.offsetWidth;
+      icon.classList.add('is-glitching');
+      setTimeout(() => icon.classList.remove('is-glitching'), 230);
+    }
+
     function runScramble() {
       if (running) return;
       running = true;
+      triggerIconGlitch();
       const totalFrames = 16;
       let frame = 0;
       const iv = setInterval(() => {
