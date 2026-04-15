@@ -817,7 +817,7 @@ import MatrixRain from '../components/MatrixRain.astro';
   typeLogo();
 
   /* --- Chat logic --- */
-  const WEBHOOK_URL = 'https://n8n.nikitakdev.uk/webhook/rag-chat';
+  const WEBHOOK_URL = import.meta.env.PUBLIC_RAG_WEBHOOK;
 
   function escapeAttr(str) {
     return String(str || '')
