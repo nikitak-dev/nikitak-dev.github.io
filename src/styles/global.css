@@ -394,6 +394,7 @@ header {
   color: var(--text-muted);
   flex-shrink: 0;
   background: var(--bg-void);
+  user-select: none;
 }
 
 .footer-links { display: flex; gap: 12px; align-items: center; }

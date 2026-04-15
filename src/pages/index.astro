@@ -176,6 +176,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       });
     });
 
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.project-card')) selectCard(null);
+    });
+
     document.addEventListener('keydown', e => {
       if (!bootDone) return;
       if (['1', '2', '3', '4'].includes(e.key)) {
