@@ -22,7 +22,7 @@ import MatrixRain from '../components/MatrixRain.astro';
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=block" rel="stylesheet">
 </head>
-<body>
+<body data-webhook={import.meta.env.PUBLIC_RAG_WEBHOOK}>
   <MatrixRain />
   <div class="overlay-vignette"></div>
 
@@ -817,7 +817,7 @@ import MatrixRain from '../components/MatrixRain.astro';
   typeLogo();
 
   /* --- Chat logic --- */
-  const WEBHOOK_URL = import.meta.env.PUBLIC_RAG_WEBHOOK;
+  const WEBHOOK_URL = document.body.dataset.webhook;
 
   function escapeAttr(str) {
     return String(str || '')
