@@ -122,17 +122,6 @@ header {
   letter-spacing: 0.02em;
 }
 
-.badge {
-  font-size: 10px;
-  font-weight: 500;
-  padding: 3px 8px;
-  border: 1px solid var(--border);
-  color: var(--green-dim);
-  background: transparent;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
 .social-links { display: flex; gap: 6px; }
 
 .social-links a {

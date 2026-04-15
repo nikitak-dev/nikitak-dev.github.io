@@ -20,6 +20,9 @@
     "url": "https://github.com/nikitak-dev/nikitak-dev.github.io/issues"
   },
   "homepage": "https://github.com/nikitak-dev/nikitak-dev.github.io#readme",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.2",
     "astro": "^6.1.5"

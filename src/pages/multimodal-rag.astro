@@ -29,7 +29,7 @@ import MatrixRain from '../components/MatrixRain.astro';
   <header>
     <div class="header-left">
       <div class="nav-breadcrumb"><a href="/">&#60;&#60; ABSOLUTE_AUTOMATIONS</a></div>
-      <h1><a href=""><span id="logo-text"></span><span class="cursor"></span></a></h1>
+      <h1><span id="logo-text"></span><span class="cursor"></span></h1>
       <p>// query your documents, images &amp; files through natural language</p>
     </div>
   </header>
@@ -84,7 +84,7 @@ import MatrixRain from '../components/MatrixRain.astro';
     </div>
     <div class="input-row">
       <div class="input-wrap">
-        <input type="text" id="question" placeholder="enter query..." autocomplete="off">
+        <input type="text" id="question" placeholder="enter query..." autocomplete="off" spellcheck="false" autocorrect="off">
       </div>
       <button id="send">EXEC</button>
       <button id="clear">CLR</button>
