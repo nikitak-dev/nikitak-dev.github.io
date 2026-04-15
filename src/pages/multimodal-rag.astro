@@ -861,10 +861,13 @@ import MatrixRain from '../components/MatrixRain.astro';
     return div;
   }
 
+  let isLoading = false;
+
   async function ask() {
     const q = input.value.trim();
-    if (!q) return;
+    if (!q || isLoading) return;
 
+    isLoading = true;
     addMsg('user', q);
     input.value = '';
     btn.disabled = true;
@@ -927,10 +930,11 @@ import MatrixRain from '../components/MatrixRain.astro';
     } catch (err) {
       typing.remove();
       addMsg('error', err.message);
+    } finally {
+      isLoading = false;
+      btn.disabled = false;
+      input.focus();
     }
-
-    btn.disabled = false;
-    input.focus();
   }
 
   function formatAnswer(text) {
