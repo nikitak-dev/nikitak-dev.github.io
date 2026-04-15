@@ -852,9 +852,14 @@ import MatrixRain from '../components/MatrixRain.astro';
   const emptyState = document.getElementById('empty-state');
 
   document.getElementById('clear').addEventListener('click', () => {
-    chat.querySelectorAll('.msg, .typing').forEach(el => el.remove());
-    if (emptyState) emptyState.classList.remove('hidden');
-    input.focus();
+    const msgs = [...chat.querySelectorAll('.msg, .typing')];
+    if (!msgs.length) { input.focus(); return; }
+    msgs.forEach(el => { el.style.animation = 'fadeSlideOut 0.3s ease-in forwards'; });
+    setTimeout(() => {
+      msgs.forEach(el => el.remove());
+      if (emptyState) emptyState.classList.remove('hidden');
+      input.focus();
+    }, 300);
   });
 
   document.querySelectorAll('.boot-query').forEach(el => {
