@@ -5,8 +5,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <main id="hub" style="display:flex;align-items:center;justify-content:center;min-height:60vh;flex-direction:column;gap:24px;text-align:center;">
     <div style="font-size:3rem;letter-spacing:0.1em;color:var(--green);">[ 404 ]</div>
     <p style="color:var(--green-dim);font-size:1rem;">// PAGE NOT FOUND</p>
-    <a href="/" style="color:var(--green);border:1px solid var(--border);padding:10px 24px;letter-spacing:0.1em;text-decoration:none;">
-      &lt;&lt; BACK TO HUB
-    </a>
+    <a href="/" class="card-launch btn-back">&lt;&lt; BACK TO HUB</a>
   </main>
 </BaseLayout>
+
+<style>
+  .btn-back {
+    padding: 10px 24px;
+    text-decoration: none;
+    background: var(--bg-elevated);
+  }
+  .btn-back:hover {
+    background: rgba(0, 255, 65, 0.15);
+  }
+</style>
