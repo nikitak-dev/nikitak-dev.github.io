@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import MatrixRain from '../components/MatrixRain.astro';
+import TypeLogo from '../components/TypeLogo.astro';
 const { title = 'ABSOLUTE // Automations Portfolio', hideSocial = false, errorMode = false } = Astro.props;
 ---
 <!DOCTYPE html>
@@ -32,6 +33,7 @@ const { title = 'ABSOLUTE // Automations Portfolio', hideSocial = false, errorMo
     <div class="header-left">
       <h1><span id="logo-text"></span><span class="cursor"></span></h1>
       <p>// Every repetitive task is a bug I can fix</p>
+      <TypeLogo text="ABSOLUTE_AUTOMATIONS" speed={70} />
     </div>
     {!hideSocial && (
     <nav class="social-links" role="navigation" aria-label="Social links">
@@ -58,24 +60,8 @@ const { title = 'ABSOLUTE // Automations Portfolio', hideSocial = false, errorMo
   </footer>
 
   <script is:inline>
-    /* --- Logo typewriter --- */
-    const logoText = 'ABSOLUTE_AUTOMATIONS';
-    const logoEl = document.getElementById('logo-text');
-    let typeInterval = null;
-
-    function typeLogo() {
-      if (typeInterval) clearInterval(typeInterval);
-      logoEl.textContent = '';
-      let i = 0;
-      typeInterval = setInterval(() => {
-        logoEl.textContent += logoText[i];
-        i++;
-        if (i >= logoText.length) { clearInterval(typeInterval); typeInterval = null; }
-      }, 70);
-    }
-
-    typeLogo();
-    var logoLoopInterval = setInterval(typeLogo, 20000);
+    /* --- Logo loop --- */
+    var logoLoopInterval = setInterval(typeLogo, 14000);
 
     /* --- Footer uptime counter --- */
     const BOOT_DATE = new Date('2026-04-12T14:00:00+02:00');
@@ -96,7 +82,6 @@ const { title = 'ABSOLUTE // Automations Portfolio', hideSocial = false, errorMo
 
     window.addEventListener('beforeunload', () => {
       clearInterval(logoLoopInterval);
-      if (typeInterval) clearInterval(typeInterval);
       if (typeof uptimeInterval !== 'undefined') clearInterval(uptimeInterval);
     });
   </script>

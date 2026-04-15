@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import MatrixRain from '../components/MatrixRain.astro';
+import TypeLogo from '../components/TypeLogo.astro';
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -31,6 +32,7 @@ import MatrixRain from '../components/MatrixRain.astro';
       <div class="nav-breadcrumb"><a href="/">&#60;&#60; ABSOLUTE_AUTOMATIONS</a></div>
       <h1><span id="logo-text"></span><span class="cursor"></span></h1>
       <p>// query your documents, images &amp; files through natural language</p>
+      <TypeLogo text="MULTIMODAL_RAG" speed={80} />
     </div>
   </header>
 
@@ -313,26 +315,6 @@ import MatrixRain from '../components/MatrixRain.astro';
 
   .empty-icon.is-glitching::after {
     animation: glitchBottom 210ms steps(1) forwards;
-  }
-
-  @keyframes glitchTop {
-    0%   { transform: translateX(-8px); opacity: 1; }
-    17%  { transform: translateX(6px); opacity: 1; }
-    33%  { transform: translateX(-3px); opacity: 1; }
-    50%  { transform: translateX(10px); opacity: 1; }
-    67%  { transform: translateX(-5px); opacity: 1; }
-    83%  { transform: translateX(2px); opacity: 1; }
-    100% { transform: none; opacity: 0; }
-  }
-
-  @keyframes glitchBottom {
-    0%   { transform: translateX(7px); opacity: 1; }
-    17%  { transform: translateX(-10px); opacity: 1; }
-    33%  { transform: translateX(4px); opacity: 1; }
-    50%  { transform: translateX(-6px); opacity: 1; }
-    67%  { transform: translateX(8px); opacity: 1; }
-    83%  { transform: translateX(-3px); opacity: 1; }
-    100% { transform: none; opacity: 0; }
   }
 
   #empty-state h2 {
@@ -792,24 +774,6 @@ import MatrixRain from '../components/MatrixRain.astro';
     }, 7000);
   })();
 
-  /* --- Logo typewriter --- */
-  const logoText = 'MULTIMODAL_RAG';
-  const logoEl = document.getElementById('logo-text');
-  let typeInterval = null;
-
-  function typeLogo() {
-    if (typeInterval) clearInterval(typeInterval);
-    logoEl.textContent = '';
-    let i = 0;
-    typeInterval = setInterval(() => {
-      logoEl.textContent += logoText[i];
-      i++;
-      if (i >= logoText.length) { clearInterval(typeInterval); typeInterval = null; }
-    }, 80);
-  }
-
-  typeLogo();
-
   /* --- Chat logic --- */
   const WEBHOOK_URL = document.body.dataset.webhook;
   const connStatus = document.getElementById('conn-status');
@@ -984,6 +948,5 @@ import MatrixRain from '../components/MatrixRain.astro';
 
   window.addEventListener('beforeunload', () => {
     if (scrambleLoopInterval) clearInterval(scrambleLoopInterval);
-    if (typeInterval) clearInterval(typeInterval);
   });
 </script>

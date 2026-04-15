@@ -1,0 +1,28 @@
+---
+const { text, speed = 70 } = Astro.props;
+---
+<script is:inline define:vars={{ text, speed }}>
+  (function () {
+    const logoEl = document.getElementById('logo-text');
+    let _typeInterval = null;
+
+    function typeLogo() {
+      if (_typeInterval) clearInterval(_typeInterval);
+      if (!logoEl) return;
+      logoEl.textContent = '';
+      let i = 0;
+      _typeInterval = setInterval(() => {
+        logoEl.textContent += text[i];
+        i++;
+        if (i >= text.length) { clearInterval(_typeInterval); _typeInterval = null; }
+      }, speed);
+    }
+
+    window.typeLogo = typeLogo;
+    typeLogo();
+
+    window.addEventListener('beforeunload', () => {
+      if (_typeInterval) clearInterval(_typeInterval);
+    });
+  })();
+</script>

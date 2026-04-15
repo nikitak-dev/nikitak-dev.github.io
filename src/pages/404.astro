@@ -45,11 +45,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .glitch-text::after  { clip-path: inset(50% 0 0 0); }
 
   .glitch-text.is-glitching::before {
-    animation: g404-top 210ms steps(1) forwards;
+    animation: glitchTop 210ms steps(1) forwards;
   }
 
   .glitch-text.is-glitching::after {
-    animation: g404-bottom 210ms steps(1) forwards;
+    animation: glitchBottom 210ms steps(1) forwards;
   }
 
   @keyframes g404-rgb {
@@ -62,25 +62,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     100% { filter: none; }
   }
 
-  @keyframes g404-top {
-    0%   { transform: translateX(-8px); opacity: 1; }
-    17%  { transform: translateX(6px); opacity: 1; }
-    33%  { transform: translateX(-3px); opacity: 1; }
-    50%  { transform: translateX(10px); opacity: 1; }
-    67%  { transform: translateX(-5px); opacity: 1; }
-    83%  { transform: translateX(2px); opacity: 1; }
-    100% { transform: none; opacity: 0; }
-  }
 
-  @keyframes g404-bottom {
-    0%   { transform: translateX(7px); opacity: 1; }
-    17%  { transform: translateX(-10px); opacity: 1; }
-    33%  { transform: translateX(4px); opacity: 1; }
-    50%  { transform: translateX(-6px); opacity: 1; }
-    67%  { transform: translateX(8px); opacity: 1; }
-    83%  { transform: translateX(-3px); opacity: 1; }
-    100% { transform: none; opacity: 0; }
-  }
 </style>
 
 <script is:inline>
@@ -105,7 +87,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         tick++;
         triggerGlitch();
         if (tick % 2 === 1) typeLogo();
-      }, 6000);
-    }, 6000);
+      }, 7000);
+    }, 7000);
   });
 </script>
