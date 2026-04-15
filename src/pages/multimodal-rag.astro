@@ -30,7 +30,7 @@ import TypeLogo from '../components/TypeLogo.astro';
   <header>
     <div class="header-left">
       <div class="nav-breadcrumb"><a href="/">&#60;&#60; ABSOLUTE_AUTOMATIONS</a></div>
-      <h1><span id="logo-text"></span><span class="cursor"></span></h1>
+      <h1><span id="logo-text"></span><span class="cursor" aria-hidden="true"></span></h1>
       <p>// query your documents, images &amp; files through natural language</p>
       <TypeLogo text="MULTIMODAL_RAG" speed={80} />
     </div>
@@ -70,7 +70,7 @@ import TypeLogo from '../components/TypeLogo.astro';
       </div>
       <div class="empty-main">
         <div class="empty-icon" data-text="[?]">[?]</div>
-        <h2><span id="scramble-text">Awaiting input</span><span class="await-cursor"></span></h2>
+        <h2><span id="scramble-text">Awaiting input</span><span class="await-cursor" aria-hidden="true"></span></h2>
       </div>
     </div>
   </div>
