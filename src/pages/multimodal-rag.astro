@@ -789,9 +789,10 @@ import '../styles/global.css';
 
   initMatrix();
   window.addEventListener('resize', initMatrix);
-  setInterval(drawMatrix, 80);
+  const matrixInterval = setInterval(drawMatrix, 80);
 
   /* --- Scramble text --- */
+  let scrambleLoopInterval = null;
   (function () {
     const el = document.getElementById('scramble-text');
     if (!el) return;
@@ -824,7 +825,7 @@ import '../styles/global.css';
     setTimeout(() => {
       runScramble();
       let tick = 0;
-      setInterval(() => {
+      scrambleLoopInterval = setInterval(() => {
         tick++;
         runScramble();
         if (tick % 2 === 1) typeLogo();
@@ -979,8 +980,10 @@ import '../styles/global.css';
     if (e.target.tagName === 'IMG' && e.target.closest('.msg-media-item')) {
       const item = e.target.closest('.msg-media-item');
       const label = item.querySelector('.media-label');
-      const name = label ? label.textContent : 'file';
-      item.innerHTML = `<div class="media-error">[ IMAGE UNAVAILABLE: ${name} ]</div>`;
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'media-error';
+      errorDiv.textContent = `[ IMAGE UNAVAILABLE: ${label ? label.textContent : 'file'} ]`;
+      item.replaceChildren(errorDiv);
     }
   }, true);
 
@@ -990,4 +993,10 @@ import '../styles/global.css';
     if (e.key === 'Escape') { input.value = ''; }
   });
   input.focus();
+
+  window.addEventListener('beforeunload', () => {
+    clearInterval(matrixInterval);
+    if (scrambleLoopInterval) clearInterval(scrambleLoopInterval);
+    if (typeInterval) clearInterval(typeInterval);
+  });
 </script>
