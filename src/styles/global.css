@@ -199,6 +199,16 @@ header {
   animation: connPulse 3s ease-in-out infinite;
 }
 
+.status-block-dead {
+  color: #ff3333;
+  animation: connLost 3s ease-in-out infinite;
+}
+
+@keyframes connLost {
+  0%, 100% { color: #ff3333; }
+  50%       { color: #660000; }
+}
+
 @keyframes connPulse {
   0%, 100% { color: var(--green); }
   50%       { color: var(--text-muted); }

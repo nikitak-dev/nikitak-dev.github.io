@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
 import MatrixRain from '../components/MatrixRain.astro';
-const { title = 'ABSOLUTE // Automations Portfolio', hideSocial = false } = Astro.props;
+const { title = 'ABSOLUTE // Automations Portfolio', hideSocial = false, errorMode = false } = Astro.props;
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -24,7 +24,7 @@ const { title = 'ABSOLUTE // Automations Portfolio', hideSocial = false } = Astr
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=block" rel="stylesheet">
 </head>
-<body>
+<body data-error={errorMode ? 'true' : 'false'}>
   <MatrixRain />
   <div class="overlay-vignette"></div>
 
@@ -45,12 +45,15 @@ const { title = 'ABSOLUTE // Automations Portfolio', hideSocial = false } = Astr
   <slot />
 
   <footer class="hub-footer">
-    <span>© 2026 ABSOLUTE</span>
-    <div class="sys-status">
-      <span>[ SYS: NOMINAL ]</span>
-      <span>[ UPTIME: <span id="uptime-val">0d 0h</span> ]</span>
-      <span>[ PROC: 2/4 LIVE ]</span>
-      <span class="status-block-live">[ CONN: ESTABLISHED ]</span>
+    {!errorMode && <span>© 2026 ABSOLUTE</span>}
+    <div class="sys-status" style={errorMode ? 'margin-left:auto' : ''}>
+      <span>{errorMode ? '[ SYS: ERROR ]' : '[ SYS: NOMINAL ]'}</span>
+      <span>[ UPTIME: <span id="uptime-val">{errorMode ? '--' : '0d 0h'}</span> ]</span>
+      <span>{errorMode ? '[ PROC: 0/4 LIVE ]' : '[ PROC: 2/4 LIVE ]'}</span>
+      {errorMode
+        ? <span class="status-block-dead">[ CONN: LOST ]</span>
+        : <span class="status-block-live">[ CONN: ESTABLISHED ]</span>
+      }
     </div>
   </footer>
 
@@ -86,13 +89,15 @@ const { title = 'ABSOLUTE // Automations Portfolio', hideSocial = false } = Astr
       uptimeEl.textContent = `${days}d ${hours}h ${mins}m`;
     }
 
-    updateUptime();
-    const uptimeInterval = setInterval(updateUptime, 60000);
+    if (document.body.dataset.error !== 'true') {
+      updateUptime();
+      var uptimeInterval = setInterval(updateUptime, 60000);
+    }
 
     window.addEventListener('beforeunload', () => {
       clearInterval(logoLoopInterval);
       if (typeInterval) clearInterval(typeInterval);
-      clearInterval(uptimeInterval);
+      if (typeof uptimeInterval !== 'undefined') clearInterval(uptimeInterval);
     });
   </script>
 </body>
