@@ -908,9 +908,11 @@ import TypeLogo from '../components/TypeLogo.astro';
       typing.remove();
       const isNetworkErr = err.message.includes('fetch') || err.message.includes('NetworkError');
       const isServerErr = /^HTTP 5/.test(err.message);
+      const isClientErr = /^HTTP 4/.test(err.message);
       if (isNetworkErr || isServerErr) setConnStatus('lost'); else setConnStatus('established');
       const userMsg = isNetworkErr ? 'Connection error. Check your network.'
         : isServerErr ? 'Service unavailable. Try again later.'
+        : isClientErr ? 'Request rejected by server. The service may be misconfigured.'
         : err.message;
       addMsg('error', userMsg);
     } finally {

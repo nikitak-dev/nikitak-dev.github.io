@@ -18,6 +18,8 @@ jobs:
       - uses: withastro/action@v3
         with:
           node-version: 22
+        env:
+          PUBLIC_RAG_WEBHOOK: ${{ secrets.PUBLIC_RAG_WEBHOOK }}
 
   deploy:
     needs: build
