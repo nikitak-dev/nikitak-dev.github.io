@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
 import MatrixRain from '../components/MatrixRain.astro';
-const { title = 'ABSOLUTE // Automations Portfolio' } = Astro.props;
+const { title = 'ABSOLUTE // Automations Portfolio', hideSocial = false } = Astro.props;
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -33,11 +33,13 @@ const { title = 'ABSOLUTE // Automations Portfolio' } = Astro.props;
       <h1><span id="logo-text"></span><span class="cursor"></span></h1>
       <p>// Every repetitive task is a bug I can fix</p>
     </div>
+    {!hideSocial && (
     <nav class="social-links" role="navigation" aria-label="Social links">
       <a href="https://github.com/nikitak-dev" target="_blank" rel="noopener">GitHub</a>
       <a href="https://www.linkedin.com/in/nikita-kurdybailo-b0438a333" target="_blank" rel="noopener">LinkedIn</a>
       <a href="https://t.me/nikitadev001" target="_blank" rel="noopener">Telegram</a>
     </nav>
+    )}
   </header>
 
   <slot />
