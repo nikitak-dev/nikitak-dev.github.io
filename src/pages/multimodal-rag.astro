@@ -79,7 +79,7 @@ import MatrixRain from '../components/MatrixRain.astro';
       <span class="input-status-right">
         <span class="status-block">[ VDB: PINECONE ]</span>
         <span class="status-block">[ LLM: CLAUDE ]</span>
-        <span class="status-block-live">[ CONN: ESTABLISHED ]</span>
+        <span class="status-block-live" id="conn-status">[ CONN: ESTABLISHED ]</span>
       </span>
     </div>
     <div class="input-row">
@@ -837,6 +837,19 @@ import MatrixRain from '../components/MatrixRain.astro';
 
   /* --- Chat logic --- */
   const WEBHOOK_URL = document.body.dataset.webhook;
+  const connStatus = document.getElementById('conn-status');
+
+  function setConnStatus(state) {
+    if (!connStatus) return;
+    const labels = { established: 'ESTABLISHED', lost: 'LOST', missing: 'MISSING' };
+    connStatus.textContent = `[ CONN: ${labels[state] || state} ]`;
+    connStatus.className = state === 'established' ? 'status-block-live' : 'status-block-dead';
+  }
+
+  if (!WEBHOOK_URL) {
+    setConnStatus('missing');
+    document.getElementById('send').disabled = true;
+  }
 
   function escapeAttr(str) {
     return String(str || '')
@@ -951,9 +964,16 @@ import MatrixRain from '../components/MatrixRain.astro';
       }
 
       addMsg('assistant', html);
+      setConnStatus('established');
     } catch (err) {
       typing.remove();
-      addMsg('error', err.message);
+      const isNetworkErr = err.message.includes('fetch') || err.message.includes('NetworkError');
+      const isServerErr = /^HTTP 5/.test(err.message);
+      if (isNetworkErr || isServerErr) setConnStatus('lost'); else setConnStatus('established');
+      const userMsg = isNetworkErr ? 'Connection error. Check your network.'
+        : isServerErr ? 'Service unavailable. Try again later.'
+        : err.message;
+      addMsg('error', userMsg);
     } finally {
       isLoading = false;
       btn.disabled = false;
