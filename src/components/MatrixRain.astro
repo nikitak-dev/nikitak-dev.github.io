@@ -1,0 +1,60 @@
+---
+// MatrixRain: shared canvas animation component
+// Used by BaseLayout and multimodal-rag
+---
+<canvas id="matrix-bg"></canvas>
+
+<script is:inline>
+  (function () {
+    const canvas = document.getElementById('matrix-bg');
+    const ctx = canvas.getContext('2d');
+    const chars = '01';
+    const fontSize = 14;
+    let columns, drops;
+
+    function initMatrix() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const rows = Math.ceil(canvas.height / fontSize);
+      columns = Math.floor(canvas.width / fontSize);
+      drops = Array.from({ length: columns }, () => -Math.floor(Math.random() * rows));
+    }
+
+    let lastTime = 0;
+    const interval = 80; // ~12.5 fps
+    let rafId = null;
+
+    function drawMatrix(timestamp) {
+      rafId = requestAnimationFrame(drawMatrix);
+      if (timestamp - lastTime < interval) return;
+      lastTime = timestamp;
+
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.font = `${fontSize}px JetBrains Mono, monospace`;
+      for (let i = 0; i < drops.length; i++) {
+        if (drops[i] < 0) { drops[i]++; continue; }
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        const y = drops[i] * fontSize;
+        ctx.fillStyle = '#00ff41';
+        ctx.fillText(char, i * fontSize, y);
+        if (y > 0) {
+          ctx.fillStyle = 'rgba(0, 255, 65, 0.4)';
+          ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * fontSize, y - fontSize);
+        }
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = -Math.floor(Math.random() * 30);
+        }
+        drops[i]++;
+      }
+    }
+
+    initMatrix();
+    window.addEventListener('resize', initMatrix);
+    rafId = requestAnimationFrame(drawMatrix);
+
+    window.addEventListener('beforeunload', () => {
+      if (rafId) cancelAnimationFrame(rafId);
+    });
+  })();
+</script>
