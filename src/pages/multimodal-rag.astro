@@ -154,25 +154,6 @@ import MatrixRain from '../components/MatrixRain.astro';
     text-decoration: none;
   }
 
-  /* Stack badges */
-  .stack-badges {
-    display: flex;
-    gap: 6px;
-  }
-
-  .badge {
-    font-size: 12px;
-    font-weight: 500;
-    padding: 5px 12px;
-    transition: border-color 0.3s, color 0.3s, text-shadow 0.3s;
-  }
-
-  .badge:hover {
-    border-color: var(--green-dim);
-    color: var(--green-mid);
-    text-shadow: 0 0 8px var(--green-ghost);
-  }
-
   /* Chat area */
   #chat {
     position: relative;
@@ -745,14 +726,8 @@ import MatrixRain from '../components/MatrixRain.astro';
   .input-hint .hint-key { color: var(--green-dim); }
 
   /* Responsive */
-  @media (max-width: 1024px) {
-    .stack-badges { gap: 4px; }
-    .badge { font-size: 12px; padding: 4px 10px; }
-  }
-
   @media (max-width: 640px) {
     header { padding: 12px 16px; flex-direction: column; gap: 10px; align-items: flex-start; }
-    .stack-badges { flex-wrap: wrap; }
     #chat { padding: 16px; }
     #input-bar { padding: 12px 16px 16px; }
     .msg { max-width: 100%; }
