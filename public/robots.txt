@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://nikitak-dev.github.io/sitemap-index.xml
