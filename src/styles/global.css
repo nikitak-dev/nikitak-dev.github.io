@@ -438,6 +438,30 @@ header {
 .hub-footer a { color: var(--green-dim); text-decoration: none; transition: color 0.2s; }
 .hub-footer a:hover { color: var(--green); }
 
+/* === BREADCRUMB === */
+.nav-breadcrumb {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+
+.nav-breadcrumb a {
+  color: var(--green-dim);
+  text-decoration: none;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+
+.nav-breadcrumb a:hover {
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green-ghost);
+}
+
+.nav-breadcrumb .sep {
+  margin: 0 6px;
+  color: var(--border-hover);
+}
+
 /* === SCANLINES === */
 body.no-global-scanlines::after { display: none; }
 

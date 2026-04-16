@@ -2,7 +2,21 @@
 import '../styles/global.css';
 import MatrixRain from '../components/MatrixRain.astro';
 import TypeLogo from '../components/TypeLogo.astro';
-const { title = 'ABSOLUTE // Automations Portfolio', hideSocial = false, errorMode = false } = Astro.props;
+const {
+  title = 'ABSOLUTE // Automations Portfolio',
+  logoText = 'ABSOLUTE_AUTOMATIONS',
+  subtitle = '// Every repetitive task is a bug I can fix',
+  hideSocial = false,
+  hideFooter = false,
+  errorMode = false,
+  breadcrumb = null,
+  procLive = 2,
+  procTotal = 4,
+  scanlineMode = 'global',
+  description = 'AI automation portfolio: n8n, Claude, Supabase, VAPI. Multimodal RAG, Voice AI agents, and more. Available for remote freelance.',
+  ogTitle = title,
+  ogDescription = description,
+} = Astro.props;
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -11,9 +25,9 @@ const { title = 'ABSOLUTE // Automations Portfolio', hideSocial = false, errorMo
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{title}</title>
   <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABRElEQVR4nO2Wv0vEMBSAv5SicKCToKCg+He4BP8FEcTBVdDRRTcHHZwcFBc3f4yuLkIWN1dHnRTUQYVTHHR4krt4tIUOueTawX4QyEua5EtfhgcNDf8d1euJ3gVG87NmPcopog8KI22U2SoKPAPjBQEVSUAKIy8oM2E7adlEVLIX6V60R+q9mehV4MhFX8AdcArso8yP73aJtwDcAoeuXbh3swdcItr7Qqn38cpcA7Z1ET0EnAELwBJwMug/kEeZb2DHRfN4khCX4eoFpJP3TRfdDP4N/CF6G5gB5oBZ4B44pjIBWAGmgXfgHNhAmXaVApZXlBkjgDRg7SPQCjk8TEAZm/tgkr5Xip5E9FQ9AqIXXQoeEL1cRwregE+rAjzFFBjJFQ9lBYkyV51v+ytI7LqPMoEWsJaJ41RE+T3JCjQ0NFA3v7FOSnR3aaFyAAAAAElFTkSuQmCC">
-  <meta name="description" content="AI automation portfolio: n8n, Claude, Supabase, VAPI. Multimodal RAG, Voice AI agents, and more. Available for remote freelance.">
-  <meta property="og:title" content="ABSOLUTE // Automations Portfolio">
-  <meta property="og:description" content="AI-powered automation projects. n8n · Claude · Supabase · VAPI.">
+  <meta name="description" content={description}>
+  <meta property="og:title" content={ogTitle}>
+  <meta property="og:description" content={ogDescription}>
   <meta property="og:type" content="website">
   <meta property="og:url" content={Astro.url} />
   <meta property="og:image" content="https://nikitak-dev.github.io/og-image.png">
@@ -25,15 +39,20 @@ const { title = 'ABSOLUTE // Automations Portfolio', hideSocial = false, errorMo
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=block" rel="stylesheet">
 </head>
-<body data-error={errorMode ? 'true' : 'false'}>
+<body data-error={errorMode ? 'true' : 'false'} class={scanlineMode !== 'global' ? 'no-global-scanlines' : ''}>
   <MatrixRain />
   <div class="overlay-vignette"></div>
 
   <header>
     <div class="header-left">
+      {breadcrumb && (
+        <div class="nav-breadcrumb">
+          <a href={breadcrumb.href}>&lt;&lt; {breadcrumb.label}</a>
+        </div>
+      )}
       <h1><span id="logo-text"></span><span class="cursor" aria-hidden="true"></span></h1>
-      <p>// Every repetitive task is a bug I can fix</p>
-      <TypeLogo text="ABSOLUTE_AUTOMATIONS" speed={70} />
+      <p>{subtitle}</p>
+      <TypeLogo text={logoText} speed={70} />
     </div>
     {!hideSocial && (
     <nav class="social-links" role="navigation" aria-label="Social links">
@@ -46,18 +65,20 @@ const { title = 'ABSOLUTE // Automations Portfolio', hideSocial = false, errorMo
 
   <slot />
 
+  {!hideFooter && (
   <footer class="hub-footer">
     {!errorMode && <span>© 2026 ABSOLUTE</span>}
     <div class="sys-status" style={errorMode ? 'margin-left:auto' : ''}>
       <span>{errorMode ? '[ SYS: ERROR ]' : '[ SYS: NOMINAL ]'}</span>
       <span>[ UPTIME: <span id="uptime-val">{errorMode ? '--' : '0d 0h'}</span> ]</span>
-      <span>{errorMode ? '[ PROC: 0/4 LIVE ]' : '[ PROC: 2/4 LIVE ]'}</span>
+      <span>{errorMode ? `[ PROC: 0/${procTotal} LIVE ]` : `[ PROC: ${procLive}/${procTotal} LIVE ]`}</span>
       {errorMode
         ? <span class="status-block-dead">[ CONN: LOST ]</span>
         : <span class="status-block-live">[ CONN: ESTABLISHED ]</span>
       }
     </div>
   </footer>
+  )}
 
   <script is:inline>
     /* --- Logo loop --- */
@@ -75,7 +96,7 @@ const { title = 'ABSOLUTE // Automations Portfolio', hideSocial = false, errorMo
       uptimeEl.textContent = `${days}d ${hours}h ${mins}m`;
     }
 
-    if (document.body.dataset.error !== 'true') {
+    if (uptimeEl && document.body.dataset.error !== 'true') {
       updateUptime();
       var uptimeInterval = setInterval(updateUptime, 60000);
     }
