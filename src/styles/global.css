@@ -342,11 +342,13 @@ header::after { display: none; }
   display: flex;
   flex-direction: column;
   gap: 14px;
+  box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.75);
   transition: border-color 0.2s, box-shadow 0.2s;
   opacity: 0;
   cursor: pointer;
   user-select: none;
 }
+
 
 .project-grid.ready .project-card          { animation: fadeSlideUp 0.4s ease-out forwards; }
 .project-grid.ready .project-card:nth-child(1) { animation-delay: 0.00s; }
@@ -354,8 +356,8 @@ header::after { display: none; }
 .project-grid.ready .project-card:nth-child(3) { animation-delay: 0.20s; }
 .project-grid.ready .project-card:nth-child(4) { animation-delay: 0.30s; }
 
-.project-card:hover   { border-color: var(--green-dim); box-shadow: 0 0 20px var(--green-ghost); }
-.project-card.selected { border-color: var(--green);     box-shadow: 0 0 30px var(--green-glow); }
+.project-card:hover   { border-color: var(--green-dim); box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.75), 0 0 20px var(--green-ghost); }
+.project-card.selected { border-color: var(--green);     box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.75), 0 0 30px var(--green-glow); }
 
 /* === RED THEME (non-AI cards) === */
 .theme-red { border-color: var(--error-deep); background: #0d0404; }
@@ -400,7 +402,7 @@ header::after { display: none; }
 }
 
 .card-status            { font-size: 11px; letter-spacing: 0.06em; }
-.card-status.live       { color: var(--green); }
+.card-status.live       { color: var(--green); animation: connPulse 3s ease-in-out infinite; }
 .card-status.private    { color: var(--green-dim); }
 .card-status.wip        { color: var(--border-hover); }
 
