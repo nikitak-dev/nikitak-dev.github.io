@@ -43,7 +43,7 @@ const {
   <MatrixRain />
   <div class="overlay-vignette"></div>
 
-  <header>
+  <header class={scanlineMode === 'per-section' ? 'scanlines-section' : ''}>
     <div class="header-left">
       {breadcrumb && (
         <div class="nav-breadcrumb">

@@ -1,153 +1,90 @@
 ---
-import '../styles/global.css';
-import MatrixRain from '../components/MatrixRain.astro';
-import TypeLogo from '../components/TypeLogo.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MULTIMODAL_RAG // AI Document Intelligence</title>
-  <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABRElEQVR4nO2Wv0vEMBSAv5SicKCToKCg+He4BP8FEcTBVdDRRTcHHZwcFBc3f4yuLkIWN1dHnRTUQYVTHHR4krt4tIUOueTawX4QyEua5EtfhgcNDf8d1euJ3gVG87NmPcopog8KI22U2SoKPAPjBQEVSUAKIy8oM2E7adlEVLIX6V60R+q9mehV4MhFX8AdcArso8yP73aJtwDcAoeuXbh3swdcItr7Qqn38cpcA7Z1ET0EnAELwBJwMug/kEeZb2DHRfN4khCX4eoFpJP3TRfdDP4N/CF6G5gB5oBZ4B44pjIBWAGmgXfgHNhAmXaVApZXlBkjgDRg7SPQCjk8TEAZm/tgkr5Xip5E9FQ9AqIXXQoeEL1cRwregE+rAjzFFBjJFQ9lBYkyV51v+ytI7LqPMoEWsJaJ41RE+T3JCjQ0NFA3v7FOSnR3aaFyAAAAAElFTkSuQmCC">
-  <meta name="description" content="Multimodal RAG pipeline: query documents, images, and files through natural language. Built with n8n, Gemini, Pinecone, OpenRouter.">
-  <meta property="og:title" content="MULTIMODAL_RAG // AI Document Intelligence">
-  <meta property="og:description" content="AI-powered document intelligence with multimodal retrieval. n8n + Gemini Embedding 2 + Pinecone + OpenRouter.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://nikitak-dev.github.io/multimodal-rag/">
-  <meta property="og:image" content="https://nikitak-dev.github.io/og-image.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta name="theme-color" content="#000000">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=block" rel="stylesheet">
-</head>
-<body data-webhook={import.meta.env.PUBLIC_RAG_WEBHOOK}>
-  <MatrixRain />
-  <div class="overlay-vignette"></div>
-
-  <header>
-    <div class="header-left">
-      <div class="nav-breadcrumb"><a href="/">&#60;&#60; ABSOLUTE_AUTOMATIONS</a></div>
-      <h1><span id="logo-text"></span><span class="cursor" aria-hidden="true"></span></h1>
-      <p>// query your documents, images &amp; files through natural language</p>
-      <TypeLogo text="MULTIMODAL_RAG" speed={80} />
-    </div>
-  </header>
-
-  <div id="chat">
-    <div id="chat-spacer"></div>
-    <div id="empty-state">
-      <div class="empty-panel">
-        <div class="kb-section">
-          <div class="empty-panel-label">// KNOWLEDGE BASE</div>
-          <div class="empty-panel-desc">Answers grounded in 13 indexed files.<br>Sources cited in every reply.</div>
-        </div>
-        <div class="empty-panel-divider"></div>
-        <div class="kb-section">
-          <div class="empty-panel-queries-label">// TOPICS:</div>
-          <div class="empty-panel-topics">
-            CYBERSECURITY &nbsp;|&nbsp; AGILE<br>
-            API DESIGN &nbsp;|&nbsp; DEVOPS<br>
-            CLOUD ARCHITECTURE &nbsp;|&nbsp; SQL
+<BaseLayout
+  title="MULTIMODAL_RAG // AI Document Intelligence"
+  logoText="MULTIMODAL_RAG"
+  subtitle="// query your documents, images & files through natural language"
+  hideSocial={true}
+  hideFooter={true}
+  breadcrumb={{ label: 'ABSOLUTE_AUTOMATIONS', href: '/' }}
+  procLive={2}
+  procTotal={4}
+  scanlineMode="per-section"
+  description="Multimodal RAG pipeline: query documents, images, and files through natural language. Built with n8n, Gemini, Pinecone, OpenRouter."
+  ogTitle="MULTIMODAL_RAG // AI Document Intelligence"
+  ogDescription="AI-powered document intelligence with multimodal retrieval. n8n + Gemini Embedding 2 + Pinecone + OpenRouter."
+>
+  <main id="chat-page" data-webhook={import.meta.env.PUBLIC_RAG_WEBHOOK}>
+    <div id="chat">
+      <div id="chat-spacer"></div>
+      <div id="empty-state" class="scanlines-section">
+        <div class="empty-panel">
+          <div class="kb-section">
+            <div class="empty-panel-label">// KNOWLEDGE BASE</div>
+            <div class="empty-panel-desc">Answers grounded in 13 indexed files.<br>Sources cited in every reply.</div>
+          </div>
+          <div class="empty-panel-divider"></div>
+          <div class="kb-section">
+            <div class="empty-panel-queries-label">// TOPICS:</div>
+            <div class="empty-panel-topics">
+              CYBERSECURITY &nbsp;|&nbsp; AGILE<br>
+              API DESIGN &nbsp;|&nbsp; DEVOPS<br>
+              CLOUD ARCHITECTURE &nbsp;|&nbsp; SQL
+            </div>
+          </div>
+          <div class="empty-panel-divider"></div>
+          <div class="kb-section">
+            <div class="empty-panel-queries-label">// FILE TYPES:</div>
+            <div class="empty-panel-formats">TEXT &nbsp;|&nbsp; IMAGE &nbsp;|&nbsp; AUDIO<br>VIDEO &nbsp;|&nbsp; PDF</div>
+          </div>
+          <div class="empty-panel-divider"></div>
+          <div class="kb-section">
+            <div class="empty-panel-queries-label">// CLICK TO TRY:</div>
+            <div class="empty-panel-queries">
+              <span class="boot-query">&gt; What is symmetric encryption?</span>
+              <span class="boot-query">&gt; Explain the Agile sprint cycle</span>
+              <span class="boot-query">&gt; What SQL join types are covered?</span>
+            </div>
           </div>
         </div>
-        <div class="empty-panel-divider"></div>
-        <div class="kb-section">
-          <div class="empty-panel-queries-label">// FILE TYPES:</div>
-          <div class="empty-panel-formats">TEXT &nbsp;|&nbsp; IMAGE &nbsp;|&nbsp; AUDIO<br>VIDEO &nbsp;|&nbsp; PDF</div>
+        <div class="empty-main">
+          <div class="empty-icon" data-text="[?]">[?]</div>
+          <h2><span id="scramble-text">Awaiting input</span><span class="await-cursor" aria-hidden="true"></span></h2>
         </div>
-        <div class="empty-panel-divider"></div>
-        <div class="kb-section">
-          <div class="empty-panel-queries-label">// CLICK TO TRY:</div>
-          <div class="empty-panel-queries">
-            <span class="boot-query">&gt; What is symmetric encryption?</span>
-            <span class="boot-query">&gt; Explain the Agile sprint cycle</span>
-            <span class="boot-query">&gt; What SQL join types are covered?</span>
-          </div>
-        </div>
-      </div>
-      <div class="empty-main">
-        <div class="empty-icon" data-text="[?]">[?]</div>
-        <h2><span id="scramble-text">Awaiting input</span><span class="await-cursor" aria-hidden="true"></span></h2>
       </div>
     </div>
-  </div>
 
-  <div id="input-bar">
-    <div class="input-status">
-      <span class="input-status-left">// QUERY INTERFACE</span>
-      <span class="input-status-right">
-        <span class="status-block">[ VDB: PINECONE ]</span>
-        <span class="status-block">[ LLM: CLAUDE ]</span>
-        <span class="status-block-live" id="conn-status">[ CONN: ESTABLISHED ]</span>
-      </span>
-    </div>
-    <div class="input-row">
-      <div class="input-wrap">
-        <input type="text" id="question" placeholder="enter query..." autocomplete="off" spellcheck="false" autocorrect="off">
+    <div id="input-bar" class="scanlines-section">
+      <div class="input-status">
+        <span class="input-status-left">// QUERY INTERFACE</span>
+        <span class="input-status-right">
+          <span class="status-block">[ VDB: PINECONE ]</span>
+          <span class="status-block">[ LLM: CLAUDE ]</span>
+          <span class="status-block-live" id="conn-status">[ CONN: ESTABLISHED ]</span>
+        </span>
       </div>
-      <button id="send">EXEC</button>
-      <button id="clear">CLR</button>
+      <div class="input-row">
+        <div class="input-wrap">
+          <input type="text" id="question" placeholder="enter query..." autocomplete="off" spellcheck="false" autocorrect="off">
+        </div>
+        <button id="send">EXEC</button>
+        <button id="clear">CLR</button>
+      </div>
+      <div class="input-hint"><span class="hint-key">[ ENTER ]</span> transmit &nbsp;&nbsp;|&nbsp;&nbsp; <span class="hint-key">[ ESC ]</span> clear</div>
     </div>
-    <div class="input-hint"><span class="hint-key">[ ENTER ]</span> transmit &nbsp;&nbsp;|&nbsp;&nbsp; <span class="hint-key">[ ESC ]</span> clear</div>
-  </div>
-</body>
-</html>
+  </main>
+</BaseLayout>
 
 <style is:global>
-  /* Override: global.css adds full-page scanline via body::after.
-     This page applies scanlines per-section instead. */
-  body::after { display: none; }
-
-  /* Per-section scanlines */
-  header::after,
-  #input-bar::after,
-  #empty-state::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 1px,
-      rgba(0, 0, 0, 0.12) 1px,
-      rgba(0, 0, 0, 0.12) 2px
-    );
-    pointer-events: none;
-    z-index: 2;
-  }
-
-  /* Additional CSS variables not in global.css */
-  :root {
-    --user-bg: rgba(0, 255, 65, 0.05);
-    --user-border: rgba(0, 255, 65, 0.15);
-    --error: #ff3333;
-  }
-
-  /* Nav breadcrumb */
-  .nav-breadcrumb {
-    font-size: 12px;
-    letter-spacing: 0.06em;
-    color: var(--text-muted);
-    margin-bottom: 5px;
-  }
-
-  .nav-breadcrumb a {
-    color: var(--green-dim);
-    text-decoration: none;
-    transition: color 0.2s, text-shadow 0.2s;
-  }
-
-  .nav-breadcrumb a:hover {
-    color: var(--green);
-    text-shadow: 0 0 8px var(--green-ghost);
-  }
-
-  .nav-breadcrumb .sep {
-    margin: 0 6px;
-    color: var(--border-hover);
+  /* Chat page layout: flex container filling remaining viewport height */
+  #chat-page {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
   }
 
   /* Logo link */
@@ -261,11 +198,6 @@ import TypeLogo from '../components/TypeLogo.astro';
     animation: fadeSlideOut 0.5s ease-in forwards;
   }
 
-  @keyframes fadeSlideOut {
-    from { opacity: 1; transform: translateY(0); }
-    to { opacity: 0; transform: translateY(-10px); }
-  }
-
   .empty-icon {
     font-family: 'JetBrains Mono', monospace;
     font-size: 36px;
@@ -278,16 +210,6 @@ import TypeLogo from '../components/TypeLogo.astro';
 
   .empty-icon.is-glitching {
     animation: rgbSplit 210ms steps(1) forwards;
-  }
-
-  @keyframes rgbSplit {
-    0%   { filter: drop-shadow(-6px 0 rgba(255,0,64,0.9))  drop-shadow(6px 0 rgba(0,255,255,0.9)); }
-    17%  { filter: drop-shadow(-10px 0 rgba(255,0,64,0.8)) drop-shadow(4px 0 rgba(0,255,255,0.8)); }
-    33%  { filter: drop-shadow(-4px 0 rgba(255,0,64,0.95)) drop-shadow(10px 0 rgba(0,255,255,0.95)); }
-    50%  { filter: drop-shadow(-8px 0 rgba(255,0,64,0.7))  drop-shadow(7px 0 rgba(0,255,255,0.7)); }
-    67%  { filter: drop-shadow(-12px 0 rgba(255,0,64,0.9)) drop-shadow(3px 0 rgba(0,255,255,0.9)); }
-    83%  { filter: drop-shadow(-3px 0 rgba(255,0,64,0.4))  drop-shadow(8px 0 rgba(0,255,255,0.4)); }
-    100% { filter: none; }
   }
 
   .empty-icon::before,
@@ -458,7 +380,7 @@ import TypeLogo from '../components/TypeLogo.astro';
     color: var(--error);
     font-size: 12px;
     padding: 10px 16px;
-    border: 1px solid rgba(255, 51, 51, 0.15);
+    border: 1px solid var(--error-glow);
     border-left: 2px solid var(--error);
     background: var(--bg-void);
   }
@@ -630,7 +552,7 @@ import TypeLogo from '../components/TypeLogo.astro';
     background: var(--bg-input);
     border: 1px solid var(--border);
     padding: 6px 16px;
-    transition: border-color 0.3s, box-shadow 0.3s;
+    transition: border-color 0.2s, box-shadow 0.2s;
   }
 
   .input-wrap::before {
@@ -639,7 +561,7 @@ import TypeLogo from '../components/TypeLogo.astro';
     font-weight: 700;
     font-size: 12px;
     flex-shrink: 0;
-    transition: color 0.3s;
+    transition: color 0.2s;
   }
 
   .input-wrap:focus-within {
@@ -723,6 +645,9 @@ import TypeLogo from '../components/TypeLogo.astro';
 
 <script is:inline>
   /* --- Scramble text --- */
+  /* Stop BaseLayout's logo loop — scrambleLoopInterval runs its own typeLogo calls */
+  if (typeof logoLoopInterval !== 'undefined') clearInterval(logoLoopInterval);
+
   let scrambleLoopInterval = null;
   (function () {
     const el = document.getElementById('scramble-text');
@@ -775,7 +700,7 @@ import TypeLogo from '../components/TypeLogo.astro';
   })();
 
   /* --- Chat logic --- */
-  const WEBHOOK_URL = document.body.dataset.webhook;
+  const WEBHOOK_URL = document.getElementById('chat-page').dataset.webhook;
   const connStatus = document.getElementById('conn-status');
 
   function setConnStatus(state) {

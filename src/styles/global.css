@@ -16,6 +16,8 @@
   --text-primary: #00ff41;
   --text-secondary: #00cc33;
   --text-muted: #00aa30;
+  --user-bg: rgba(0, 255, 65, 0.05);
+  --user-border: rgba(0, 255, 65, 0.15);
   --error: #ff3333;
   --error-mid: #cc2200;
   --error-dim: #991a00;
