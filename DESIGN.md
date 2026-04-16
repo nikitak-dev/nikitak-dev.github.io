@@ -55,6 +55,13 @@ Key structural elements follow a **4px grid**. Content elements follow a **2px g
 --text-secondary: #00cc33;
 --text-muted: #00aa30;
 --error: #ff3333;
+--error-mid: #cc2200;
+--error-dim: #991a00;
+--error-muted: #661000;
+--error-deep: #3a0d0d;
+--error-ghost: rgba(255, 51, 51, 0.08);
+--error-glow: rgba(255, 51, 51, 0.15);
+--error-glow-strong: rgba(255, 51, 51, 0.3);
 ```
 
 ---
@@ -94,7 +101,10 @@ body::after {
 }
 ```
 
-Do NOT apply `.scanlined` per-element — use the global body overlay instead.
+Default: use global `body::after` overlay (single fixed layer, z-index 9999).
+Exception: pages with media content (images, video) — global `body::after` corrupts media rendering. Add class `no-global-scanlines` to `<body>` (via `scanlineMode="per-section"` prop in BaseLayout) and apply `.scanlines-section` utility class to individual containers (header, chat panel, input bar).
+
+**`.scanlines-section` utility** (defined in `global.css`): sets `position: relative` and adds `::after` overlay identical to `body::after` but scoped to the container. Use on any element that needs scanlines when global overlay is disabled.
 
 ### Button hover (EXEC style)
 
