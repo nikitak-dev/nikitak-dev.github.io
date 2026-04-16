@@ -181,15 +181,17 @@ header::after { display: none; }
 .social-links { display: flex; gap: 6px; }
 
 .social-links a {
-  padding: 5px 12px;
+  padding: 6px 16px;
   text-decoration: none;
+  font-weight: 350;
 }
 
 /* === BUTTON BASE === */
 .btn-terminal {
   border: 1px solid var(--border);
   color: var(--green);
-  background: transparent;
+  background: var(--bg-input);
+  text-shadow: 0 0 6px rgba(0, 255, 65, 0.25);
   font-family: var(--font);
   font-size: 12px;
   font-weight: 400;
@@ -197,14 +199,16 @@ header::after { display: none; }
   text-transform: uppercase;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s, text-shadow 0.2s;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-terminal:hover:not(:disabled) {
   background: rgba(0, 255, 65, 0.15);
   border-color: var(--green);
   color: #ccffcc;
-  box-shadow: 0 0 20px rgba(0, 255, 65, 0.1), inset 0 0 10px rgba(0, 255, 65, 0.1);
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.3), inset 0 0 10px rgba(0, 255, 65, 0.1);
   text-shadow: 0 0 8px var(--green-glow-strong);
 }
 
@@ -447,13 +451,11 @@ header::after { display: none; }
   flex-shrink: 0;
   user-select: none;
   outline: none;
+  font-weight: 350;
 }
 
 .card-launch:disabled {
   color: var(--text-muted);
-}
-
-.card-launch:not(:disabled):hover {
 }
 
 /* === FOOTER === */
