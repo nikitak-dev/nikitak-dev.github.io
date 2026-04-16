@@ -11,7 +11,7 @@
   --green-dim: #009922;
   --green-muted: #00992a;
   --green-ghost: rgba(0, 255, 65, 0.08);
-  --green-glow: rgba(0, 255, 65, 0.12);
+  --green-glow: rgba(0, 255, 65, 0.1);
   --green-glow-strong: rgba(0, 255, 65, 0.25);
   --text-primary: #00ff41;
   --text-secondary: #00cc33;
@@ -31,14 +31,16 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+html { background: var(--bg-void); }
+
 ::selection {
-  background: rgba(0, 255, 65, 0.3);
+  background: rgba(0, 255, 65, 0.1);
   color: #ccffcc;
 }
 
 body {
   font-family: var(--font);
-  background: var(--bg-void);
+  background: transparent;
   color: var(--text-primary);
   height: 100vh;
   display: flex;
@@ -71,7 +73,7 @@ body::after {
 .overlay-vignette {
   position: fixed;
   inset: 0;
-  background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.6) 100%);
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.05) 100%);
   pointer-events: none;
   z-index: 0;
 }
@@ -125,7 +127,6 @@ header {
   position: relative;
   z-index: 1;
   padding: 16px 32px;
-  border-bottom: 1px solid var(--border);
   background: var(--bg-void);
   display: flex;
   align-items: center;
@@ -133,6 +134,22 @@ header {
   flex-shrink: 0;
   animation: fadeSlideDown 0.6s ease-out both;
 }
+
+header::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background-image: linear-gradient(90deg, transparent 35%, var(--green) 50%, transparent 65%);
+  background-color: var(--border);
+  background-size: 100vw 100%;
+  background-repeat: repeat-x;
+  animation: beamWrap 3s linear infinite;
+  pointer-events: none;
+  filter: drop-shadow(0 0 3px var(--green-dim));
+}
+
+header::after { display: none; }
 
 .header-left h1 {
   font-size: 20px;
@@ -163,24 +180,56 @@ header {
 .social-links { display: flex; gap: 6px; }
 
 .social-links a {
-  font-size: 12px;
-  font-weight: 500;
   padding: 5px 12px;
-  border: 1px solid var(--border);
-  color: var(--green-dim);
-  background: transparent;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   text-decoration: none;
-  transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s, text-shadow 0.2s;
 }
 
-.social-links a:hover {
-  background: rgba(0, 255, 65, 0.08);
-  border-color: var(--green-dim);
-  color: var(--green-mid);
-  box-shadow: 0 0 10px rgba(0, 255, 65, 0.15), inset 0 0 6px rgba(0, 255, 65, 0.05);
-  text-shadow: 0 0 6px var(--green-glow);
+/* === BUTTON BASE === */
+.btn-terminal {
+  border: 1px solid var(--border);
+  color: var(--green);
+  background: transparent;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s, text-shadow 0.2s;
+  display: inline-block;
+}
+
+.btn-terminal:hover:not(:disabled) {
+  background: rgba(0, 255, 65, 0.15);
+  border-color: var(--green);
+  color: #ccffcc;
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.1), inset 0 0 10px rgba(0, 255, 65, 0.1);
+  text-shadow: 0 0 8px var(--green-glow-strong);
+}
+
+.btn-terminal:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* === BEAM LINE === */
+.beam-line {
+  position: relative;
+  height: 1px;
+  background: var(--border);
+}
+
+.beam-line::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background-image: linear-gradient(90deg, transparent 35%, var(--green) 50%, transparent 65%);
+  background-size: 100vw 100%;
+  background-repeat: repeat-x;
+  animation: beamWrap 3s linear infinite;
+  pointer-events: none;
+  filter: drop-shadow(0 0 3px var(--green-dim));
 }
 
 /* === BOOT SCREEN === */
@@ -245,6 +294,11 @@ header {
 @keyframes connLost {
   0%, 100% { color: var(--error); }
   50%       { color: var(--error-muted); }
+}
+
+@keyframes beamWrap {
+  from { background-position: 0 0; }
+  to   { background-position: 100vw 0; }
 }
 
 @keyframes connPulse {
@@ -389,34 +443,16 @@ header {
 
 .card-launch {
   padding: 6px 16px;
-  border: 1px solid var(--green-dim);
-  color: var(--green);
-  background: transparent;
-  font-family: var(--font);
-  font-size: 12px;
-  font-weight: 400;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s, text-shadow 0.2s;
   flex-shrink: 0;
   user-select: none;
   outline: none;
 }
 
 .card-launch:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-  border-color: var(--border);
   color: var(--text-muted);
 }
 
 .card-launch:not(:disabled):hover {
-  background: rgba(0, 255, 65, 0.15);
-  border-color: var(--green);
-  color: #ccffcc;
-  box-shadow: 0 0 20px rgba(0, 255, 65, 0.3), inset 0 0 10px rgba(0, 255, 65, 0.1);
-  text-shadow: 0 0 8px var(--green-glow-strong);
 }
 
 /* === FOOTER === */
@@ -424,7 +460,6 @@ header {
   position: relative;
   z-index: 1;
   padding: 10px 32px;
-  border-top: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -433,7 +468,24 @@ header {
   flex-shrink: 0;
   background: var(--bg-void);
   user-select: none;
+  box-shadow: 0 -4px 24px rgba(0, 255, 65, 0.06);
 }
+
+.hub-footer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background-image: linear-gradient(90deg, transparent 35%, var(--green) 50%, transparent 65%);
+  background-color: var(--border);
+  background-size: 100vw 100%;
+  background-repeat: repeat-x;
+  animation: beamWrap 3s linear infinite;
+  pointer-events: none;
+  filter: drop-shadow(0 0 3px var(--green-dim));
+}
+
+.hub-footer::after { display: none; }
 
 .footer-links { display: flex; gap: 12px; align-items: center; }
 .footer-sep { color: var(--border-hover); }

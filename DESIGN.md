@@ -106,27 +106,39 @@ Exception: pages with media content (images, video) — global `body::after` cor
 
 **`.scanlines-section` utility** (defined in `global.css`): sets `position: relative` and adds `::after` overlay identical to `body::after` but scoped to the container. Use on any element that needs scanlines when global overlay is disabled.
 
-### Button hover (EXEC style)
+### Button: `.btn-terminal`
 
-Full-intensity version (primary action buttons):
+Base class for all interactive buttons and links in the terminal aesthetic. Apply to any `<button>` or `<a>` element.
 
+```html
+<button class="btn-terminal">[ ACTION ]</button>
+<a href="..." class="btn-terminal">LINK</a>
+```
+
+Base: `border: 1px solid var(--border)`, `color: var(--green)`, `background: transparent`, `12px`, `font-weight: 400`, `letter-spacing: 0.06em`, `uppercase`.
+
+Hover (built-in):
 ```css
 background: rgba(0, 255, 65, 0.15);
 border-color: var(--green);
 color: #ccffcc;
-box-shadow: 0 0 20px rgba(0, 255, 65, 0.3), inset 0 0 10px rgba(0, 255, 65, 0.1);
+box-shadow: 0 0 20px rgba(0, 255, 65, 0.1), inset 0 0 10px rgba(0, 255, 65, 0.1);
 text-shadow: 0 0 8px var(--green-glow-strong);
 ```
 
-Subtle version (secondary elements, e.g. social links):
+Override `padding` as needed (default: none set by base). Disabled state (opacity 0.3, not-allowed cursor) is built-in.
 
-```css
-background: rgba(0, 255, 65, 0.08);
-border-color: var(--green-dim);
-color: var(--green-mid);
-box-shadow: 0 0 10px rgba(0, 255, 65, 0.15), inset 0 0 6px rgba(0, 255, 65, 0.05);
-text-shadow: 0 0 6px var(--green-glow);
+Used by: `.card-launch`, `.social-links a`, `#send`, `#clear`.
+
+### Animated beam separator: `.beam-line`
+
+Drop a `<div class="beam-line">` anywhere to render an animated beam separator line.
+
+```html
+<div class="beam-line"></div>
 ```
+
+Renders a 1px horizontal line with base color `var(--border)` and an animated bright beam moving right-to-left (RTL, 3s loop). Header and footer use their own `::before` pseudo-elements with the same animation.
 
 ### Section labels
 

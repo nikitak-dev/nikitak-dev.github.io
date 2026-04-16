@@ -68,8 +68,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <div class="input-wrap">
           <input type="text" id="question" placeholder="enter query..." autocomplete="off" spellcheck="false" autocorrect="off">
         </div>
-        <button id="send">EXEC</button>
-        <button id="clear">CLR</button>
+        <button id="send" class="btn-terminal">EXEC</button>
+        <button id="clear" class="btn-terminal">CLR</button>
       </div>
       <div class="input-hint"><span class="hint-key">[ ENTER ]</span> transmit &nbsp;&nbsp;|&nbsp;&nbsp; <span class="hint-key">[ ESC ]</span> clear</div>
     </div>
@@ -522,9 +522,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     z-index: 1;
     padding: 12px 32px 20px;
     background: var(--bg-void);
-    border-top: 1px solid var(--border);
     flex-shrink: 0;
     animation: fadeSlideUp 0.5s ease-out 0.5s both;
+  }
+
+  #input-bar::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background-image: linear-gradient(90deg, transparent 35%, var(--green) 50%, transparent 65%);
+    background-color: var(--border);
+    background-size: 100vw 100%;
+    background-repeat: repeat-x;
+    animation: beamWrap 3s linear infinite;
+    pointer-events: none;
+    filter: drop-shadow(0 0 3px var(--green-dim));
   }
 
   .input-status {
@@ -590,15 +603,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     width: 80px;
     padding: 8px 0;
     background: var(--bg-input);
-    color: var(--green);
-    border: 1px solid var(--border);
-    font-family: var(--font);
-    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.08em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s, text-shadow 0.2s;
     flex-shrink: 0;
   }
 
