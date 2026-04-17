@@ -39,7 +39,7 @@ import DocsModal from '../components/DocsModal.astro';
       </div>
       <div class="input-row">
         <div class="input-wrap">
-          <input type="text" id="question" placeholder="enter query..." autocomplete="off" spellcheck="false" autocorrect="off">
+          <input type="text" id="question" placeholder="enter query..." maxlength="500" autocomplete="off" spellcheck="false" autocorrect="off">
         </div>
         <button id="send" class="btn-terminal">EXEC</button>
         <button id="clear" class="btn-terminal">CLR</button>
@@ -750,6 +750,8 @@ import DocsModal from '../components/DocsModal.astro';
 
       if (data.media && data.media.length > 0) {
         const mediaHtml = data.media.map(m => {
+          if (!/^https:\/\//i.test(m.url)) return '';
+          if (!/^[A-Za-z0-9_-]+$/.test(m.driveFileId || '')) return '';
           const safeName = escapeAttr(m.filename);
           const safeUrl = escapeAttr(m.url);
           const safeId = escapeAttr(m.driveFileId);
