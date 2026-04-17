@@ -6,3 +6,7 @@ dist/
 !.env.example
 .playwright-mcp/
 *.png
+!public/og-image.png
+
+# Source HTML for regenerating public/og-image.png via headless screenshot
+og-image.source.html
