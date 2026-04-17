@@ -19,11 +19,29 @@ const {
   ogTitle = title,
   ogDescription = description,
 } = Astro.props;
+
+// Derive webhook origin for CSP connect-src. Falls back to empty when env
+// is missing so the header stays valid (fetch just fails on 'self' only).
+const webhookUrl = import.meta.env.PUBLIC_RAG_WEBHOOK;
+const webhookOrigin = webhookUrl ? new URL(webhookUrl).origin : '';
+const csp = [
+  "default-src 'self'",
+  `connect-src 'self'${webhookOrigin ? ' ' + webhookOrigin : ''}`,
+  "img-src 'self' data: https://drive.google.com",
+  "frame-src https://drive.google.com",
+  "font-src https://fonts.gstatic.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "script-src 'self' 'unsafe-inline'",
+  "base-uri 'none'",
+  "form-action 'self'",
+  "object-src 'none'",
+].join('; ');
 ---
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content={csp}>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{title}</title>
   <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABRElEQVR4nO2Wv0vEMBSAv5SicKCToKCg+He4BP8FEcTBVdDRRTcHHZwcFBc3f4yuLkIWN1dHnRTUQYVTHHR4krt4tIUOueTawX4QyEua5EtfhgcNDf8d1euJ3gVG87NmPcopog8KI22U2SoKPAPjBQEVSUAKIy8oM2E7adlEVLIX6V60R+q9mehV4MhFX8AdcArso8yP73aJtwDcAoeuXbh3swdcItr7Qqn38cpcA7Z1ET0EnAELwBJwMug/kEeZb2DHRfN4khCX4eoFpJP3TRfdDP4N/CF6G5gB5oBZ4B44pjIBWAGmgXfgHNhAmXaVApZXlBkjgDRg7SPQCjk8TEAZm/tgkr5Xip5E9FQ9AqIXXQoeEL1cRwregE+rAjzFFBjJFQ9lBYkyV51v+ytI7LqPMoEWsJaJ41RE+T3JCjQ0NFA3v7FOSnR3aaFyAAAAAElFTkSuQmCC">
