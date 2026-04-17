@@ -1,7 +1,12 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { PROJECTS, liveCount, totalCount, STATUS_SYMBOL, STATUS_LABEL } from '../data/projects';
+
+const live = liveCount();
+const total = totalCount();
+const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Berlin' });
 ---
-<BaseLayout>
+<BaseLayout procLive={live} procTotal={total}>
   <div id="boot-screen">
     <div id="boot-lines"></div>
     <div id="boot-skip">// click or press any key to skip</div>
@@ -13,94 +18,47 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <span class="legend-item legend-auto"><span class="legend-dot"></span>AUTOMATION</span>
     </div>
     <div class="project-grid">
-
-      <!-- [ 001 ] VOICE_AGENT -->
-      <div class="project-card" data-index="1" data-url="#">
-        <div class="card-header">
-          <span class="card-id">[ 001 ]</span>
-          <span class="card-status private">○ PRIVATE</span>
-        </div>
-        <div class="card-body">
-          <h2 class="card-title">VOICE_AGENT</h2>
-          <p class="card-desc">Never miss a lead because no one picked up the phone. An AI agent handles inbound calls 24/7 — qualifies prospects, schedules meetings and logs key metrics to a database automatically. Built on voice AI infrastructure.</p>
-          <div class="card-stack">
-            <span class="stack-comment">// VAPI | n8n | Airtable | Google Calendar</span>
+      {PROJECTS.map((p, i) => (
+        <div
+          class={`project-card${p.category === 'automation' ? ' theme-amber' : ''}`}
+          data-index={i + 1}
+          data-url={p.url ?? '#'}
+        >
+          <div class="card-header">
+            <span class="card-id">[ {p.id} ]</span>
+            <span class={`card-status ${p.status}`}>{STATUS_SYMBOL[p.status]} {STATUS_LABEL[p.status]}</span>
+          </div>
+          <div class="card-body">
+            <h2 class="card-title">{p.title}</h2>
+            <p class="card-desc">{p.desc}</p>
+            <div class="card-stack">
+              {p.stack && <span class="stack-comment">// {p.stack}</span>}
+            </div>
+          </div>
+          <div class="card-footer">
+            <span class="card-meta">{p.meta}</span>
+            <button
+              class="card-launch btn-terminal"
+              disabled={p.button.disabled}
+              aria-label={p.button.ariaLabel}
+            >[ {p.button.label} ]</button>
           </div>
         </div>
-        <div class="card-footer">
-          <span class="card-meta">For companies paying humans to answer routine calls</span>
-          <button class="card-launch btn-terminal" disabled aria-label="Contact about VOICE_AGENT project">[ CONTACT ]</button>
-        </div>
-      </div>
-
-      <!-- [ 002 ] MULTIMODAL_RAG -->
-      <div class="project-card" data-index="2" data-url="/multimodal-rag/">
-        <div class="card-header">
-          <span class="card-id">[ 002 ]</span>
-          <span class="card-status live">● LIVE</span>
-        </div>
-        <div class="card-body">
-          <h2 class="card-title">MULTIMODAL_RAG</h2>
-          <p class="card-desc">What if you could Google your own files? Upload anything — docs, images, audio, video, PDFs — ask in plain language, get the answer. Built on vector embeddings and semantic retrieval.</p>
-          <div class="card-stack">
-            <span class="stack-comment">// n8n | Gemini | Pinecone | OpenRouter</span>
-          </div>
-        </div>
-        <div class="card-footer">
-          <span class="card-meta">For teams where "find the document" wastes hours</span>
-          <button class="card-launch btn-terminal" aria-label="Launch MULTIMODAL_RAG demo">[ LAUNCH ]</button>
-        </div>
-      </div>
-
-      <!-- [ 003 ] COMING SOON -->
-      <div class="project-card theme-red" data-index="3">
-        <div class="card-header">
-          <span class="card-id">[ 003 ]</span>
-          <span class="card-status wip">○ WIP</span>
-        </div>
-        <div class="card-body">
-          <h2 class="card-title">COMING_SOON</h2>
-          <p class="card-desc">Next project in development.</p>
-          <div class="card-stack"></div>
-        </div>
-        <div class="card-footer">
-          <span class="card-meta">—</span>
-          <button class="card-launch btn-terminal" disabled>[ LOCKED ]</button>
-        </div>
-      </div>
-
-      <!-- [ 004 ] COMING SOON -->
-      <div class="project-card theme-red" data-index="4">
-        <div class="card-header">
-          <span class="card-id">[ 004 ]</span>
-          <span class="card-status wip">○ WIP</span>
-        </div>
-        <div class="card-body">
-          <h2 class="card-title">COMING_SOON</h2>
-          <p class="card-desc">Next project in development.</p>
-          <div class="card-stack"></div>
-        </div>
-        <div class="card-footer">
-          <span class="card-meta">—</span>
-          <button class="card-launch btn-terminal" disabled>[ LOCKED ]</button>
-        </div>
-      </div>
-
+      ))}
     </div>
   </main>
 
-  <script is:inline>
+  <script is:inline define:vars={{ live, total, buildDate }}>
     /* --- Boot sequence --- */
     const bootScreen = document.getElementById('boot-screen');
     const bootLinesEl = document.getElementById('boot-lines');
     const grid = document.querySelector('.project-grid');
 
     const bootSequence = [
-      { text: 'INIT 0x00 :: ENTROPY POOL... [OK]',          bright: false },
-      { text: 'MAPPING 0x7FFE4B2A -- 0x00C3F190 [DONE]',    bright: false },
-      { text: 'PROC 1024 :: HEAP ALLOC 4096B',               bright: false },
-      { text: 'CRC32 A4D3F9B1 -- INTEGRITY VALID',           bright: false },
-      { text: '> BOOT COMPLETE',                              bright: true  },
+      { text: `PROC SCAN :: ${live}/${total} PROJECTS LIVE`,       bright: false },
+      { text: `BUILD :: ${buildDate}`,                             bright: false },
+      { text: 'GLOW :: ON  |  SCANLINES :: ON  |  MATRIX :: STABLE', bright: false },
+      { text: '> BOOT COMPLETE',                                    bright: true  },
     ];
 
     let bootDone = false;
@@ -166,7 +124,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     let selectedCard = null;
 
     function selectCard(card) {
-      if (selectedCard) selectedCard.classList.remove('selected');
+      if (selectedCard) {
+        selectedCard.classList.remove('selected');
+        selectedCard.classList.remove('kb-pulse');
+      }
       selectedCard = card || null;
       if (selectedCard) selectedCard.classList.add('selected');
     }
@@ -182,6 +143,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     cards.forEach(card => {
       card.addEventListener('click', e => {
         selectCard(card);
+        kbPulse(card);
         if (e.target.closest('.card-launch')) launchSelected();
       });
     });
@@ -190,11 +152,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       if (!e.target.closest('.project-card')) selectCard(null);
     });
 
+    function kbPulse(card) {
+      if (!card) return;
+      card.classList.remove('kb-pulse');
+      void card.offsetWidth;
+      card.classList.add('kb-pulse');
+    }
+
     document.addEventListener('keydown', e => {
       if (!bootDone) return;
       if (['1', '2', '3', '4'].includes(e.key)) {
         const idx = parseInt(e.key) - 1;
-        if (cards[idx]) selectCard(cards[idx]);
+        if (cards[idx]) { selectCard(cards[idx]); kbPulse(cards[idx]); }
+      } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        const currentIdx = selectedCard ? Array.from(cards).indexOf(selectedCard) : -1;
+        const nextIdx = (currentIdx + 1) % cards.length;
+        selectCard(cards[nextIdx]); kbPulse(cards[nextIdx]);
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const currentIdx = selectedCard ? Array.from(cards).indexOf(selectedCard) : 0;
+        const prevIdx = (currentIdx - 1 + cards.length) % cards.length;
+        selectCard(cards[prevIdx]); kbPulse(cards[prevIdx]);
       } else if (e.key === 'Enter') {
         launchSelected();
       } else if (e.key === 'Escape') {

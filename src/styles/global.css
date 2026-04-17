@@ -26,6 +26,14 @@
   --error-ghost: rgba(255, 51, 51, 0.08);
   --error-glow: rgba(255, 51, 51, 0.15);
   --error-glow-strong: rgba(255, 51, 51, 0.3);
+  --amber: #ffaa00;
+  --amber-mid: #e59400;
+  --amber-dim: #b87400;
+  --amber-muted: #8a5700;
+  --amber-deep: #3d2605;
+  --amber-ghost: rgba(255, 170, 0, 0.08);
+  --amber-glow: rgba(255, 170, 0, 0.15);
+  --amber-glow-strong: rgba(255, 170, 0, 0.3);
   --font: 'JetBrains Mono', monospace;
 }
 
@@ -356,6 +364,7 @@ header::after { display: none; }
 
 /* === PROJECT CARDS === */
 .project-card {
+  position: relative;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   padding: 20px;
@@ -381,22 +390,68 @@ header::after { display: none; }
 }
 .project-card.selected { border-color: var(--green);     box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.75), 0 0 30px var(--green-glow); }
 
-/* === RED THEME (non-AI cards) === */
-.theme-red { border-color: var(--error-deep); background: #0d0404; }
-@media (hover: hover) and (pointer: fine) {
-  .theme-red:hover { border-color: var(--error-dim); box-shadow: 0 0 20px var(--error-ghost); }
+.project-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 1px solid transparent;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 3;
 }
-.theme-red.selected { border-color: var(--error); box-shadow: 0 0 30px var(--error-glow); }
-.theme-red .card-id   { color: var(--error-muted); }
-.theme-red .card-title { color: var(--error); text-shadow: 0 0 8px var(--error-ghost); }
-.theme-red .card-status.wip { color: var(--error-dim); }
-.theme-red .card-desc { color: var(--error-mid); }
-.theme-red .card-footer { border-top-color: var(--error-deep); }
-.theme-red .card-meta { color: var(--error-muted); }
-.theme-red .card-launch { border-color: var(--error-dim); color: var(--error); }
-.theme-red .card-launch:disabled { border-color: var(--error-muted); color: var(--error-mid); }
+.project-card.kb-pulse::before {
+  animation: kbPulseRing 1.5s ease-out;
+}
+.project-card.theme-amber.kb-pulse::before {
+  animation: kbPulseRingAmber 1.5s ease-out;
+}
+
+@keyframes kbPulseRing {
+  from {
+    opacity: 1;
+    border-color: #55ff77;
+    box-shadow: 0 0 30px var(--green-glow-strong), 0 0 10px var(--green);
+  }
+  to {
+    opacity: 0;
+    border-color: var(--green);
+    box-shadow: none;
+  }
+}
+
+@keyframes kbPulseRingAmber {
+  from {
+    opacity: 1;
+    border-color: #ffcc44;
+    box-shadow: 0 0 30px var(--amber-glow-strong), 0 0 10px var(--amber);
+  }
+  to {
+    opacity: 0;
+    border-color: var(--amber);
+    box-shadow: none;
+  }
+}
+
+/* === AMBER THEME (automation cards) === */
+.theme-amber { border-color: var(--amber-deep); background: #0d0904; }
 @media (hover: hover) and (pointer: fine) {
-  .theme-red .card-launch:not(:disabled):hover { border-color: var(--error); box-shadow: 0 0 12px var(--error-glow); }
+  .theme-amber:hover { border-color: var(--amber-dim); box-shadow: 0 0 20px var(--amber-ghost); }
+}
+.theme-amber.selected { border-color: var(--amber); box-shadow: 0 0 30px var(--amber-glow); }
+.theme-amber .card-id   { color: var(--amber-muted); }
+.theme-amber .card-title { color: var(--amber); text-shadow: 0 0 8px var(--amber-ghost); }
+.theme-amber .card-status.wip { color: var(--amber-dim); }
+.theme-amber .card-desc { color: var(--amber-mid); }
+.theme-amber .card-footer { border-top-color: var(--amber-deep); }
+.theme-amber .card-meta { color: var(--amber-muted); }
+.theme-amber .card-launch { border-color: var(--amber-dim); color: var(--amber); }
+.theme-amber .card-launch:disabled { border-color: var(--amber-muted); color: var(--amber-mid); }
+@media (hover: hover) and (pointer: fine) {
+  .theme-amber .card-launch:not(:disabled):hover { border-color: var(--amber); box-shadow: 0 0 12px var(--amber-glow); }
+}
+.theme-amber .card-launch:focus-visible:not(:disabled),
+.theme-amber .card-launch:active:not(:disabled) {
+  border-color: var(--amber); box-shadow: 0 0 12px var(--amber-glow);
 }
 
 /* === GRID LEGEND === */
@@ -411,9 +466,9 @@ header::after { display: none; }
 .legend-item { display: flex; align-items: center; gap: 6px; }
 .legend-dot { width: 8px; height: 8px; border-radius: 1px; display: inline-block; }
 .legend-ai   .legend-dot { background: var(--green); box-shadow: 0 0 6px var(--green-glow); }
-.legend-auto .legend-dot { background: var(--error); box-shadow: 0 0 6px var(--error-glow-strong); }
+.legend-auto .legend-dot { background: var(--amber); box-shadow: 0 0 6px var(--amber-glow-strong); }
 .legend-ai   { color: var(--green-dim); }
-.legend-auto { color: var(--error-dim); }
+.legend-auto { color: var(--amber-dim); }
 
 .card-header {
   display: flex;
