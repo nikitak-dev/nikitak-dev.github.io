@@ -40,9 +40,13 @@
     const fontSize = 14;
     const errorMode = document.body.dataset.error === 'true';
 
+    /* Read from body: error-mode overrides cascade from body[data-error="true"] */
+    const bodyStyles = getComputedStyle(document.body);
+    const mainColor  = bodyStyles.getPropertyValue('--green').trim();
+    const trailColor = bodyStyles.getPropertyValue('--matrix-trail').trim();
+    const fontFamily = bodyStyles.getPropertyValue('--font').trim() || 'monospace';
+
     const chars = errorMode ? 'ERR!?@#$%^&*<>/\\~|:;' : '01';
-    const mainColor  = errorMode ? '#ff3333' : '#00ff41';
-    const trailColor = errorMode ? 'rgba(255, 51, 51, 0.4)' : 'rgba(0, 255, 65, 0.4)';
     const glyphCyclingRate = errorMode ? 0.05 : 0;
 
     let columns, drops, speedFactors, cells;
@@ -74,7 +78,7 @@
 
       ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.font = `${fontSize}px JetBrains Mono, monospace`;
+      ctx.font = `${fontSize}px ${fontFamily}`;
 
       for (let i = 0; i < drops.length; i++) {
         if (drops[i] < 0) { drops[i] += speedFactors[i]; continue; }
