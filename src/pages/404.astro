@@ -54,7 +54,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <script is:inline>
   document.addEventListener('DOMContentLoaded', () => {
-    if (typeof logoLoopInterval !== 'undefined') clearInterval(logoLoopInterval);
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const el = document.querySelector('.glitch-text');

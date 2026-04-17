@@ -57,11 +57,6 @@
       ghosts = [];
     }
 
-    window.__matrixIntensify = (x, y, radius = 140, duration = 500) => {
-      boosts.push({ x, y, r2: radius * radius, until: performance.now() + duration });
-    };
-
-
     let lastTime = 0;
     const interval = 80; // ~12.5 fps
     let rafId = null;
@@ -186,34 +181,6 @@
         }
       }
     }
-
-    /* Cursor halo follow */
-    const halo = document.getElementById('cursor-halo');
-    if (halo) {
-      const HALO_HALF = 100;
-      let haloRAF = null, hx = 0, hy = 0;
-      window.addEventListener('mousemove', e => {
-        hx = e.clientX; hy = e.clientY;
-        halo.style.opacity = '1';
-        if (!haloRAF) {
-          haloRAF = requestAnimationFrame(() => {
-            halo.style.transform = `translate3d(${hx - HALO_HALF}px, ${hy - HALO_HALF}px, 0)`;
-            haloRAF = null;
-          });
-        }
-      });
-      window.addEventListener('mouseleave', () => { halo.style.opacity = '0'; });
-    }
-
-    /* Click shockwave */
-    window.addEventListener('click', e => {
-      const wave = document.createElement('div');
-      wave.className = 'shockwave';
-      wave.style.left = e.clientX + 'px';
-      wave.style.top = e.clientY + 'px';
-      document.body.appendChild(wave);
-      wave.addEventListener('animationend', () => wave.remove(), { once: true });
-    });
 
     window.addEventListener('beforeunload', () => {
       if (rafId) cancelAnimationFrame(rafId);

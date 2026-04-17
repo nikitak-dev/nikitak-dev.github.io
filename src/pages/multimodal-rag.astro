@@ -105,60 +105,6 @@ import DocsModal from '../components/DocsModal.astro';
     to   { opacity: 1; }
   }
 
-  .empty-panel {
-    width: 296px;
-    flex-shrink: 0;
-    border-right: 1px solid var(--border);
-    padding: 24px 24px 32px 32px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .empty-panel-label {
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.10em;
-    color: var(--green-mid);
-    text-transform: uppercase;
-    text-shadow: 0 0 10px rgba(0, 255, 65, 0.35);
-  }
-
-  .empty-panel-desc {
-    font-size: 10px;
-    letter-spacing: 0.04em;
-    color: var(--text-muted);
-    line-height: 1.8;
-  }
-
-  .empty-panel-divider { height: 1px; background: var(--border); }
-
-  .empty-panel-topics {
-    font-size: 10px;
-    letter-spacing: 0.05em;
-    color: var(--text-muted);
-    line-height: 2;
-  }
-
-  .empty-panel-formats {
-    font-size: 10px;
-    letter-spacing: 0.05em;
-    color: var(--green-muted);
-    line-height: 1.9;
-  }
-
-  .kb-section { display: flex; flex-direction: column; gap: 6px; }
-
-  .empty-panel-queries-label {
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.10em;
-    color: var(--green-mid);
-    text-shadow: 0 0 10px rgba(0, 255, 65, 0.35);
-  }
-
-  .empty-panel-queries { display: flex; flex-direction: column; gap: 6px; }
-
   .empty-main {
     flex: 1;
     display: flex;
@@ -589,7 +535,6 @@ import DocsModal from '../components/DocsModal.astro';
     .msg.assistant .sources { padding-left: 0; }
     .sources-label { position: static; width: 100%; margin-bottom: 4px; }
     #empty-state { flex-direction: column; }
-    .empty-panel { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 20px 16px; }
     .empty-main { padding: 32px 16px; }
   }
 </style>
