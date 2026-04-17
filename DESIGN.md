@@ -17,8 +17,9 @@ Key structural elements follow a **4px grid**. Content elements follow a **2px g
 | `36px` | ×4 | Display icons (e.g. `[?]`, `[R]`) |
 | `20px` | ×4 | Logo / primary heading |
 | `16px` | ×4 | Section headings, card titles |
+| `14px` | ×2 | Modal title |
 | `12px` | ×4 | Labels (`// STACK`), body text, buttons, footer, subtitle |
-| `10px` | ×2 | Secondary content (card IDs, meta info) |
+| `10px` | ×2 | Secondary content (card IDs, status, meta info) |
 | `8px`  | ×4 | Micro-prefixes (`SYS >`, `YOU >`, `ERR >`) |
 
 ### Hierarchy Rules
@@ -27,7 +28,7 @@ Key structural elements follow a **4px grid**. Content elements follow a **2px g
 - **Subtitle** (header tagline): `12px`, `font-weight: 400`, `color: var(--text-muted)`, `letter-spacing: 0.02em`
 - **Card title**: `16px`, `font-weight: 700`, `color: var(--green)`, `text-shadow: 0 0 8px var(--green-ghost)`
 - **Stack label** (`// n8n | ...`): `12px`, `font-weight: 700`, `color: var(--green)`, `letter-spacing: 0.06em`, `text-shadow: 0 0 8px var(--green-ghost)` — scaled-down card-title
-- **Section labels** (`// KNOWLEDGE BASE`): `12px`, `font-weight: 700`, `letter-spacing: 0.10em`, `color: var(--green-mid)`, `text-shadow: 0 0 10px rgba(0, 255, 65, 0.35)`, `text-transform: uppercase`
+- **Section labels** (`// KNOWLEDGE BASE`): `12px`, `font-weight: 700`, `letter-spacing: 0.10em`, `color: var(--green-mid)`, `text-shadow: 0 0 10px var(--green-glow-label)`, `text-transform: uppercase`
 - **Body text / descriptions**: `12px`, `font-weight: 400`, `color: var(--text-muted)`
 - **Buttons**: `12px`, `font-weight: 400`, `letter-spacing: 0.06em`, `text-transform: uppercase`
 - **Secondary content** (card IDs, meta): `10px`, `color: var(--text-muted)`
@@ -37,23 +38,54 @@ Key structural elements follow a **4px grid**. Content elements follow a **2px g
 
 ## Color Palette
 
+### Surfaces & borders
+
 ```css
 --bg-void: #000000;
 --bg-surface: #040804;
 --bg-elevated: #0a120a;
+--bg-elevated-amber: #0d0904;     /* amber-card background */
 --bg-input: #060e06;
 --border: #0d3a0d;
 --border-hover: #137a13;
+```
+
+### Green scale (primary)
+
+```css
 --green: #00ff41;
+--green-bright: #55ff77;           /* keyboard-pulse ring accent */
 --green-mid: #00cc33;
 --green-dim: #009922;
 --green-muted: #00992a;
 --green-ghost: rgba(0, 255, 65, 0.08);
---green-glow: rgba(0, 255, 65, 0.12);
+--green-glow: rgba(0, 255, 65, 0.1);
 --green-glow-strong: rgba(0, 255, 65, 0.25);
+--green-glow-label: rgba(0, 255, 65, 0.35);  /* section-label text-shadow */
+--green-mid-glow: rgba(0, 204, 51, 0.4);      /* chat message text-shadow */
 --text-primary: #00ff41;
 --text-secondary: #00cc33;
 --text-muted: #00aa30;
+--text-bright: #ccffcc;            /* hover/active foreground */
+```
+
+### Amber scale (automation cards, `.theme-amber`)
+
+```css
+--amber: #ffaa00;
+--amber-bright: #ffcc44;           /* keyboard-pulse ring accent (amber theme) */
+--amber-mid: #e59400;
+--amber-dim: #b87400;
+--amber-muted: #8a5700;
+--amber-deep: #3d2605;
+--amber-ghost: rgba(255, 170, 0, 0.08);
+--amber-glow: rgba(255, 170, 0, 0.15);
+--amber-glow-strong: rgba(255, 170, 0, 0.3);
+```
+
+### Error scale (404, error mode)
+
+```css
 --error: #ff3333;
 --error-mid: #cc2200;
 --error-dim: #991a00;
@@ -63,6 +95,31 @@ Key structural elements follow a **4px grid**. Content elements follow a **2px g
 --error-glow: rgba(255, 51, 51, 0.15);
 --error-glow-strong: rgba(255, 51, 51, 0.3);
 ```
+
+### Chat message variants
+
+```css
+--user-bg: rgba(0, 255, 65, 0.05);
+--user-border: rgba(0, 255, 65, 0.15);
+```
+
+In error mode (`body[data-error="true"]`) the green-scale variables are remapped to their error-scale equivalents; `--user-bg`, `--user-border`, `--text-bright` also gain error variants.
+
+---
+
+## Layout Tokens
+
+```css
+--font: 'JetBrains Mono', monospace;
+--content-max: 1000px;             /* hub grid + legend width cap */
+--transition: 0.2s;                /* standard interaction transition */
+--beam-height: 1px;                /* beam separator height */
+--beam-duration: 3s;               /* beam sweep loop */
+--beam-blur: 3px;                  /* beam drop-shadow blur */
+--shadow-inset-deep: inset 0 0 28px rgba(0, 0, 0, 0.75);  /* panel depth */
+```
+
+Used by beam separators, panels (`.project-card`, `.grid-legend`), modal animations.
 
 ---
 
@@ -74,7 +131,7 @@ Key structural elements follow a **4px grid**. Content elements follow a **2px g
 - `[ 001 ]` pattern for card IDs — `10px`, `color: var(--text-muted)`
 - Status symbols: `●` for live (solid), `○` for non-live (outline) — avoid `◌` (dotted, breaks under scanline)
 - Border style: `border-left: 2px solid var(--green-dim)` for message blocks
-- All interactive elements: `transition` on `background`, `border-color`, `color`, `box-shadow`, `text-shadow` — use `0.2s`
+- All interactive elements: `transition` on `background`, `border-color`, `color`, `box-shadow`, `text-shadow` — use `var(--transition)` (`0.2s`)
 
 ---
 
@@ -147,7 +204,7 @@ Section labels (`// LABEL:`) use bold + brighter color + glow to stand out from 
 ```css
 font-weight: 700;
 color: var(--green-mid);
-text-shadow: 0 0 10px rgba(0, 255, 65, 0.35);
+text-shadow: 0 0 10px var(--green-glow-label);
 ```
 
 Content under labels: `12px`, `color: var(--text-muted)`.
