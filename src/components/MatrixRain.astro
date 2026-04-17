@@ -3,6 +3,28 @@
 // Used by BaseLayout and multimodal-rag
 ---
 <canvas id="matrix-bg"></canvas>
+<canvas id="matrix-lens" aria-hidden="true"></canvas>
+
+<style is:global>
+  #matrix-bg {
+    filter: blur(3px);
+  }
+  #matrix-lens {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    opacity: 0.55;
+    pointer-events: none;
+    mask-image: radial-gradient(circle 120px at var(--cx, -200px) var(--cy, -200px),
+      #000 0%, rgba(0,0,0,0.92) 30%, rgba(0,0,0,0.6) 55%, rgba(0,0,0,0.25) 80%, transparent 100%);
+    -webkit-mask-image: radial-gradient(circle 120px at var(--cx, -200px) var(--cy, -200px),
+      #000 0%, rgba(0,0,0,0.92) 30%, rgba(0,0,0,0.6) 55%, rgba(0,0,0,0.25) 80%, transparent 100%);
+  }
+  @media (prefers-reduced-motion: reduce), (hover: none) {
+    #matrix-bg { filter: none; }
+    #matrix-lens { display: none; }
+  }
+</style>
 
 <script is:inline>
   (function () {
@@ -10,17 +32,33 @@
 
     const canvas = document.getElementById('matrix-bg');
     const ctx = canvas.getContext('2d');
-    const chars = '01';
+    const lens = document.getElementById('matrix-lens');
+    const lensCtx = lens ? lens.getContext('2d') : null;
     const fontSize = 14;
-    let columns, drops;
+    const errorMode = document.body.dataset.error === 'true';
+
+    const chars = errorMode ? 'ERR!?@#$%^&*<>/\\~|:;' : '01';
+    const mainColor  = errorMode ? '#ff3333' : '#00ff41';
+    const trailColor = errorMode ? 'rgba(255, 51, 51, 0.4)' : 'rgba(0, 255, 65, 0.4)';
+    const glyphCyclingRate = errorMode ? 0.05 : 0;
+
+    let columns, drops, speedFactors, cells;
 
     function initMatrix() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      if (lens) { lens.width = window.innerWidth; lens.height = window.innerHeight; }
       const rows = Math.ceil(canvas.height / fontSize);
       columns = Math.floor(canvas.width / fontSize);
       drops = Array.from({ length: columns }, () => -Math.floor(Math.random() * rows));
+      speedFactors = Array.from({ length: columns }, () => 0.5 + Math.random());
+      cells = Array.from({ length: columns }, () => []);
     }
+
+    window.__matrixIntensify = (x, y, radius = 140, duration = 500) => {
+      boosts.push({ x, y, r2: radius * radius, until: performance.now() + duration });
+    };
+
 
     let lastTime = 0;
     const interval = 80; // ~12.5 fps
@@ -34,26 +72,104 @@
       ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.font = `${fontSize}px JetBrains Mono, monospace`;
+
       for (let i = 0; i < drops.length; i++) {
-        if (drops[i] < 0) { drops[i]++; continue; }
+        if (drops[i] < 0) { drops[i] += speedFactors[i]; continue; }
+
+        const x = i * fontSize;
+        const y = Math.floor(drops[i]) * fontSize;
         const char = chars[Math.floor(Math.random() * chars.length)];
-        const y = drops[i] * fontSize;
-        ctx.fillStyle = '#00ff41';
-        ctx.fillText(char, i * fontSize, y);
-        if (y > 0) {
-          ctx.fillStyle = 'rgba(0, 255, 65, 0.4)';
-          ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * fontSize, y - fontSize);
+
+        ctx.fillStyle = mainColor;
+        ctx.fillText(char, x, y);
+        if (y - fontSize > 0) {
+          ctx.fillStyle = trailColor;
+          ctx.fillText(chars[Math.floor(Math.random() * chars.length)], x, y - fontSize);
         }
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+
+        // 4.4 In-place glyph cycling (error mode only)
+        if (glyphCyclingRate > 0 && cells[i].length > 0 && Math.random() < glyphCyclingRate) {
+          const cell = cells[i][Math.floor(Math.random() * cells[i].length)];
+          ctx.fillStyle = mainColor;
+          ctx.fillText(chars[Math.floor(Math.random() * chars.length)], cell.x, cell.y);
+        }
+
+        cells[i].push({ x, y });
+        if (cells[i].length > 20) cells[i].shift();
+
+        if (y > canvas.height && Math.random() > 0.975) {
           drops[i] = -Math.floor(Math.random() * 30);
+          cells[i].length = 0;
         }
-        drops[i]++;
+        drops[i] += speedFactors[i]; // 4.2 variable speed
+      }
+
+      if (lensCtx) {
+        lensCtx.clearRect(0, 0, lens.width, lens.height);
+        lensCtx.drawImage(canvas, 0, 0);
       }
     }
 
     initMatrix();
     window.addEventListener('resize', initMatrix);
     rafId = requestAnimationFrame(drawMatrix);
+
+    /* Cursor lens tracking with smooth lerp follow */
+    if (lens) {
+      let targetX = -200, targetY = -200;
+      let currentX = -200, currentY = -200;
+      let cursorActive = false;
+      const LERP = 0.22;
+
+      window.addEventListener('mousemove', e => {
+        targetX = e.clientX;
+        targetY = e.clientY;
+        if (!cursorActive) { cursorActive = true; requestAnimationFrame(lerpLoop); }
+      });
+      window.addEventListener('mouseleave', () => {
+        targetX = -200; targetY = -200;
+      });
+
+      function lerpLoop() {
+        currentX += (targetX - currentX) * LERP;
+        currentY += (targetY - currentY) * LERP;
+        lens.style.setProperty('--cx', currentX.toFixed(1) + 'px');
+        lens.style.setProperty('--cy', currentY.toFixed(1) + 'px');
+        if (Math.abs(targetX - currentX) > 0.5 || Math.abs(targetY - currentY) > 0.5) {
+          requestAnimationFrame(lerpLoop);
+        } else {
+          cursorActive = false;
+        }
+      }
+    }
+
+    /* Cursor halo follow */
+    const halo = document.getElementById('cursor-halo');
+    if (halo) {
+      const HALO_HALF = 100;
+      let haloRAF = null, hx = 0, hy = 0;
+      window.addEventListener('mousemove', e => {
+        hx = e.clientX; hy = e.clientY;
+        halo.style.opacity = '1';
+        if (!haloRAF) {
+          haloRAF = requestAnimationFrame(() => {
+            halo.style.transform = `translate3d(${hx - HALO_HALF}px, ${hy - HALO_HALF}px, 0)`;
+            haloRAF = null;
+          });
+        }
+      });
+      window.addEventListener('mouseleave', () => { halo.style.opacity = '0'; });
+    }
+
+    /* Click shockwave */
+    window.addEventListener('click', e => {
+      const wave = document.createElement('div');
+      wave.className = 'shockwave';
+      wave.style.left = e.clientX + 'px';
+      wave.style.top = e.clientY + 'px';
+      document.body.appendChild(wave);
+      wave.addEventListener('animationend', () => wave.remove(), { once: true });
+    });
 
     window.addEventListener('beforeunload', () => {
       if (rafId) cancelAnimationFrame(rafId);
