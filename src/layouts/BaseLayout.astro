@@ -36,6 +36,33 @@ const csp = [
   "form-action 'self'",
   "object-src 'none'",
 ].join('; ');
+
+const siteUrl = 'https://nikitak-dev.github.io/';
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Person',
+      '@id': siteUrl + '#person',
+      name: 'Nikita Kurdybailo',
+      url: siteUrl,
+      jobTitle: 'AI Automation & Integration Specialist',
+      sameAs: [
+        'https://github.com/nikitak-dev',
+        'https://www.linkedin.com/in/nikita-kurdybailo-b0438a333',
+        'https://t.me/nikitadev001',
+      ],
+    },
+    {
+      '@type': 'WebSite',
+      '@id': siteUrl + '#website',
+      url: siteUrl,
+      name: 'ABSOLUTE // Automations Portfolio',
+      description: 'AI automation portfolio: n8n, Claude, Supabase, VAPI. Multimodal RAG, Voice AI agents, and more. Available for remote freelance.',
+      author: { '@id': siteUrl + '#person' },
+    },
+  ],
+};
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -60,6 +87,7 @@ const csp = [
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script type="application/ld+json" set:html={JSON.stringify(structuredData)}></script>
 </head>
 <body data-error={errorMode ? 'true' : 'false'} class={scanlineMode !== 'global' ? 'no-global-scanlines' : ''}>
   <MatrixRain />
