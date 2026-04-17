@@ -54,13 +54,15 @@ const {
       <p>{subtitle}</p>
       <TypeLogo text={logoText} speed={70} />
     </div>
-    {!hideSocial && (
-    <nav class="social-links" role="navigation" aria-label="Social links">
-      <a href="https://github.com/nikitak-dev" target="_blank" rel="noopener" class="btn-terminal">GitHub</a>
-      <a href="https://www.linkedin.com/in/nikita-kurdybailo-b0438a333" target="_blank" rel="noopener" class="btn-terminal">LinkedIn</a>
-      <a href="https://t.me/nikitadev001" target="_blank" rel="noopener" class="btn-terminal">Telegram</a>
-    </nav>
-    )}
+    {Astro.slots.has('header-action') ? (
+      <div class="header-action"><slot name="header-action" /></div>
+    ) : !hideSocial ? (
+      <nav class="social-links" role="navigation" aria-label="Social links">
+        <a href="https://github.com/nikitak-dev" target="_blank" rel="noopener" class="btn-terminal">GitHub</a>
+        <a href="https://www.linkedin.com/in/nikita-kurdybailo-b0438a333" target="_blank" rel="noopener" class="btn-terminal">LinkedIn</a>
+        <a href="https://t.me/nikitadev001" target="_blank" rel="noopener" class="btn-terminal">Telegram</a>
+      </nav>
+    ) : null}
   </header>
 
   <slot />

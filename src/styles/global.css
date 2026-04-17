@@ -192,6 +192,8 @@ header::after { display: none; }
 }
 
 .social-links { display: flex; gap: 6px; }
+.header-action { display: flex; gap: 6px; align-items: center; }
+.header-action .btn-terminal { padding: 6px 16px; font-weight: 350; }
 
 .social-links a {
   padding: 6px 16px;

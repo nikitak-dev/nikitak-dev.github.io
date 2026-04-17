@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import DocsModal from '../components/DocsModal.astro';
 ---
 <BaseLayout
   title="MULTIMODAL_RAG // AI Document Intelligence"
@@ -15,39 +16,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   ogTitle="MULTIMODAL_RAG // AI Document Intelligence"
   ogDescription="AI-powered document intelligence with multimodal retrieval. n8n + Gemini Embedding 2 + Pinecone + OpenRouter."
 >
+  <button type="button" id="docs-trigger" class="btn-terminal" slot="header-action" style="width: 170px;">[ DOCS &amp; VIDEO ]</button>
   <main id="chat-page" data-webhook={import.meta.env.PUBLIC_RAG_WEBHOOK}>
     <div id="chat">
       <div id="chat-spacer"></div>
       <div id="empty-state" class="scanlines-section">
-        <div class="empty-panel">
-          <div class="kb-section">
-            <div class="empty-panel-label">// KNOWLEDGE BASE</div>
-            <div class="empty-panel-desc">Answers grounded in 13 indexed files.<br>Sources cited in every reply.</div>
-          </div>
-          <div class="empty-panel-divider"></div>
-          <div class="kb-section">
-            <div class="empty-panel-queries-label">// TOPICS:</div>
-            <div class="empty-panel-topics">
-              CYBERSECURITY &nbsp;|&nbsp; AGILE<br>
-              API DESIGN &nbsp;|&nbsp; DEVOPS<br>
-              CLOUD ARCHITECTURE &nbsp;|&nbsp; SQL
-            </div>
-          </div>
-          <div class="empty-panel-divider"></div>
-          <div class="kb-section">
-            <div class="empty-panel-queries-label">// FILE TYPES:</div>
-            <div class="empty-panel-formats">TEXT &nbsp;|&nbsp; IMAGE &nbsp;|&nbsp; AUDIO<br>VIDEO &nbsp;|&nbsp; PDF</div>
-          </div>
-          <div class="empty-panel-divider"></div>
-          <div class="kb-section">
-            <div class="empty-panel-queries-label">// CLICK TO TRY:</div>
-            <div class="empty-panel-queries">
-              <span class="boot-query">&gt; What is symmetric encryption?</span>
-              <span class="boot-query">&gt; Explain the Agile sprint cycle</span>
-              <span class="boot-query">&gt; What SQL join types are covered?</span>
-            </div>
-          </div>
-        </div>
         <div class="empty-main">
           <div class="empty-icon" data-text="[?]">[?]</div>
           <h2><span id="scramble-text">Awaiting input</span><span class="await-cursor" aria-hidden="true"></span></h2>
@@ -57,7 +30,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     <div id="input-bar" class="scanlines-section">
       <div class="input-status">
-        <span class="input-status-left">// QUERY INTERFACE</span>
+        <span class="input-status-left">// TRY TO ASK:</span>
         <span class="input-status-right">
           <span class="status-block">[ VDB: PINECONE ]</span>
           <span class="status-block">[ LLM: CLAUDE ]</span>
@@ -71,9 +44,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <button id="send" class="btn-terminal">EXEC</button>
         <button id="clear" class="btn-terminal">CLR</button>
       </div>
-      <div class="input-hint"><span class="hint-key">[ ENTER ]</span> transmit &nbsp;&nbsp;|&nbsp;&nbsp; <span class="hint-key">[ ESC ]</span> clear</div>
+      <div class="input-hint"><span class="hint-key">[ ENTER ]</span> transmit &nbsp;&nbsp;|&nbsp;&nbsp; <span class="hint-key">[ ESC ]</span> clear &nbsp;&nbsp;|&nbsp;&nbsp; <span class="hint-key">[ CLICK ]</span> use prompt</div>
     </div>
   </main>
+  <DocsModal id="docs-modal" title="PROJECT :: MULTIMODAL_RAG" />
 </BaseLayout>
 
 <style is:global>
@@ -750,11 +724,70 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }, 300);
   });
 
-  document.querySelectorAll('.boot-query').forEach(el => {
-    el.addEventListener('click', () => {
-      input.value = el.textContent.replace(/^>\s*/, '');
-      input.focus();
+  /* Rotating placeholder typewriter on input */
+  (function () {
+    const QUERIES = [
+      'What is symmetric encryption?',
+      'Explain the Agile sprint cycle',
+      'What SQL join types are covered?',
+    ];
+    if (!input) return;
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      input.placeholder = QUERIES[0];
+      return;
+    }
+
+    let qIdx = 0;
+    let currentQuery = QUERIES[0];
+
+    input.addEventListener('click', () => {
+      if (!input.value) {
+        input.value = currentQuery;
+        input.setSelectionRange(currentQuery.length, currentQuery.length);
+        qIdx = (qIdx + 1) % QUERIES.length;
+      }
     });
+    window.addEventListener('advance-query-hint', () => { qIdx = (qIdx + 1) % QUERIES.length; });
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+    const busy = () => !!input.value;
+
+    async function cycle() {
+      while (true) {
+        while (busy()) await sleep(100);
+        currentQuery = QUERIES[qIdx];
+        let broken = false;
+        for (let i = 1; i <= currentQuery.length; i++) {
+          if (busy()) { broken = true; break; }
+          input.placeholder = currentQuery.slice(0, i);
+          await sleep(40);
+        }
+        if (broken) continue;
+        for (let t = 0; t < 25; t++) {
+          if (busy()) { broken = true; break; }
+          await sleep(100);
+        }
+        if (broken) continue;
+        for (let i = currentQuery.length; i > 0; i--) {
+          if (busy()) { broken = true; break; }
+          input.placeholder = currentQuery.slice(0, i);
+          await sleep(25);
+        }
+        if (broken) continue;
+        qIdx = (qIdx + 1) % QUERIES.length;
+      }
+    }
+    cycle();
+  })();
+
+  /* Docs modal trigger */
+  document.getElementById('docs-trigger')?.addEventListener('click', () => {
+    const modal = document.getElementById('docs-modal');
+    if (!modal) return;
+    modal.showModal();
+    document.body.classList.add('modal-open');
   });
 
   function addMsg(role, content) {
@@ -782,6 +815,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     isLoading = true;
     addMsg('user', q);
     input.value = '';
+    window.dispatchEvent(new Event('advance-query-hint'));
     btn.disabled = true;
 
     const typing = document.createElement('div');
@@ -880,7 +914,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   btn.addEventListener('click', ask);
   input.addEventListener('keydown', e => {
     if (e.key === 'Enter') ask();
-    if (e.key === 'Escape') { input.value = ''; }
+    if (e.key === 'Escape') {
+      if (input.value) { input.value = ''; } else { input.blur(); }
+    }
   });
   input.focus();
 

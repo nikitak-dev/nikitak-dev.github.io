@@ -1,0 +1,146 @@
+---
+interface Props {
+  id: string;
+  title?: string;
+}
+const { id, title = 'PROJECT :: DOCUMENTATION' } = Astro.props;
+const titleId = `${id}-title`;
+---
+<dialog id={id} class="docs-modal" aria-labelledby={titleId} closedby="any">
+  <div class="modal-frame scanlines-section">
+    <header class="modal-header">
+      <h2 id={titleId} class="modal-title">// {title}</h2>
+      <button type="button" class="modal-close btn-terminal" aria-label="Close dialog">[ × CLOSE ]</button>
+    </header>
+    <section class="modal-section">
+      <div class="section-label">// OVERVIEW</div>
+      <slot name="overview">
+        <div class="slot-empty">[ DOCS :: COMING SOON ]</div>
+      </slot>
+    </section>
+    <section class="modal-section">
+      <div class="section-label">// DEMO</div>
+      <slot name="demo">
+        <div class="video-slot">[ VIDEO :: COMING SOON ]</div>
+      </slot>
+    </section>
+  </div>
+</dialog>
+
+<script is:inline define:vars={{ id }}>
+  (function () {
+    const modal = document.getElementById(id);
+    if (!modal) return;
+
+    const closeBtn = modal.querySelector('.modal-close');
+    closeBtn && closeBtn.addEventListener('click', () => modal.close());
+
+    /* body.modal-open cleanup on close — parent sets it on open */
+    modal.addEventListener('close', () => document.body.classList.remove('modal-open'));
+
+    /* Drag-close fix: only close on backdrop click if mousedown+mouseup both on dialog itself */
+    let downTarget = null;
+    modal.addEventListener('mousedown', e => { downTarget = e.target; });
+    modal.addEventListener('mouseup', e => {
+      if (e.target === modal && downTarget === modal) modal.close();
+    });
+
+    /* Fallback for closedby="any" (Chrome 134+/Safari 18+). Older browsers: bind Escape + backdrop manually.
+       If native closedby works, it fires close() — our drag-fix above still guards against accidental drag-close. */
+    const supportsClosedBy = 'closedBy' in modal;
+    if (!supportsClosedBy) {
+      modal.addEventListener('cancel', e => { /* Escape already closes via native cancel event */ });
+    }
+  })();
+</script>
+
+<style is:global>
+  dialog.docs-modal {
+    margin: auto;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    max-width: min(720px, calc(100vw - 32px));
+    max-height: 80vh;
+    overflow: visible;
+  }
+  dialog.docs-modal::backdrop {
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(4px);
+  }
+
+  body.modal-open::after { display: none; }
+
+  .docs-modal .modal-frame {
+    position: relative;
+    border: 1px solid var(--border-hover);
+    background: var(--bg-elevated);
+    padding: 24px 28px;
+    max-height: 80vh;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: var(--green-muted) transparent;
+  }
+  .docs-modal .modal-frame::-webkit-scrollbar { width: 4px; }
+  .docs-modal .modal-frame::-webkit-scrollbar-track { background: transparent; }
+  .docs-modal .modal-frame::-webkit-scrollbar-thumb { background: var(--green-muted); border-radius: 2px; }
+
+  .docs-modal .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .docs-modal .modal-title {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.10em;
+    color: var(--green-mid);
+    text-transform: uppercase;
+    text-shadow: 0 0 8px var(--green-glow-strong);
+  }
+  .docs-modal .modal-close {
+    padding: 6px 14px;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  .docs-modal .modal-section { margin-bottom: 24px; }
+  .docs-modal .modal-section:last-child { margin-bottom: 0; }
+
+  .docs-modal .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.10em;
+    color: var(--green-mid);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .docs-modal .slot-empty {
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    border: 1px dashed var(--border-hover);
+    background: var(--bg-input);
+  }
+
+  .docs-modal .video-slot {
+    aspect-ratio: 16 / 9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed var(--border-hover);
+    background: var(--bg-input);
+    color: var(--text-muted);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+  }
+</style>
