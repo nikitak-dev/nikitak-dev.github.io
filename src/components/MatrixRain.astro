@@ -24,6 +24,9 @@
     #matrix-bg { filter: none; }
     #matrix-lens { display: none; }
   }
+  @media (max-width: 640px) {
+    #matrix-bg { filter: none; }
+  }
 </style>
 
 <script is:inline>
@@ -150,7 +153,11 @@
     }
 
     initMatrix();
-    window.addEventListener('resize', initMatrix);
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(initMatrix, 100);
+    });
     rafId = requestAnimationFrame(drawMatrix);
 
     /* Cursor lens tracking with smooth lerp follow */
