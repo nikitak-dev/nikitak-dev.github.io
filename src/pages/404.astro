@@ -2,14 +2,30 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 <BaseLayout title="404 // NOT FOUND" logoText="VBSOLXTE_VXTOMVTIONS" subtitle="// Segmentation fault :: this page does not exist" hideSocial={true} errorMode={true} brokenTyping={true} noindex={true}>
-  <main id="hub" style="display:flex;align-items:center;justify-content:center;min-height:60vh;flex-direction:column;gap:24px;text-align:center;">
+  <main class="error-hub">
     <div class="glitch-text" data-text="[ 404 ]">[ 404 ]</div>
-    <p style="color:var(--green-dim);font-size:12px;"><span id="page-scramble">// PAGE NOT FOUND</span></p>
+    <p class="error-caption"><span id="page-scramble">// PAGE NOT FOUND</span></p>
     <a href="/" class="btn-terminal btn-back">BACK TO HUB</a>
   </main>
 </BaseLayout>
 
 <style>
+  .error-hub {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    flex-direction: column;
+    gap: 24px;
+    text-align: center;
+  }
+
+  .error-caption {
+    color: var(--green-dim);
+    font-size: 12px;
+  }
+
   .btn-back {
     padding: 10px 24px;
     text-decoration: none;
@@ -18,7 +34,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   .glitch-text {
     font-size: 36px;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.10em;
     color: var(--green);
     position: relative;
     white-space: nowrap;
