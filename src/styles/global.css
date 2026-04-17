@@ -82,6 +82,32 @@ body {
   overflow: hidden;
 }
 
+body[data-error="true"] {
+  animation: crtJitter 5s linear infinite;
+}
+body[data-error="true"] header::before,
+body[data-error="true"] .beam-line::after,
+body[data-error="true"] .hub-footer::before {
+  animation: beamWrapError 1.2s steps(10, end) infinite;
+}
+
+@keyframes crtJitter {
+  0%, 22%, 24%, 47%, 49%, 73%, 75%, 91%, 93%, 100% { filter: brightness(1); }
+  23% { filter: brightness(0.82); }
+  48% { filter: brightness(0.9); }
+  74% { filter: brightness(0.78); }
+  92% { filter: brightness(0.88); }
+}
+
+@keyframes beamWrapError {
+  0%   { background-position: 0 0; }
+  30%  { background-position: 40vw 0; }
+  35%  { background-position: 30vw 0; }
+  65%  { background-position: 80vw 0; }
+  70%  { background-position: 70vw 0; }
+  100% { background-position: 100vw 0; }
+}
+
 #matrix-bg {
   position: fixed;
   inset: 0;
@@ -93,13 +119,21 @@ body::after {
   content: '';
   position: fixed;
   inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 1px,
-    rgba(0, 0, 0, 0.12) 1px,
-    rgba(0, 0, 0, 0.12) 2px
-  );
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1px,
+      rgba(0, 0, 0, 0.12) 1px,
+      rgba(0, 0, 0, 0.12) 2px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 0, 0, 0.035),
+      rgba(0, 255, 0, 0.018),
+      rgba(0, 0, 255, 0.035)
+    );
+  background-size: 100% 2px, 3px 100%;
   pointer-events: none;
   z-index: 9999;
 }
@@ -648,16 +682,25 @@ body.no-global-scanlines::after { display: none; }
   display: block;
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 1px,
-    rgba(0, 0, 0, 0.12) 1px,
-    rgba(0, 0, 0, 0.12) 2px
-  );
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1px,
+      rgba(0, 0, 0, 0.12) 1px,
+      rgba(0, 0, 0, 0.12) 2px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 0, 0, 0.035),
+      rgba(0, 255, 0, 0.018),
+      rgba(0, 0, 255, 0.035)
+    );
+  background-size: 100% 2px, 3px 100%;
   pointer-events: none;
   z-index: 9999;
 }
+
 
 /* === MOBILE === */
 @media (max-width: 640px) {
