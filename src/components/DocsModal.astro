@@ -2,8 +2,9 @@
 interface Props {
   id: string;
   title?: string;
+  sections?: Array<'overview' | 'demo'>;
 }
-const { id, title = 'PROJECT :: DOCUMENTATION' } = Astro.props;
+const { id, title = 'PROJECT :: DOCUMENTATION', sections = ['overview', 'demo'] } = Astro.props;
 const titleId = `${id}-title`;
 ---
 <dialog id={id} class="docs-modal" aria-labelledby={titleId} closedby="any">
@@ -12,18 +13,22 @@ const titleId = `${id}-title`;
       <h2 id={titleId} class="modal-title">// {title}</h2>
       <button type="button" class="modal-close btn-terminal" aria-label="Close dialog">[ × CLOSE ]</button>
     </header>
-    <section class="modal-section">
-      <div class="section-label">// OVERVIEW</div>
-      <slot name="overview">
-        <div class="slot-empty">[ DOCS :: COMING SOON ]</div>
-      </slot>
-    </section>
-    <section class="modal-section">
-      <div class="section-label">// DEMO</div>
-      <slot name="demo">
-        <div class="video-slot">[ VIDEO :: COMING SOON ]</div>
-      </slot>
-    </section>
+    {sections.includes('overview') && (
+      <section class="modal-section">
+        <div class="section-label">// OVERVIEW</div>
+        <slot name="overview">
+          <div class="slot-empty">[ DOCS :: COMING SOON ]</div>
+        </slot>
+      </section>
+    )}
+    {sections.includes('demo') && (
+      <section class="modal-section">
+        <div class="section-label">// DEMO</div>
+        <slot name="demo">
+          <div class="video-slot">[ VIDEO :: COMING SOON ]</div>
+        </slot>
+      </section>
+    )}
   </div>
 </dialog>
 

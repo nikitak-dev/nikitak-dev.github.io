@@ -287,7 +287,7 @@ header::after { display: none; }
 .btn-terminal:active:not(:disabled) {
   background: var(--user-border);
   border-color: var(--green);
-  color: var(--text-primary);
+  color: var(--text-bright);
   box-shadow: 0 0 20px var(--green-glow-strong), inset 0 0 10px var(--green-glow);
   text-shadow: 0 0 8px var(--green-glow-strong);
 }
@@ -375,6 +375,7 @@ header::after { display: none; }
   color: var(--green);
   animation: connPulse 3s ease-in-out infinite;
 }
+
 
 .status-block-dead {
   color: var(--error);
@@ -515,10 +516,40 @@ header::after { display: none; }
 .grid-legend {
   display: flex;
   gap: 20px;
+  align-items: center;
   max-width: 1000px;
   margin: 0 auto 16px;
   font-size: 11px;
   letter-spacing: 0.06em;
+}
+.grid-legend .legend-help {
+  margin-left: auto;
+  padding: 4px 10px;
+  font-size: 10px;
+}
+
+.shortcuts-list { display: flex; flex-direction: column; gap: 8px; }
+.shortcut-row {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+}
+.shortcut-key {
+  flex-shrink: 0;
+  min-width: 220px;
+  color: var(--green);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+  text-shadow: 0 0 6px var(--green-glow);
+}
+.shortcut-desc {
+  color: var(--text-muted);
+  font-size: 11px;
+  letter-spacing: 0.04em;
 }
 .legend-item { display: flex; align-items: center; gap: 6px; }
 .legend-dot { width: 8px; height: 8px; border-radius: 1px; display: inline-block; }

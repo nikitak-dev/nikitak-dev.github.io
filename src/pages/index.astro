@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import DocsModal from '../components/DocsModal.astro';
 import { PROJECTS, liveCount, totalCount, STATUS_SYMBOL, STATUS_LABEL } from '../data/projects';
 
 const live = liveCount();
@@ -16,6 +17,7 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
     <div class="grid-legend">
       <span class="legend-item legend-ai"><span class="legend-dot"></span>AI-POWERED</span>
       <span class="legend-item legend-auto"><span class="legend-dot"></span>AUTOMATION</span>
+      <button type="button" id="shortcuts-trigger" class="btn-terminal legend-help">[ ? SHORTCUTS ]</button>
     </div>
     <div class="project-grid">
       {PROJECTS.map((p, i) => (
@@ -48,17 +50,40 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
     </div>
   </main>
 
+  <DocsModal id="shortcuts-modal" title="HUB :: KEYBOARD SHORTCUTS" sections={['overview']}>
+    <div slot="overview" class="shortcuts-list">
+      <div class="shortcut-row"><span class="shortcut-key">[ 1 ] [ 2 ] [ 3 ] [ 4 ]</span><span class="shortcut-desc">select project by number</span></div>
+      <div class="shortcut-row"><span class="shortcut-key">[ &lt;- ] [ -&gt; ] [ UP ] [ DN ]</span><span class="shortcut-desc">cycle selection</span></div>
+      <div class="shortcut-row"><span class="shortcut-key">[ Enter ]</span><span class="shortcut-desc">launch selected project</span></div>
+      <div class="shortcut-row"><span class="shortcut-key">[ Esc ]</span><span class="shortcut-desc">deselect</span></div>
+    </div>
+  </DocsModal>
+
   <script is:inline define:vars={{ live, total, buildDate }}>
     /* --- Boot sequence --- */
     const bootScreen = document.getElementById('boot-screen');
     const bootLinesEl = document.getElementById('boot-lines');
     const grid = document.querySelector('.project-grid');
 
+    const bootVariants = [
+      'MEM :: 512B HEAP ALLOC',
+      'MEM :: 1024B HEAP ALLOC',
+      'MEM :: 2048B HEAP ALLOC',
+      'MEM :: 4096B HEAP ALLOC',
+      'RNG :: SEED 0xA4D3F9B1',
+      'RNG :: SEED 0x7FFE4B2A',
+      'CACHE :: WARMED',
+      'THREADS :: 4/8 ACTIVE',
+      'TICK :: 24HZ LOCKED',
+    ];
+    const variantLine = bootVariants[Math.floor(Math.random() * bootVariants.length)];
+
     const bootSequence = [
-      { text: `PROC SCAN :: ${live}/${total} PROJECTS LIVE`,       bright: false },
-      { text: `BUILD :: ${buildDate}`,                             bright: false },
+      { text: `PROC SCAN :: ${live}/${total} PROJECTS LIVE`,         bright: false },
+      { text: `BUILD :: ${buildDate}`,                               bright: false },
+      { text: variantLine,                                           bright: false },
       { text: 'GLOW :: ON  |  SCANLINES :: ON  |  MATRIX :: STABLE', bright: false },
-      { text: '> BOOT COMPLETE',                                    bright: true  },
+      { text: '> BOOT COMPLETE',                                     bright: true  },
     ];
 
     let bootDone = false;
@@ -118,6 +143,14 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
     runBoot();
     bootScreen.addEventListener('click', endBoot);
     document.addEventListener('keydown', endBoot, { once: true });
+
+    /* Shortcuts modal */
+    document.getElementById('shortcuts-trigger')?.addEventListener('click', () => {
+      const modal = document.getElementById('shortcuts-modal');
+      if (!modal) return;
+      modal.showModal();
+      document.body.classList.add('modal-open');
+    });
 
     /* --- Card selection & keyboard navigation --- */
     const cards = document.querySelectorAll('.project-card');
