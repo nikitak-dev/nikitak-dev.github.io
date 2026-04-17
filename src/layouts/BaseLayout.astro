@@ -18,6 +18,7 @@ const {
   description = 'AI automation portfolio: n8n, Claude, Supabase, VAPI. Multimodal RAG, Voice AI agents, and more. Available for remote freelance.',
   ogTitle = title,
   ogDescription = description,
+  noindex = false,
 } = Astro.props;
 
 // Derive webhook origin for CSP connect-src. Falls back to empty when env
@@ -37,6 +38,7 @@ const csp = [
   "object-src 'none'",
 ].join('; ');
 
+const buildTime = new Date().toISOString();
 const siteUrl = 'https://nikitak-dev.github.io/';
 const structuredData = {
   '@context': 'https://schema.org',
@@ -73,6 +75,7 @@ const structuredData = {
   <title>{title}</title>
   <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABRElEQVR4nO2Wv0vEMBSAv5SicKCToKCg+He4BP8FEcTBVdDRRTcHHZwcFBc3f4yuLkIWN1dHnRTUQYVTHHR4krt4tIUOueTawX4QyEua5EtfhgcNDf8d1euJ3gVG87NmPcopog8KI22U2SoKPAPjBQEVSUAKIy8oM2E7adlEVLIX6V60R+q9mehV4MhFX8AdcArso8yP73aJtwDcAoeuXbh3swdcItr7Qqn38cpcA7Z1ET0EnAELwBJwMug/kEeZb2DHRfN4khCX4eoFpJP3TRfdDP4N/CF6G5gB5oBZ4B44pjIBWAGmgXfgHNhAmXaVApZXlBkjgDRg7SPQCjk8TEAZm/tgkr5Xip5E9FQ9AqIXXQoeEL1cRwregE+rAjzFFBjJFQ9lBYkyV51v+ytI7LqPMoEWsJaJ41RE+T3JCjQ0NFA3v7FOSnR3aaFyAAAAAElFTkSuQmCC">
   <meta name="description" content={description}>
+  {noindex && <meta name="robots" content="noindex, nofollow" />}
   <meta property="og:title" content={ogTitle}>
   <meta property="og:description" content={ogDescription}>
   <meta property="og:type" content="website">
@@ -114,9 +117,9 @@ const structuredData = {
       <div class="header-action"><slot name="header-action" /></div>
     ) : !hideSocial ? (
       <nav class="social-links" role="navigation" aria-label="Social links">
-        <a href="https://github.com/nikitak-dev" target="_blank" rel="noopener" class="btn-terminal">GitHub</a>
-        <a href="https://www.linkedin.com/in/nikita-kurdybailo-b0438a333" target="_blank" rel="noopener" class="btn-terminal">LinkedIn</a>
-        <a href="https://t.me/nikitadev001" target="_blank" rel="noopener" class="btn-terminal">Telegram</a>
+        <a href="https://github.com/nikitak-dev" target="_blank" rel="noopener noreferrer" class="btn-terminal">GitHub</a>
+        <a href="https://www.linkedin.com/in/nikita-kurdybailo-b0438a333" target="_blank" rel="noopener noreferrer" class="btn-terminal">LinkedIn</a>
+        <a href="https://t.me/nikitadev001" target="_blank" rel="noopener noreferrer" class="btn-terminal">Telegram</a>
       </nav>
     ) : null}
   </header>
@@ -138,7 +141,7 @@ const structuredData = {
   </footer>
   )}
 
-  <script is:inline>
+  <script is:inline define:vars={{ buildTime }}>
     /* --- Logo loop --- */
     var logoLoopTimer = null;
     function scheduleLogoLoop() {
@@ -157,7 +160,7 @@ const structuredData = {
     scheduleLogoLoop();
 
     /* --- Footer uptime counter --- */
-    const BOOT_DATE = new Date('2026-04-12T14:00:00+02:00');
+    const BOOT_DATE = new Date(buildTime);
     const uptimeEl = document.getElementById('uptime-val');
 
     function updateUptime() {

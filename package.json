@@ -1,8 +1,9 @@
 {
   "name": "portfolio",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Personal portfolio site — AI automation & integration projects.",
+  "private": true,
+  "type": "module",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
@@ -12,14 +13,19 @@
     "type": "git",
     "url": "git+https://github.com/nikitak-dev/nikitak-dev.github.io.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
+  "keywords": [
+    "portfolio",
+    "astro",
+    "ai",
+    "automation",
+    "n8n"
+  ],
+  "author": "Nikita Kurdybailo <nikitak.dev001@gmail.com>",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/nikitak-dev/nikitak-dev.github.io/issues"
   },
-  "homepage": "https://github.com/nikitak-dev/nikitak-dev.github.io#readme",
+  "homepage": "https://nikitak-dev.github.io/",
   "engines": {
     "node": ">=22.0.0"
   },
