@@ -14,6 +14,9 @@
   text-decoration: none;
 }
 
+/* Header-action button — fixed width to match page layout */
+#docs-trigger { width: 176px; }
+
 /* Chat area */
 #chat {
   position: relative;
@@ -30,9 +33,7 @@
   scrollbar-color: var(--border) transparent;
 }
 
-#chat::-webkit-scrollbar { width: 4px; }
-#chat::-webkit-scrollbar-track { background: transparent; }
-#chat::-webkit-scrollbar-thumb { background: var(--green-muted); border-radius: 2px; }
+/* #chat webkit scrollbar: defined in global.css shared SCROLLBAR block */
 
 #chat-spacer { flex: 1 1 auto; min-height: 0; }
 
@@ -43,7 +44,7 @@
   display: flex;
   flex-direction: row;
   opacity: 0;
-  animation: emptyFadeIn 0.8s ease-out 0.3s both;
+  animation: emptyFadeIn 0.8s ease-out var(--transition) both;
   z-index: 1;
 }
 
@@ -70,7 +71,7 @@
 }
 
 .empty-icon {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font);
   font-size: 36px;
   font-weight: 700;
   color: var(--green);
@@ -79,9 +80,9 @@
 
 #empty-state h2 {
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 700;
   color: var(--green-dim);
-  letter-spacing: 0.15em;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
 }
 
@@ -93,26 +94,16 @@
   margin-left: 3px;
   vertical-align: middle;
   box-shadow: 0 0 6px var(--green-glow-strong);
-  animation: cursorBlink 1s step-end infinite;
-}
-
-@keyframes cursorBlink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
+  animation: blink 1s step-end infinite;
 }
 
 /* Messages */
 .msg {
   max-width: 700px;
   line-height: 1.7;
-  animation: msgIn 0.4s ease-out both;
+  animation: fadeSlideUp 0.4s ease-out both;
   font-size: 12px;
   font-weight: 400;
-}
-
-@keyframes msgIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 .msg.user {
@@ -124,7 +115,7 @@
   padding: 10px 16px;
   position: relative;
   font-weight: 300;
-  text-shadow: 0 0 2px rgba(0, 204, 51, 0.4);
+  text-shadow: 0 0 2px var(--green-mid-glow);
 }
 
 .msg.user::before {
@@ -132,7 +123,7 @@
   display: block;
   font-size: 8px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.10em;
   color: var(--green-dim);
   margin-bottom: 4px;
 }
@@ -155,7 +146,7 @@
   border-left: 2px solid var(--green-dim);
   color: var(--green-mid);
   font-weight: 300;
-  text-shadow: 0 0 2px rgba(0, 204, 51, 0.4);
+  text-shadow: 0 0 2px var(--green-mid-glow);
 }
 
 .msg.assistant .answer::before {
@@ -163,7 +154,7 @@
   display: block;
   font-size: 8px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.10em;
   color: var(--green-muted);
   margin-bottom: 8px;
 }
@@ -194,7 +185,7 @@
   top: 13px;
   font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.10em;
   color: var(--text-muted);
 }
 
@@ -206,7 +197,7 @@
   color: var(--green-dim);
   border: 1px solid var(--border);
   padding: 3px 8px;
-  transition: border-color 0.2s, color 0.2s;
+  transition: border-color var(--transition), color var(--transition);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -230,7 +221,7 @@
   display: block;
   font-size: 8px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.10em;
   margin-bottom: 4px;
 }
 
@@ -244,7 +235,7 @@
   background: var(--bg-void);
   position: relative;
   outline: 1px solid var(--border);
-  transition: box-shadow 0.3s;
+  transition: box-shadow var(--transition);
 }
 
 .msg-media-item::before {
@@ -278,7 +269,7 @@
   min-height: 80px;
   background: var(--bg-elevated);
   filter: saturate(0.85) brightness(0.95);
-  transition: filter 0.3s;
+  transition: filter var(--transition);
 }
 
 .msg-media-item img.loading { animation: imgLoad 1.5s ease-in-out infinite; }
@@ -315,7 +306,7 @@
   align-items: center;
   gap: 3px;
   padding: 12px 16px;
-  animation: msgIn 0.3s ease-out both;
+  animation: fadeSlideUp var(--transition) ease-out both;
   font-size: 12px;
   color: var(--green-dim);
 }
@@ -324,7 +315,7 @@
   content: '< SYS ';
   font-size: 8px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.10em;
   color: var(--green-muted);
   margin-right: 6px;
 }
@@ -351,7 +342,7 @@
   letter-spacing: 0.04em;
   color: var(--green-dim);
   cursor: pointer;
-  transition: color 0.2s, text-shadow 0.2s;
+  transition: color var(--transition), text-shadow var(--transition);
   padding: 1px 0;
   display: block;
   padding-left: 2ch;
@@ -368,24 +359,12 @@
   z-index: 1;
   padding: 12px 32px 20px;
   background: var(--bg-void);
-  background-image: linear-gradient(to bottom, rgba(0, 255, 65, 0.08) 0%, transparent 100%);
+  background-image: linear-gradient(to bottom, var(--green-ghost) 0%, transparent 100%);
   flex-shrink: 0;
   animation: fadeSlideUp 0.5s ease-out 0.5s both;
 }
 
-#input-bar::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background-image: linear-gradient(90deg, transparent 35%, var(--green) 50%, transparent 65%);
-  background-color: var(--border);
-  background-size: 100vw 100%;
-  background-repeat: repeat-x;
-  animation: beamWrap 3s linear infinite;
-  pointer-events: none;
-  filter: drop-shadow(0 0 3px var(--green-dim));
-}
+/* #input-bar::before beam: defined in global.css shared beam block */
 
 .input-status {
   display: flex;
@@ -412,7 +391,7 @@
   background: var(--bg-input);
   border: 1px solid var(--border);
   padding: 6px 16px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color var(--transition), box-shadow var(--transition);
 }
 
 .input-wrap::before {
@@ -421,7 +400,7 @@
   font-weight: 700;
   font-size: 12px;
   flex-shrink: 0;
-  transition: color 0.2s;
+  transition: color var(--transition);
 }
 
 .input-wrap:focus-within {
@@ -465,7 +444,7 @@
 .input-hint {
   font-size: 12px;
   color: var(--text-muted);
-  letter-spacing: 0.07em;
+  letter-spacing: 0.06em;
   margin-top: 10px;
   padding: 0 2px;
   user-select: none;
@@ -473,9 +452,8 @@
 
 .input-hint .hint-key { color: var(--green-dim); }
 
-/* Responsive */
+/* Responsive (header rule lives in global.css mobile block) */
 @media (max-width: 640px) {
-  header { padding: 12px 16px; flex-direction: column; gap: 10px; align-items: flex-start; }
   #chat { padding: 16px; }
   #input-bar { padding: 12px 16px 16px; }
   .msg { max-width: 100%; }

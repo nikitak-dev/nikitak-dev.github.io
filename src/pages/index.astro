@@ -15,8 +15,9 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
 
   <main id="hub">
     <div class="grid-legend">
-      <span class="legend-item legend-ai"><span class="legend-dot"></span>AI-POWERED</span>
-      <span class="legend-item legend-auto"><span class="legend-dot"></span>AUTOMATION</span>
+      <span class="section-label">// LEGEND:</span>
+      <span class="legend-item legend-ai" data-filter="ai" tabindex="0"><span class="legend-dot"></span>AI-POWERED</span>
+      <span class="legend-item legend-auto" data-filter="automation" tabindex="0"><span class="legend-dot"></span>AUTOMATION</span>
       <button type="button" id="shortcuts-trigger" class="btn-terminal legend-help">[ SHORTCUTS ]</button>
     </div>
     <div class="project-grid">
@@ -154,6 +155,18 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
       if (!modal) return;
       modal.showModal();
       document.body.classList.add('modal-open');
+    });
+
+    /* Legend filter on hover/focus */
+    document.querySelectorAll('.legend-item').forEach(item => {
+      const filter = item.dataset.filter;
+      if (!filter) return;
+      const on = () => grid.classList.add(`filter-${filter}`);
+      const off = () => grid.classList.remove(`filter-${filter}`);
+      item.addEventListener('mouseenter', on);
+      item.addEventListener('mouseleave', off);
+      item.addEventListener('focus', on);
+      item.addEventListener('blur', off);
     });
 
     /* --- Card selection & keyboard navigation --- */
