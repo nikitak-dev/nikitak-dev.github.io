@@ -11,7 +11,7 @@ const titleId = `${id}-title`;
   <div class="modal-frame scanlines-section">
     <header class="modal-header">
       <h2 id={titleId} class="modal-title">// {title}</h2>
-      <button type="button" class="modal-close btn-terminal" aria-label="Close dialog">[ × CLOSE ]</button>
+      <button type="button" class="modal-close btn-terminal" aria-label="Close dialog">[ CLOSE ]</button>
     </header>
     {sections.includes('overview') && (
       <section class="modal-section">
@@ -40,8 +40,16 @@ const titleId = `${id}-title`;
     const closeBtn = modal.querySelector('.modal-close');
     closeBtn && closeBtn.addEventListener('click', () => modal.close());
 
-    /* body.modal-open cleanup on close — parent sets it on open */
-    modal.addEventListener('close', () => document.body.classList.remove('modal-open'));
+    /* body.modal-open cleanup on close — parent sets it on open.
+       Also blur the trigger after native focus-restore: Escape-close restores focus with
+       keyboard context, so :focus-visible lingers on the opener and it looks "selected". */
+    modal.addEventListener('close', () => {
+      document.body.classList.remove('modal-open');
+      requestAnimationFrame(() => {
+        const active = document.activeElement;
+        if (active instanceof HTMLElement && active !== document.body) active.blur();
+      });
+    });
 
     /* Drag-close fix: only close on backdrop click if mousedown+mouseup both on dialog itself */
     let downTarget = null;
@@ -66,13 +74,57 @@ const titleId = `${id}-title`;
     border: none;
     background: transparent;
     color: inherit;
+    min-width: min(560px, calc(100vw - 32px));
     max-width: min(720px, calc(100vw - 32px));
     max-height: 80vh;
     overflow: visible;
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+    transition:
+      opacity 320ms ease-in,
+      transform 320ms ease-in,
+      overlay 320ms ease-in allow-discrete,
+      display 320ms ease-in allow-discrete;
   }
+  dialog.docs-modal[open] {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    transition:
+      opacity 320ms ease-out,
+      transform 320ms ease-out,
+      overlay 320ms ease-out allow-discrete,
+      display 320ms ease-out allow-discrete;
+  }
+  @starting-style {
+    dialog.docs-modal[open] {
+      opacity: 0;
+      transform: translateY(10px) scale(0.97);
+    }
+  }
+
   dialog.docs-modal::backdrop {
     background: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(4px);
+    opacity: 0;
+    transition:
+      opacity 320ms ease-in,
+      overlay 320ms ease-in allow-discrete,
+      display 320ms ease-in allow-discrete;
+  }
+  dialog.docs-modal[open]::backdrop {
+    opacity: 1;
+    transition:
+      opacity 320ms ease-out,
+      overlay 320ms ease-out allow-discrete,
+      display 320ms ease-out allow-discrete;
+  }
+  @starting-style {
+    dialog.docs-modal[open]::backdrop { opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    dialog.docs-modal,
+    dialog.docs-modal::backdrop { transition: none; }
   }
 
   body.modal-open::after { display: none; }
@@ -87,27 +139,69 @@ const titleId = `${id}-title`;
     scrollbar-gutter: stable;
     scrollbar-width: thin;
     scrollbar-color: var(--green-muted) transparent;
+    animation: docs-modal-breathe 3s linear infinite;
+  }
+  @keyframes docs-modal-breathe {
+    0%, 100% {
+      border-color: var(--green-muted);
+      box-shadow: 0 0 8px var(--green-glow), inset 0 0 4px var(--green-glow);
+    }
+    50% {
+      border-color: var(--green);
+      box-shadow: 0 0 24px var(--green-glow-strong), inset 0 0 14px var(--green-glow-strong);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .docs-modal .modal-frame { animation: none; }
   }
   .docs-modal .modal-frame::-webkit-scrollbar { width: 4px; }
   .docs-modal .modal-frame::-webkit-scrollbar-track { background: transparent; }
   .docs-modal .modal-frame::-webkit-scrollbar-thumb { background: var(--green-muted); border-radius: 2px; }
 
   .docs-modal .modal-header {
+    position: relative;
+    container-type: inline-size;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
     margin-bottom: 20px;
     padding-bottom: 16px;
-    border-bottom: 1px solid var(--border);
+  }
+  .docs-modal .modal-header::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -1px;
+    height: 1px;
+    background-color: var(--border);
+    background-image: linear-gradient(90deg,
+      transparent 17.5%,
+      var(--green) 25%,
+      transparent 32.5%,
+      transparent 67.5%,
+      var(--green) 75%,
+      transparent 82.5%);
+    background-size: 200% 100%;
+    background-repeat: repeat-x;
+    animation: docs-modal-beam 3s linear infinite;
+    pointer-events: none;
+    filter: drop-shadow(0 0 3px var(--green-dim));
+  }
+  @keyframes docs-modal-beam {
+    from { background-position-x: 0%; }
+    to   { background-position-x: -100%; }
   }
   .docs-modal .modal-title {
     font-size: 14px;
     font-weight: 700;
     letter-spacing: 0.10em;
-    color: var(--green-mid);
+    color: var(--green);
     text-transform: uppercase;
     text-shadow: 0 0 8px var(--green-glow-strong);
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .docs-modal .modal-close {
     padding: 6px 14px;

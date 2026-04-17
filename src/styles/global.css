@@ -569,11 +569,10 @@ header::after { display: none; }
 .shortcut-key {
   flex-shrink: 0;
   min-width: 220px;
-  color: var(--green);
+  color: var(--green-mid);
   font-size: 11px;
   letter-spacing: 0.06em;
   font-weight: 500;
-  text-shadow: 0 0 6px var(--green-glow);
 }
 .shortcut-desc {
   color: var(--text-muted);
