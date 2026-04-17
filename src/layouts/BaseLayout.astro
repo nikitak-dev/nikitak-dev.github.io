@@ -9,7 +9,9 @@ const {
   hideSocial = false,
   hideFooter = false,
   errorMode = false,
-  breadcrumb = null,
+  brokenTyping = false,
+  backHref = null,
+  backHoverText = 'ABSOLUTE_AUTOMATIONS',
   procLive = 2,
   procTotal = 4,
   scanlineMode = 'global',
@@ -45,14 +47,20 @@ const {
 
   <header class={scanlineMode === 'per-section' ? 'scanlines-section' : ''}>
     <div class="header-left">
-      {breadcrumb && (
-        <div class="nav-breadcrumb">
-          <a href={breadcrumb.href}>&lt;&lt; {breadcrumb.label}</a>
-        </div>
-      )}
-      <h1><span id="logo-text"></span><span class="cursor" aria-hidden="true"></span></h1>
+      <h1>
+        {backHref ? (
+          <a
+            href={backHref}
+            class="logo-back"
+            style={`min-width: ${Math.max(logoText.length, backHoverText.length)}ch`}
+            aria-label={`Back (${backHoverText})`}
+          ><span id="logo-text"></span><span class="cursor" aria-hidden="true"></span></a>
+        ) : (
+          <><span id="logo-text"></span><span class="cursor" aria-hidden="true"></span></>
+        )}
+      </h1>
       <p>{subtitle}</p>
-      <TypeLogo text={logoText} speed={70} />
+      <TypeLogo text={logoText} speed={70} broken={brokenTyping} />
     </div>
     {Astro.slots.has('header-action') ? (
       <div class="header-action"><slot name="header-action" /></div>
@@ -84,7 +92,21 @@ const {
 
   <script is:inline>
     /* --- Logo loop --- */
-    var logoLoopInterval = setInterval(typeLogo, 14000);
+    var logoLoopTimer = null;
+    function scheduleLogoLoop() {
+      if (logoLoopTimer) clearTimeout(logoLoopTimer);
+      logoLoopTimer = setTimeout(() => {
+        logoLoopTimer = null;
+        typeLogo();
+        scheduleLogoLoop();
+      }, 14000);
+    }
+    window._logoTimerStop = () => {
+      if (logoLoopTimer) clearTimeout(logoLoopTimer);
+      logoLoopTimer = null;
+    };
+    window._logoTimerReset = scheduleLogoLoop;
+    scheduleLogoLoop();
 
     /* --- Footer uptime counter --- */
     const BOOT_DATE = new Date('2026-04-12T14:00:00+02:00');
@@ -104,9 +126,63 @@ const {
     }
 
     window.addEventListener('beforeunload', () => {
-      clearInterval(logoLoopInterval);
+      if (logoLoopTimer) clearTimeout(logoLoopTimer);
       if (typeof uptimeInterval !== 'undefined') clearInterval(uptimeInterval);
     });
   </script>
+
+  {backHref && (
+    <script is:inline define:vars={{ backHoverText, originalLogoText: logoText, speed: 70 }}>
+      (function () {
+        const anchor = document.querySelector('h1 a.logo-back');
+        const logoEl = document.getElementById('logo-text');
+        if (!anchor || !logoEl) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        let animIv = null;
+        let currentTarget = null;
+
+        function animateTo(target) {
+          if (animIv) { clearInterval(animIv); animIv = null; }
+          if (currentTarget === target) return;
+          currentTarget = target;
+          window._logoHoverActive = true;
+          if (target !== originalLogoText) window._logoTimerStop && window._logoTimerStop();
+          // phase 1: erase
+          animIv = setInterval(() => {
+            const cur = logoEl.textContent;
+            if (cur.length > 0) {
+              logoEl.textContent = cur.slice(0, -1);
+              return;
+            }
+            clearInterval(animIv);
+            // phase 2: type target
+            let i = 0;
+            animIv = setInterval(() => {
+              logoEl.textContent += target[i];
+              i++;
+              if (i >= target.length) {
+                clearInterval(animIv);
+                animIv = null;
+                if (target === originalLogoText) {
+                  window._logoHoverActive = false;
+                  window._logoTimerReset && window._logoTimerReset();
+                }
+              }
+            }, speed);
+          }, speed);
+        }
+
+        anchor.addEventListener('mouseenter', () => animateTo(backHoverText));
+        anchor.addEventListener('mouseleave', () => animateTo(originalLogoText));
+        anchor.addEventListener('focus', () => animateTo(backHoverText));
+        anchor.addEventListener('blur', () => animateTo(originalLogoText));
+
+        window.addEventListener('beforeunload', () => {
+          if (animIv) clearInterval(animIv);
+        });
+      })();
+    </script>
+  )}
 </body>
 </html>

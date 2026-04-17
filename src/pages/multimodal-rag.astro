@@ -8,7 +8,7 @@ import DocsModal from '../components/DocsModal.astro';
   subtitle="// query your documents, images & files through natural language"
   hideSocial={true}
   hideFooter={true}
-  breadcrumb={{ label: 'ABSOLUTE_AUTOMATIONS', href: '/' }}
+  backHref="/"
   procLive={2}
   procTotal={4}
   scanlineMode="per-section"
@@ -22,8 +22,8 @@ import DocsModal from '../components/DocsModal.astro';
       <div id="chat-spacer"></div>
       <div id="empty-state" class="scanlines-section">
         <div class="empty-main">
-          <div class="empty-icon" data-text="[?]">[?]</div>
-          <h2><span id="scramble-text">Awaiting input</span><span class="await-cursor" aria-hidden="true"></span></h2>
+          <div class="empty-icon">[?]</div>
+          <h2><span>Awaiting input</span><span class="await-cursor" aria-hidden="true"></span></h2>
         </div>
       </div>
     </div>
@@ -182,39 +182,6 @@ import DocsModal from '../components/DocsModal.astro';
     font-weight: 700;
     color: var(--green);
     text-shadow: 0 0 20px var(--green-glow-strong);
-    position: relative;
-    white-space: nowrap;
-  }
-
-  .empty-icon.is-glitching {
-    animation: rgbSplit 210ms steps(1) forwards;
-  }
-
-  .empty-icon::before,
-  .empty-icon::after {
-    content: attr(data-text);
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    color: var(--green);
-    text-shadow: 0 0 20px var(--green-glow-strong);
-    opacity: 0;
-  }
-
-  .empty-icon::before {
-    clip-path: inset(0 0 50% 0);
-  }
-
-  .empty-icon::after {
-    clip-path: inset(50% 0 0 0);
-  }
-
-  .empty-icon.is-glitching::before {
-    animation: glitchTop 210ms steps(1) forwards;
-  }
-
-  .empty-icon.is-glitching::after {
-    animation: glitchBottom 210ms steps(1) forwards;
   }
 
   #empty-state h2 {
@@ -538,7 +505,7 @@ import DocsModal from '../components/DocsModal.astro';
     user-select: none;
   }
 
-  .input-status-left { color: var(--border-hover); }
+  .input-status-left { color: var(--green-mid); }
   .input-status-right { display: flex; gap: 10px; }
   .status-block { color: var(--green-dim); }
 
@@ -628,62 +595,6 @@ import DocsModal from '../components/DocsModal.astro';
 </style>
 
 <script is:inline>
-  /* --- Scramble text --- */
-  /* Stop BaseLayout's logo loop — scrambleLoopInterval runs its own typeLogo calls */
-  if (typeof logoLoopInterval !== 'undefined') clearInterval(logoLoopInterval);
-
-  let scrambleLoopInterval = null;
-  (function () {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const el = document.getElementById('scramble-text');
-    if (!el) return;
-    const original = el.textContent;
-    const glyphSet = '#@!?/\\[]<>~|=%+^&*$0123456789';
-    let running = false;
-
-    function triggerIconGlitch() {
-      const icon = document.querySelector('.empty-icon');
-      if (!icon) return;
-      icon.classList.remove('is-glitching');
-      void icon.offsetWidth;
-      icon.classList.add('is-glitching');
-      setTimeout(() => icon.classList.remove('is-glitching'), 230);
-    }
-
-    function runScramble() {
-      if (running) return;
-      running = true;
-      triggerIconGlitch();
-      const totalFrames = 16;
-      let frame = 0;
-      const iv = setInterval(() => {
-        frame++;
-        const resolved = Math.floor((frame / totalFrames) * original.length);
-        let out = '';
-        for (let i = 0; i < original.length; i++) {
-          if (i < resolved || original[i] === ' ') out += original[i];
-          else out += glyphSet[Math.floor(Math.random() * glyphSet.length)];
-        }
-        el.textContent = out;
-        if (frame >= totalFrames) {
-          clearInterval(iv);
-          el.textContent = original;
-          running = false;
-        }
-      }, 45);
-    }
-
-    setTimeout(() => {
-      runScramble();
-      let tick = 0;
-      scrambleLoopInterval = setInterval(() => {
-        tick++;
-        runScramble();
-        if (tick % 2 === 1) typeLogo();
-      }, 7000);
-    }, 7000);
-  })();
-
   /* --- Chat logic --- */
   const WEBHOOK_URL = document.getElementById('chat-page').dataset.webhook;
   const connStatus = document.getElementById('conn-status');
@@ -919,8 +830,4 @@ import DocsModal from '../components/DocsModal.astro';
     }
   });
   input.focus();
-
-  window.addEventListener('beforeunload', () => {
-    if (scrambleLoopInterval) clearInterval(scrambleLoopInterval);
-  });
 </script>

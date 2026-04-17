@@ -53,6 +53,8 @@
       drops = Array.from({ length: columns }, () => -Math.floor(Math.random() * rows));
       speedFactors = Array.from({ length: columns }, () => 0.5 + Math.random());
       cells = Array.from({ length: columns }, () => []);
+      jumpsRemaining = Array.from({ length: columns }, () => errorMode ? 2 : 0);
+      ghosts = [];
     }
 
     window.__matrixIntensify = (x, y, radius = 140, duration = 500) => {
@@ -63,6 +65,9 @@
     let lastTime = 0;
     const interval = 80; // ~12.5 fps
     let rafId = null;
+
+    let ghosts = [];
+    let jumpsRemaining;
 
     function drawMatrix(timestamp) {
       rafId = requestAnimationFrame(drawMatrix);
@@ -97,11 +102,50 @@
         cells[i].push({ x, y });
         if (cells[i].length > 20) cells[i].shift();
 
+        // Error-mode: rare head-jump to another lane, leaves a trail
+        if (jumpsRemaining[i] > 0 && y > 0 && y < canvas.height && Math.random() < 0.004) {
+          const targetCol = Math.floor(Math.random() * columns);
+          if (targetCol !== i) {
+            ghosts.push({
+              startX: x,
+              targetX: targetCol * fontSize,
+              y,
+              char: chars[Math.floor(Math.random() * chars.length)],
+              frame: 0,
+              totalFrames: 4 + Math.floor(Math.random() * 3),
+            });
+            jumpsRemaining[i]--;
+          }
+        }
+
         if (y > canvas.height && Math.random() > 0.975) {
           drops[i] = -Math.floor(Math.random() * 30);
           cells[i].length = 0;
+          if (errorMode) jumpsRemaining[i] = 2;
         }
         drops[i] += speedFactors[i]; // 4.2 variable speed
+      }
+
+      // Advance ghost jumps (error mode only; empty otherwise)
+      if (ghosts.length > 0) {
+        for (let g = ghosts.length - 1; g >= 0; g--) {
+          const ghost = ghosts[g];
+          const t0 = ghost.frame / ghost.totalFrames;
+          ghost.frame++;
+          const t1 = ghost.frame / ghost.totalFrames;
+          const x0 = ghost.startX + (ghost.targetX - ghost.startX) * t0;
+          const x1 = ghost.startX + (ghost.targetX - ghost.startX) * t1;
+          const dx = x1 - x0;
+          const stepSize = fontSize * 0.6;
+          const numSteps = Math.max(1, Math.ceil(Math.abs(dx) / stepSize));
+          ctx.fillStyle = mainColor;
+          for (let s = 1; s <= numSteps; s++) {
+            const xp = x0 + dx * (s / numSteps);
+            const ch = chars[Math.floor(Math.random() * chars.length)];
+            ctx.fillText(ch, xp, ghost.y);
+          }
+          if (ghost.frame >= ghost.totalFrames) ghosts.splice(g, 1);
+        }
       }
 
       if (lensCtx) {

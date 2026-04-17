@@ -1,32 +1,87 @@
 ---
-const { text, speed = 70 } = Astro.props;
+const { text, speed = 70, broken = false } = Astro.props;
 ---
-<script is:inline define:vars={{ text, speed }}>
+<script is:inline define:vars={{ text, speed, broken }}>
   (function () {
     const logoEl = document.getElementById('logo-text');
     let _typeInterval = null;
+    let _typeTimeout = null;
 
-    function typeLogo() {
-      if (_typeInterval) clearInterval(_typeInterval);
-      if (!logoEl) return;
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        logoEl.textContent = text;
-        return;
-      }
+    function clearTiming() {
+      if (_typeInterval) { clearInterval(_typeInterval); _typeInterval = null; }
+      if (_typeTimeout) { clearTimeout(_typeTimeout); _typeTimeout = null; }
+    }
+
+    function typeLogoPlain() {
+      clearTiming();
       logoEl.textContent = '';
       let i = 0;
       _typeInterval = setInterval(() => {
+        if (window._logoHoverActive) { clearTiming(); return; }
         logoEl.textContent += text[i];
         i++;
-        if (i >= text.length) { clearInterval(_typeInterval); _typeInterval = null; }
+        if (i >= text.length) clearTiming();
       }, speed);
+    }
+
+    function typeLogoBroken() {
+      clearTiming();
+      logoEl.textContent = '';
+      const glyphs = '#@!?/\\[]<>~|=%+^&*$0123456789';
+      let i = 0;
+
+      function schedule(delay, fn) {
+        _typeTimeout = setTimeout(() => {
+          if (window._logoHoverActive) { clearTiming(); return; }
+          fn();
+        }, delay);
+      }
+
+      function tick() {
+        if (i >= text.length) { clearTiming(); return; }
+        const ch = text[i];
+        const roll = Math.random();
+        if (roll < 0.12) {
+          // misfire: wrong glyph → pause → backspace → correct char
+          const wrong = glyphs[Math.floor(Math.random() * glyphs.length)];
+          logoEl.textContent += wrong;
+          schedule(90 + Math.random() * 140, () => {
+            logoEl.textContent = logoEl.textContent.slice(0, -1);
+            schedule(60 + Math.random() * 80, () => {
+              logoEl.textContent += ch;
+              i++;
+              schedule(70 + Math.random() * 220, tick);
+            });
+          });
+        } else if (roll < 0.25) {
+          // long pause after normal char
+          logoEl.textContent += ch;
+          i++;
+          schedule(200 + Math.random() * 350, tick);
+        } else {
+          logoEl.textContent += ch;
+          i++;
+          schedule(55 + Math.random() * 50, tick);
+        }
+      }
+
+      tick();
+    }
+
+    function typeLogo() {
+      if (!logoEl) return;
+      if (window._logoHoverActive) { clearTiming(); return; }
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        clearTiming();
+        logoEl.textContent = text;
+        return;
+      }
+      if (broken) typeLogoBroken(); else typeLogoPlain();
     }
 
     window.typeLogo = typeLogo;
     typeLogo();
 
-    window.addEventListener('beforeunload', () => {
-      if (_typeInterval) clearInterval(_typeInterval);
-    });
+    window.addEventListener('beforeunload', clearTiming);
   })();
 </script>
