@@ -6,6 +6,8 @@
 
 <script is:inline>
   (function () {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
     const canvas = document.getElementById('matrix-bg');
     const ctx = canvas.getContext('2d');
     const chars = '01';

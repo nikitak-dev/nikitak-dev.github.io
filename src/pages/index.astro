@@ -113,6 +113,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     }
 
     function runBoot() {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        bootSequence.forEach(line => {
+          const el = document.createElement('div');
+          el.className = 'boot-line' + (line.bright ? ' bright' : '');
+          el.textContent = line.text;
+          bootLinesEl.appendChild(el);
+        });
+        endBoot();
+        return;
+      }
       let i = 0;
       function addLine() {
         if (bootDone) return;

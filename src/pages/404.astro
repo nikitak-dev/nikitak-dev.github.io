@@ -15,7 +15,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     text-decoration: none;
     background: var(--bg-elevated);
   }
-  .btn-back:hover {
+  @media (hover: hover) and (pointer: fine) {
+    .btn-back:hover {
+      background: rgba(0, 255, 65, 0.15);
+    }
+  }
+  .btn-back:focus-visible {
     background: rgba(0, 255, 65, 0.15);
   }
 
@@ -58,6 +63,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <script is:inline>
   document.addEventListener('DOMContentLoaded', () => {
     if (typeof logoLoopInterval !== 'undefined') clearInterval(logoLoopInterval);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const el = document.querySelector('.glitch-text');
 

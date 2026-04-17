@@ -122,9 +122,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     display: flex;
     flex-direction: row;
     opacity: 0;
-    transform: translateY(10px);
-    animation: fadeSlideUp 0.8s ease-out 0.3s both;
+    animation: emptyFadeIn 0.8s ease-out 0.3s both;
     z-index: 1;
+  }
+
+  @keyframes emptyFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
 
   .empty-panel {
@@ -371,7 +375,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     transition: border-color 0.2s, color 0.2s;
   }
 
-  .source-tag:hover { border-color: var(--green-dim); color: var(--green-mid); }
+  @media (hover: hover) and (pointer: fine) {
+    .source-tag:hover { border-color: var(--green-dim); color: var(--green-mid); }
+  }
 
   .score-bar { width: 28px; height: 3px; background: var(--border); overflow: hidden; }
   .score-fill { height: 100%; background: var(--green-dim); transition: width 0.6s ease; box-shadow: 0 0 4px var(--green-ghost); }
@@ -426,8 +432,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     z-index: 1;
   }
 
-  .msg-media-item:hover { box-shadow: 0 0 20px var(--green-ghost), 0 0 40px rgba(0, 255, 65, 0.04); }
-  .msg-media-item:hover::before { border-color: var(--green-mid); }
+  @media (hover: hover) and (pointer: fine) {
+    .msg-media-item:hover { box-shadow: 0 0 20px var(--green-ghost), 0 0 40px rgba(0, 255, 65, 0.04); }
+    .msg-media-item:hover::before { border-color: var(--green-mid); }
+  }
 
   .msg-media-item img {
     display: block;
@@ -446,7 +454,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     50% { opacity: 0.7; }
   }
 
-  .msg-media-item:hover img { filter: saturate(1) brightness(1); }
+  @media (hover: hover) and (pointer: fine) {
+    .msg-media-item:hover img { filter: saturate(1) brightness(1); }
+  }
 
   .msg-media-item .media-label {
     font-size: 12px;
@@ -514,7 +524,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     text-indent: -2ch;
   }
 
-  .boot-query:hover { color: var(--green); text-shadow: 0 0 8px var(--green-ghost); }
+  @media (hover: hover) and (pointer: fine) {
+    .boot-query:hover { color: var(--green); text-shadow: 0 0 8px var(--green-ghost); }
+  }
 
   /* Input bar */
   #input-bar {
@@ -648,6 +660,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   let scrambleLoopInterval = null;
   (function () {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const el = document.getElementById('scramble-text');
     if (!el) return;
     const original = el.textContent;
