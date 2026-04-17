@@ -20,33 +20,37 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
       <button type="button" id="shortcuts-trigger" class="btn-terminal legend-help">[ SHORTCUTS ]</button>
     </div>
     <div class="project-grid">
-      {PROJECTS.map((p, i) => (
-        <div
-          class={`project-card${p.category === 'automation' ? ' theme-amber' : ''}`}
-          data-index={i + 1}
-          data-url={p.url ?? '#'}
-        >
-          <div class="card-header">
-            <span class="card-id">[ {p.id} ]</span>
-            <span class={`card-status ${p.status}`}>{STATUS_SYMBOL[p.status]} {STATUS_LABEL[p.status]}</span>
-          </div>
-          <div class="card-body">
-            <h2 class="card-title">{p.title}</h2>
-            <p class="card-desc">{p.desc}</p>
-            <div class="card-stack">
-              {p.stack && <span class="stack-comment">// {p.stack}</span>}
+      {PROJECTS.map((p, i) => {
+        const CardTag = p.url ? 'a' : 'div';
+        return (
+          <CardTag
+            class={`project-card${p.category === 'automation' ? ' theme-amber' : ''}`}
+            data-index={i + 1}
+            data-url={p.url ?? '#'}
+            href={p.url}
+          >
+            <div class="card-header">
+              <span class="card-id">[ {p.id} ]</span>
+              <span class={`card-status ${p.status}`}>{STATUS_SYMBOL[p.status]} {STATUS_LABEL[p.status]}</span>
             </div>
-          </div>
-          <div class="card-footer">
-            <span class="card-meta">{p.meta}</span>
-            <button
-              class="card-launch btn-terminal"
-              disabled={p.button.disabled}
-              aria-label={p.button.ariaLabel}
-            >[ {p.button.label} ]</button>
-          </div>
-        </div>
-      ))}
+            <div class="card-body">
+              <h2 class="card-title">{p.title}</h2>
+              <p class="card-desc">{p.desc}</p>
+              <div class="card-stack">
+                {p.stack && <span class="stack-comment">// {p.stack}</span>}
+              </div>
+            </div>
+            <div class="card-footer">
+              <span class="card-meta">{p.meta}</span>
+              <button
+                class="card-launch btn-terminal"
+                disabled={p.button.disabled}
+                aria-label={p.button.ariaLabel}
+              >[ {p.button.label} ]</button>
+            </div>
+          </CardTag>
+        );
+      })}
     </div>
   </main>
 
@@ -178,6 +182,12 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
         selectCard(card);
         kbPulse(card);
         if (e.target.closest('.card-launch')) launchSelected();
+      });
+      card.addEventListener('focus', () => {
+        if (card.matches(':focus-visible')) {
+          selectCard(card);
+          kbPulse(card);
+        }
       });
     });
 
