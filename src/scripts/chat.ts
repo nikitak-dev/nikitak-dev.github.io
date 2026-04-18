@@ -328,4 +328,8 @@ input.addEventListener('keydown', (e) => {
     if (input.value) { input.value = ''; } else { input.blur(); }
   }
 });
-input.focus();
+
+/* Skip initial focus on touch devices — prevents auto-opening the soft keyboard */
+if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  input.focus();
+}
