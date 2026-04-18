@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import DocsModal from '../components/DocsModal.astro';
+---
+<BaseLayout
+  title="DB_MERGE // Database Reconciliation"
+  logoText="DB_MERGE"
+  subtitle="// merge and normalize records across several databases"
+  theme="amber"
+  hideSocial={true}
+  emptyFooter={true}
+  backHref="/"
+  scanlineMode="global"
+  description="DB_MERGE — automation for merging and normalizing records across multiple databases."
+  ogTitle="DB_MERGE // Database Reconciliation"
+  ogDescription="Automation that merges and normalizes records across multiple databases."
+>
+  <button
+    type="button"
+    id="docs-trigger"
+    class="btn-terminal"
+    slot="header-action"
+    aria-haspopup="dialog"
+    aria-controls="docs-modal"
+    aria-expanded="false"
+  >[ DOCS &amp; VIDEO ]</button>
+  <main id="db-merge-page"></main>
+  <DocsModal id="docs-modal" title="PROJECT :: DB_MERGE" />
+</BaseLayout>
+
+<style>
+  #db-merge-page { flex: 1; }
+</style>
+
+<script is:inline>
+  document.getElementById('docs-trigger')?.addEventListener('click', (e) => {
+    const modal = document.getElementById('docs-modal');
+    if (!modal) return;
+    modal.showModal();
+    document.body.classList.add('modal-open');
+    e.currentTarget.setAttribute('aria-expanded', 'true');
+  });
+</script>

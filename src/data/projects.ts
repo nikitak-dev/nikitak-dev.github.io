@@ -37,13 +37,14 @@ export const PROJECTS: Project[] = [
   },
   {
     id: '003',
-    title: 'COMING_SOON',
+    title: 'DB_MERGE',
     status: 'wip',
     category: 'automation',
-    desc: 'Next project in development.',
+    url: '/db-merge/',
+    desc: '',
     stack: '',
-    meta: '—',
-    button: { label: 'LOCKED', disabled: true },
+    meta: '',
+    button: { label: 'PREVIEW', disabled: false, ariaLabel: 'Preview DB_MERGE page' },
   },
   {
     id: '004',
