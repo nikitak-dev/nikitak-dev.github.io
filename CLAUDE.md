@@ -70,3 +70,8 @@ No Co-Authored-By footer.
 2. Import and use `BaseLayout`
 3. Update the card in `index.astro`: set `data-url`, change status to `live`, enable button
 4. Follow `DESIGN.md` for all visual decisions
+
+## Maintenance & Refactoring
+
+- **Постоянные правила гигиены** (лимиты файлов, именование, CSS, коммиты, чеклист перед commit/push) → `.claude/rules/portfolio-style.md`
+- **Глубокий аудит / рефакторинг** (структурный обзор, план, поэтапное исполнение) → скилл `auditing-codebase` (триггер: «аудит», «рефакторинг», «приведи в порядок»)

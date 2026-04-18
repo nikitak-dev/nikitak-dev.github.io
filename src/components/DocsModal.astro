@@ -45,6 +45,7 @@ const titleId = `${id}-title`;
        keyboard context, so :focus-visible lingers on the opener and it looks "selected". */
     modal.addEventListener('close', () => {
       document.body.classList.remove('modal-open');
+      document.querySelectorAll(`[aria-controls="${id}"]`).forEach(t => t.setAttribute('aria-expanded', 'false'));
       requestAnimationFrame(() => {
         const active = document.activeElement;
         if (active instanceof HTMLElement && active !== document.body) active.blur();
@@ -62,7 +63,7 @@ const titleId = `${id}-title`;
        If native closedby works, it fires close() — our drag-fix above still guards against accidental drag-close. */
     const supportsClosedBy = 'closedBy' in modal;
     if (!supportsClosedBy) {
-      modal.addEventListener('cancel', e => { /* Escape already closes via native cancel event */ });
+      modal.addEventListener('cancel', () => { /* Escape already closes via native cancel event */ });
     }
   })();
 </script>

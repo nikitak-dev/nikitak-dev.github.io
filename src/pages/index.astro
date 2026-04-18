@@ -18,7 +18,14 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
       <span class="section-label">// LEGEND:</span>
       <span class="legend-item legend-ai" data-filter="ai" tabindex="0"><span class="legend-dot"></span>AI-POWERED</span>
       <span class="legend-item legend-auto" data-filter="automation" tabindex="0"><span class="legend-dot"></span>AUTOMATION</span>
-      <button type="button" id="shortcuts-trigger" class="btn-terminal legend-help">[ SHORTCUTS ]</button>
+      <button
+        type="button"
+        id="shortcuts-trigger"
+        class="btn-terminal legend-help"
+        aria-haspopup="dialog"
+        aria-controls="shortcuts-modal"
+        aria-expanded="false"
+      >[ SHORTCUTS ]</button>
     </div>
     <div class="project-grid">
       {PROJECTS.map((p, i) => {
@@ -150,11 +157,12 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
     document.addEventListener('keydown', endBoot, { once: true });
 
     /* Shortcuts modal */
-    document.getElementById('shortcuts-trigger')?.addEventListener('click', () => {
+    document.getElementById('shortcuts-trigger')?.addEventListener('click', (e) => {
       const modal = document.getElementById('shortcuts-modal');
       if (!modal) return;
       modal.showModal();
       document.body.classList.add('modal-open');
+      (e.currentTarget).setAttribute('aria-expanded', 'true');
     });
 
     /* Legend filter on hover/focus */
@@ -217,7 +225,7 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
 
     document.addEventListener('keydown', e => {
       if (!bootDone) return;
-      if (['1', '2', '3', '4'].includes(e.key)) {
+      if (/^[1-9]$/.test(e.key)) {
         const idx = parseInt(e.key) - 1;
         if (cards[idx]) { selectCard(cards[idx]); kbPulse(cards[idx]); }
       } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {

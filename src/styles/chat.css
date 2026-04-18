@@ -14,8 +14,8 @@
   text-decoration: none;
 }
 
-/* Header-action button — fixed width to match page layout */
-#docs-trigger { width: 176px; }
+/* Header-action button — sized by its own label, no fragile hardcoded width. */
+#docs-trigger { min-width: max-content; }
 
 /* Chat area */
 #chat {
@@ -30,7 +30,7 @@
   justify-content: flex-start;
   gap: 20px;
   scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
+  scrollbar-color: var(--green-muted) transparent;
 }
 
 /* #chat webkit scrollbar: defined in global.css shared SCROLLBAR block */
@@ -128,15 +128,11 @@
   margin-bottom: 4px;
 }
 
-.msg.user::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.12) 1px, rgba(0,0,0,0.12) 2px);
-  pointer-events: none;
-}
+/* .msg.user::after scanline overlay: defined in global.css scanlines-lite block */
 
 .msg.assistant { align-self: flex-start; }
+
+.msg--exit, .typing.msg--exit { animation: fadeSlideOut 0.3s ease-in forwards; }
 
 .msg.assistant .answer {
   position: relative;
@@ -159,13 +155,7 @@
   margin-bottom: 8px;
 }
 
-.msg.assistant .answer::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.12) 1px, rgba(0,0,0,0.12) 2px);
-  pointer-events: none;
-}
+/* .msg.assistant .answer::after scanline overlay: defined in global.css scanlines-lite block */
 
 .msg.assistant .sources {
   margin-top: 12px;
@@ -204,7 +194,7 @@
   .source-tag:hover { border-color: var(--green-dim); color: var(--green-mid); }
 }
 
-.score-bar { width: 28px; height: 3px; background: var(--border); overflow: hidden; }
+.score-bar { width: 28px; height: 2px; background: var(--border); overflow: hidden; }
 .score-fill { height: 100%; background: var(--green-dim); transition: width 0.6s ease; box-shadow: 0 0 4px var(--green-ghost); }
 
 .msg.error {
@@ -258,7 +248,7 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .msg-media-item:hover { box-shadow: 0 0 20px var(--green-ghost), 0 0 40px rgba(0, 255, 65, 0.04); }
+  .msg-media-item:hover { box-shadow: 0 0 20px var(--green-ghost), 0 0 40px var(--green-glow-weak); }
   .msg-media-item:hover::before { border-color: var(--green-mid); }
 }
 
@@ -296,7 +286,7 @@
   white-space: nowrap;
 }
 
-.msg-media-item iframe { width: 400px; height: 225px; border: none; }
+.msg-media-item iframe { width: 100%; max-width: 400px; aspect-ratio: 16 / 9; border: none; display: block; }
 .msg-media-item .media-error { padding: 12px 8px; color: var(--error); font-size: 10px; letter-spacing: 0.06em; }
 
 /* Typing indicator */
@@ -359,7 +349,7 @@
   z-index: 1;
   padding: 12px 32px 20px;
   background: var(--bg-void);
-  background-image: linear-gradient(to bottom, var(--green-ghost) 0%, transparent 100%);
+  background-image: var(--gradient-edge-bottom);
   flex-shrink: 0;
   animation: fadeSlideUp 0.5s ease-out 0.5s both;
 }
@@ -405,7 +395,7 @@
 
 .input-wrap:focus-within {
   border-color: var(--green-mid);
-  box-shadow: 0 0 20px rgba(0, 255, 65, 0.1), 0 0 40px rgba(0, 255, 65, 0.05), inset 0 0 20px rgba(0, 255, 65, 0.05);
+  box-shadow: 0 0 20px var(--green-glow), 0 0 40px var(--green-glow-weak), inset 0 0 20px var(--green-glow-weak);
 }
 
 .input-wrap:focus-within::before { color: var(--green); text-shadow: 0 0 8px var(--green-glow); }
@@ -428,8 +418,6 @@
 #send, #clear {
   width: 80px;
   padding: 8px 0;
-  font-weight: 700;
-  letter-spacing: 0.08em;
   flex-shrink: 0;
 }
 

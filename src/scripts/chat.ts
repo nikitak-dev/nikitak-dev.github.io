@@ -181,7 +181,7 @@ function addErrorMsg(text: string) {
 clearBtn.addEventListener('click', () => {
   const msgs = [...chat.querySelectorAll<HTMLElement>('.msg, .typing')];
   if (!msgs.length) { input.focus(); return; }
-  msgs.forEach(el => { el.style.animation = 'fadeSlideOut 0.3s ease-in forwards'; });
+  msgs.forEach(el => el.classList.add('msg--exit'));
   setTimeout(() => {
     msgs.forEach(el => el.remove());
     if (emptyState) emptyState.classList.remove('hidden');
@@ -251,6 +251,7 @@ docsTrigger?.addEventListener('click', () => {
   if (!modal) return;
   modal.showModal();
   document.body.classList.add('modal-open');
+  docsTrigger.setAttribute('aria-expanded', 'true');
 });
 
 /* Capture-phase img error fallback for chat media tiles */
@@ -328,4 +329,8 @@ input.addEventListener('keydown', (e) => {
     if (input.value) { input.value = ''; } else { input.blur(); }
   }
 });
-input.focus();
+
+/* Skip initial focus on touch devices — prevents auto-opening the soft keyboard */
+if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  input.focus();
+}
