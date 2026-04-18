@@ -56,7 +56,7 @@ Key structural elements follow a **4px grid**. Content elements follow a **2px g
 --green-bright: #55ff77;           /* keyboard-pulse ring accent */
 --green-mid: #00cc33;
 --green-dim: #009922;
---green-muted: #00992a;
+--green-muted: #00751d;
 --green-ghost: rgba(0, 255, 65, 0.08);
 --green-glow-weak: rgba(0, 255, 65, 0.05);    /* input focus-within, soft hover */
 --green-glow: rgba(0, 255, 65, 0.1);

@@ -398,7 +398,7 @@
   caret-color: var(--green);
 }
 
-#question::placeholder { color: var(--green-muted); font-weight: 300; }
+#question::placeholder { color: var(--green-dim); font-weight: 300; }
 
 #send, #clear {
   width: 80px;
