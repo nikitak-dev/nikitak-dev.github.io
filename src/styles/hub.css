@@ -198,7 +198,7 @@ header {
 .project-grid.ready .project-card:nth-child(4) { animation-delay: 0.30s; }
 
 @media (hover: hover) and (pointer: fine) {
-  .project-card:hover { border-color: var(--green-dim); box-shadow: var(--shadow-inset-deep), 0 0 20px var(--green-ghost); }
+  .project-card:hover:not(.selected):not(:focus-visible) { border-color: var(--green-dim); box-shadow: var(--shadow-inset-deep), 0 0 20px var(--green-ghost); }
 }
 
 .project-card::before {
@@ -246,7 +246,7 @@ header {
 /* === AMBER THEME (automation cards) === */
 .theme-amber { border-color: var(--amber-deep); background: var(--bg-elevated-amber); }
 @media (hover: hover) and (pointer: fine) {
-  .theme-amber:hover { border-color: var(--amber-dim); box-shadow: 0 0 20px var(--amber-ghost); }
+  .theme-amber:hover:not(.selected):not(:focus-visible) { border-color: var(--amber-dim); box-shadow: 0 0 20px var(--amber-ghost); }
 }
 .theme-amber .card-id   { color: var(--amber-muted); }
 .theme-amber .card-title { color: var(--amber); text-shadow: 0 0 8px var(--amber-ghost); }
