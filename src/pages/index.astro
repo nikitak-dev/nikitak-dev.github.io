@@ -52,11 +52,15 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
             </div>
             <div class="card-footer">
               <span class="card-meta">{p.meta}</span>
-              <button
-                class="card-launch btn-terminal"
-                disabled={p.button.disabled}
-                aria-label={p.button.ariaLabel}
-              >[ {p.button.label} ]</button>
+              {p.url ? (
+                <span class="card-launch btn-terminal" aria-hidden="true">[ {p.button.label} ]</span>
+              ) : (
+                <button
+                  class="card-launch btn-terminal"
+                  disabled={p.button.disabled}
+                  aria-label={p.button.ariaLabel}
+                >[ {p.button.label} ]</button>
+              )}
             </div>
           </CardTag>
         );
@@ -225,19 +229,24 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
       if (selectedCard) selectedCard.classList.add('selected');
     }
 
+    function isNavigable(card) {
+      const url = card?.dataset.url;
+      return !!url && url !== '#';
+    }
+
     function launchSelected() {
       if (!selectedCard) return;
       const btn = selectedCard.querySelector('.card-launch');
       if (btn && btn.disabled) return;
-      const url = selectedCard.dataset.url;
-      if (url && url !== '#') window.location.href = url;
+      if (isNavigable(selectedCard)) window.location.href = selectedCard.dataset.url;
     }
 
     cards.forEach(card => {
-      card.addEventListener('click', e => {
+      card.addEventListener('click', () => {
         selectCard(card);
-        kbPulse(card);
-        if (e.target.closest('.card-launch')) launchSelected();
+        /* Skip pulse on navigating click — anchor navigation itself is the feedback.
+           For non-navigable cards (private/wip), pulse is the only response. */
+        if (!isNavigable(card)) kbPulse(card);
       });
       card.addEventListener('focus', () => {
         if (card.matches(':focus-visible')) {
