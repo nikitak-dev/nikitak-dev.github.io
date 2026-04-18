@@ -82,6 +82,7 @@ body.modal-open::after { display: none; }
 /* .modal-frame webkit scrollbar: defined in utilities.css shared scrollbar block */
 
 .docs-modal .modal-header {
+  --modal-header-pad-x: 20px;
   position: relative;
   background: var(--bg-void);
   background-image: var(--gradient-edge-top);
@@ -90,7 +91,9 @@ body.modal-open::after { display: none; }
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 20px;
-  padding: 16px 20px;
+  padding: 16px var(--modal-header-pad-x);
+  container-type: inline-size;
+  --modal-beam-tile: calc(100cqw + 2 * var(--modal-header-pad-x));
 }
 .docs-modal .modal-title {
   font-size: 14px;
@@ -105,6 +108,18 @@ body.modal-open::after { display: none; }
   text-overflow: ellipsis;
 }
 .docs-modal .modal-close { flex-shrink: 0; }
+
+/* Beam override: shared rule uses 100vw; scale tile to the header's padding-box
+   width so the beam wraps exactly at the edges — portal effect. 100cqw is the
+   content-box size, so we add 2 * padding-inline to match the ::before's span. */
+.docs-modal .modal-header::before {
+  background-size: var(--modal-beam-tile) 100%;
+  animation-name: beamWrapModal;
+}
+@keyframes beamWrapModal {
+  from { background-position: 0 0; }
+  to   { background-position: var(--modal-beam-tile) 0; }
+}
 
 .docs-modal .modal-section { margin-bottom: 24px; }
 .docs-modal .modal-section:last-child { margin-bottom: 0; }
