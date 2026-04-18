@@ -30,7 +30,7 @@
   justify-content: flex-start;
   gap: 20px;
   scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
+  scrollbar-color: var(--green-muted) transparent;
 }
 
 /* #chat webkit scrollbar: defined in global.css shared SCROLLBAR block */

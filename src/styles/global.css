@@ -485,7 +485,7 @@ header::before,
   padding: 32px;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
+  scrollbar-color: var(--green-muted) transparent;
 }
 
 /* === SHARED SCROLLBAR (webkit) — used by #hub, #chat, .modal-frame === */
@@ -837,19 +837,19 @@ dialog.docs-modal {
   opacity: 0;
   transform: translateY(10px) scale(0.97);
   transition:
-    opacity 320ms ease-in,
-    transform 320ms ease-in,
-    overlay 320ms ease-in allow-discrete,
-    display 320ms ease-in allow-discrete;
+    opacity var(--modal-duration) ease-in,
+    transform var(--modal-duration) ease-in,
+    overlay var(--modal-duration) ease-in allow-discrete,
+    display var(--modal-duration) ease-in allow-discrete;
 }
 dialog.docs-modal[open] {
   opacity: 1;
   transform: translateY(0) scale(1);
   transition:
-    opacity 320ms ease-out,
-    transform 320ms ease-out,
-    overlay 320ms ease-out allow-discrete,
-    display 320ms ease-out allow-discrete;
+    opacity var(--modal-duration) ease-out,
+    transform var(--modal-duration) ease-out,
+    overlay var(--modal-duration) ease-out allow-discrete,
+    display var(--modal-duration) ease-out allow-discrete;
 }
 @starting-style {
   dialog.docs-modal[open] {
@@ -859,20 +859,20 @@ dialog.docs-modal[open] {
 }
 
 dialog.docs-modal::backdrop {
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(4px);
+  background: var(--backdrop-bg);
+  backdrop-filter: blur(var(--backdrop-blur));
   opacity: 0;
   transition:
-    opacity 320ms ease-in,
-    overlay 320ms ease-in allow-discrete,
-    display 320ms ease-in allow-discrete;
+    opacity var(--modal-duration) ease-in,
+    overlay var(--modal-duration) ease-in allow-discrete,
+    display var(--modal-duration) ease-in allow-discrete;
 }
 dialog.docs-modal[open]::backdrop {
   opacity: 1;
   transition:
-    opacity 320ms ease-out,
-    overlay 320ms ease-out allow-discrete,
-    display 320ms ease-out allow-discrete;
+    opacity var(--modal-duration) ease-out,
+    overlay var(--modal-duration) ease-out allow-discrete,
+    display var(--modal-duration) ease-out allow-discrete;
 }
 @starting-style {
   dialog.docs-modal[open]::backdrop { opacity: 0; }
