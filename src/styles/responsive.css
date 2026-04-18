@@ -1,0 +1,21 @@
+/* Viewport-specific overrides: mobile layout and reduced-motion preferences. */
+
+@media (max-width: 640px) {
+  header { padding: 12px 16px; flex-direction: column; gap: 10px; align-items: flex-start; }
+  .sys-status { gap: 8px; flex-wrap: wrap; }
+  #hub { padding: 16px; }
+  .project-grid { grid-template-columns: 1fr; }
+  .hub-footer { padding: 10px 16px; flex-direction: column; gap: 6px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  #matrix-bg { display: none; }
+  dialog.docs-modal,
+  dialog.docs-modal::backdrop { transition: none; }
+  .docs-modal .modal-frame { animation: none; }
+}

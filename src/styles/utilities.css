@@ -1,0 +1,139 @@
+/* Reusable utility classes: .btn-terminal, .beam-line, .section-label, scanline
+   variants, and the shared webkit scrollbar rules. These are consumed across hub,
+   modal, chat and error pages. */
+
+/* === BUTTON BASE === */
+.btn-terminal {
+  border: 1px solid var(--border);
+  color: var(--green);
+  background: var(--bg-input);
+  text-shadow: 0 0 6px var(--green-glow-strong);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 6px 16px;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition), color var(--transition), box-shadow var(--transition), text-shadow var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-terminal:hover:not(:disabled) {
+    background: var(--user-border);
+    border-color: var(--green);
+    color: var(--text-bright);
+    box-shadow: 0 0 20px var(--green-glow-strong), inset 0 0 10px var(--green-glow);
+    text-shadow: 0 0 8px var(--green-glow-strong);
+  }
+}
+.btn-terminal:focus-visible:not(:disabled),
+.btn-terminal:active:not(:disabled) {
+  background: var(--user-border);
+  border-color: var(--green);
+  color: var(--text-bright);
+  box-shadow: 0 0 20px var(--green-glow-strong), inset 0 0 10px var(--green-glow);
+  text-shadow: 0 0 8px var(--green-glow-strong);
+}
+
+.btn-terminal:active:not(:disabled) {
+  transform: scale(0.97);
+  transition: transform 80ms ease-out;
+}
+
+.btn-terminal:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* === BEAM — shared luminous separator used by header, footer, modal, input-bar === */
+.beam-line {
+  position: relative;
+  height: var(--beam-height);
+  background: var(--border);
+}
+
+header::before,
+.beam-line::after,
+.hub-footer::before,
+.docs-modal .modal-header::before,
+#input-bar::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--beam-height);
+  background-image: linear-gradient(90deg, transparent 35%, var(--green) 50%, transparent 65%);
+  background-color: var(--border);
+  background-size: 100vw 100%;
+  background-repeat: repeat-x;
+  animation: beamWrap var(--beam-duration) linear infinite;
+  pointer-events: none;
+  filter: drop-shadow(0 0 var(--beam-blur) var(--green-dim));
+}
+
+header::before,
+.docs-modal .modal-header::before { bottom: 0; }
+
+.beam-line::after,
+.hub-footer::before,
+#input-bar::before { top: 0; }
+
+@keyframes beamWrap {
+  from { background-position: 0 0; }
+  to   { background-position: 100vw 0; }
+}
+
+/* === SHARED SCROLLBAR (webkit) — used by #hub, #chat, .modal-frame === */
+#hub::-webkit-scrollbar,
+#chat::-webkit-scrollbar,
+.docs-modal .modal-frame::-webkit-scrollbar { width: 4px; }
+#hub::-webkit-scrollbar-track,
+#chat::-webkit-scrollbar-track,
+.docs-modal .modal-frame::-webkit-scrollbar-track { background: transparent; }
+#hub::-webkit-scrollbar-thumb,
+#chat::-webkit-scrollbar-thumb,
+.docs-modal .modal-frame::-webkit-scrollbar-thumb { background: var(--green-muted); border-radius: 2px; }
+
+/* === SECTION LABEL — per DESIGN.md (12px / 700 / 0.10em / green-mid / glow / uppercase) === */
+.section-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  color: var(--green-mid);
+  text-transform: uppercase;
+  text-shadow: 0 0 10px var(--green-glow-label);
+}
+
+/* === SCANLINE VARIANTS === */
+body.no-global-scanlines::after { display: none; }
+
+/* Per-section scanline overlay for pages with media content (images, video).
+   Apply `scanlines-section` class to any container that needs scanlines when
+   global body::after is disabled. The ::after overlay is defined in base.css. */
+.scanlines-section {
+  position: relative;
+}
+
+/* Lite variant: horizontal scanlines only, no RGB chromatic aberration.
+   Intended for individual content boxes (chat messages) where the strong
+   global overlay would be visually harsh. Container must be positioned. */
+.scanlines-lite { position: relative; }
+.scanlines-lite::after,
+.msg.user::after,
+.msg.assistant .answer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    var(--scanline-line) 1px,
+    var(--scanline-line) 2px
+  );
+  pointer-events: none;
+}

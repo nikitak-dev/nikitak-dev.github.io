@@ -17,12 +17,30 @@ Repo: `nikitak-dev/nikitak-dev.github.io`
 ```
 src/
   pages/          # Each file = a route (index, 404, project pages)
-  layouts/        # BaseLayout.astro — wraps all pages (head, fonts, global CSS)
-  components/     # MatrixRain.astro, TypeLogo.astro
-  styles/         # global.css — CSS variables, reset, shared rules
+  layouts/        # BaseLayout.astro — wraps all pages (head, fonts, CSS barrel)
+  components/     # DocsModal.astro, MatrixRain.astro, TypeLogo.astro
+  scripts/        # Feature scripts (chat.ts)
+  styles/         # Modular CSS — see "Styles" below
+  data/           # Typed static data (projects.ts)
+  env.d.ts        # ImportMetaEnv typings for PUBLIC_* env vars
 public/           # Static assets served as-is
 DESIGN.md         # Design system reference — read before touching CSS
 ```
+
+### Styles
+
+`src/styles/index.css` is the barrel imported by `BaseLayout.astro`. It `@import`s modules in cascade order:
+
+| Module | Purpose |
+|---|---|
+| `tokens.css` | `:root` design tokens + `body[data-error]` remaps |
+| `base.css` | Reset, body, `#matrix-bg` positioning, scanline overlay, vignette, shared keyframes |
+| `utilities.css` | `.btn-terminal`, `.beam-line`, `.section-label`, scanline variants, shared scrollbar |
+| `hub.css` | Header, boot, sys-status, `#hub`, project cards (+amber theme), legend, footer |
+| `modal.css` | `dialog.docs-modal` transitions and internals |
+| `responsive.css` | Mobile `@media (max-width: 640px)` + reduced-motion |
+
+Feature-scoped CSS (e.g. `chat.css`) is imported directly by the owning page, not via the barrel.
 
 ## Design System
 

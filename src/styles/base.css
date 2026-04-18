@@ -1,0 +1,153 @@
+/* Reset, body/html defaults, matrix canvas positioning, CRT scanline overlay,
+   vignette, and global animation keyframes (rgbSplit, glitch*, fadeSlide*, blink,
+   crtJitter, beamWrapError) used across all pages. */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { background: var(--bg-void); overflow: hidden; }
+
+::selection {
+  background: var(--green-glow);
+  color: var(--text-bright);
+}
+
+h1, h2 { text-shadow: 0 0 8px var(--green-ghost); }
+
+:focus { outline: none; }
+
+body {
+  font-family: var(--font);
+  background: transparent;
+  color: var(--text-primary);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+body[data-error="true"] {
+  animation: crtJitter 5s linear infinite;
+}
+body[data-error="true"] header::before {
+  animation: beamWrapError 1.4s steps(10, end) infinite;
+  animation-delay: -0.3s;
+}
+body[data-error="true"] .beam-line::after {
+  animation: beamWrapError 1.7s steps(10, end) infinite;
+  animation-delay: -0.9s;
+}
+body[data-error="true"] .hub-footer::before {
+  animation: beamWrapError 1.1s steps(10, end) infinite;
+  animation-delay: -1.2s;
+}
+body[data-error="true"] .docs-modal .modal-header::before {
+  animation: beamWrapError 1.5s steps(10, end) infinite;
+  animation-delay: -0.6s;
+}
+body[data-error="true"] #input-bar::before {
+  animation: beamWrapError 1.3s steps(10, end) infinite;
+  animation-delay: -0.7s;
+}
+
+@keyframes crtJitter {
+  0%, 22%, 24%, 47%, 49%, 73%, 75%, 91%, 93%, 100% { filter: brightness(1); }
+  23% { filter: brightness(0.82); }
+  48% { filter: brightness(0.9); }
+  74% { filter: brightness(0.78); }
+  92% { filter: brightness(0.88); }
+}
+
+@keyframes beamWrapError {
+  0%   { background-position: 0 0; }
+  30%  { background-position: 40vw 0; }
+  35%  { background-position: 30vw 0; }
+  65%  { background-position: 80vw 0; }
+  70%  { background-position: 70vw 0; }
+  100% { background-position: 100vw 0; }
+}
+
+#matrix-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.25;
+}
+
+/* CRT scanline overlay — shared by global body and .scanlines-section containers */
+body::after,
+.scanlines-section::after {
+  content: '';
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1px,
+      var(--scanline-line) 1px,
+      var(--scanline-line) 2px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 0, 0, 0.035),
+      rgba(0, 255, 0, 0.018),
+      rgba(0, 0, 255, 0.035)
+    );
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+  z-index: 9999;
+}
+body::after { position: fixed; }
+.scanlines-section::after { position: absolute; display: block; }
+
+.overlay-vignette {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.05) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes rgbSplit {
+  0%   { filter: drop-shadow(-6px 0 rgba(255,0,64,0.9))  drop-shadow(6px 0 rgba(0,255,255,0.9)); }
+  17%  { filter: drop-shadow(-10px 0 rgba(255,0,64,0.8)) drop-shadow(4px 0 rgba(0,255,255,0.8)); }
+  33%  { filter: drop-shadow(-4px 0 rgba(255,0,64,0.95)) drop-shadow(10px 0 rgba(0,255,255,0.95)); }
+  50%  { filter: drop-shadow(-8px 0 rgba(255,0,64,0.7))  drop-shadow(7px 0 rgba(0,255,255,0.7)); }
+  67%  { filter: drop-shadow(-12px 0 rgba(255,0,64,0.9)) drop-shadow(3px 0 rgba(0,255,255,0.9)); }
+  83%  { filter: drop-shadow(-3px 0 rgba(255,0,64,0.4))  drop-shadow(8px 0 rgba(0,255,255,0.4)); }
+  100% { filter: none; }
+}
+
+@keyframes glitchTop {
+  0%   { transform: translateX(-8px); opacity: 1; }
+  17%  { transform: translateX(6px); opacity: 1; }
+  33%  { transform: translateX(-3px); opacity: 1; }
+  50%  { transform: translateX(10px); opacity: 1; }
+  67%  { transform: translateX(-5px); opacity: 1; }
+  83%  { transform: translateX(2px); opacity: 1; }
+  100% { transform: none; opacity: 0; }
+}
+@keyframes glitchBottom {
+  0%   { transform: translateX(7px); opacity: 1; }
+  17%  { transform: translateX(-10px); opacity: 1; }
+  33%  { transform: translateX(4px); opacity: 1; }
+  50%  { transform: translateX(-6px); opacity: 1; }
+  67%  { transform: translateX(8px); opacity: 1; }
+  83%  { transform: translateX(-3px); opacity: 1; }
+  100% { transform: none; opacity: 0; }
+}
+@keyframes fadeSlideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeSlideOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-10px); }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}

@@ -1,0 +1,134 @@
+/* Docs modal (<dialog class="docs-modal">) — open/close transitions, backdrop
+   blur, breathing border, and modal-frame internals. */
+
+dialog.docs-modal {
+  margin: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  min-width: min(560px, calc(100vw - 32px));
+  max-width: min(720px, calc(100vw - 32px));
+  max-height: 80vh;
+  overflow: visible;
+  opacity: 0;
+  transform: translateY(10px) scale(0.97);
+  transition:
+    opacity var(--modal-duration) ease-in,
+    transform var(--modal-duration) ease-in,
+    overlay var(--modal-duration) ease-in allow-discrete,
+    display var(--modal-duration) ease-in allow-discrete;
+}
+dialog.docs-modal[open] {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity var(--modal-duration) ease-out,
+    transform var(--modal-duration) ease-out,
+    overlay var(--modal-duration) ease-out allow-discrete,
+    display var(--modal-duration) ease-out allow-discrete;
+}
+@starting-style {
+  dialog.docs-modal[open] {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+}
+
+dialog.docs-modal::backdrop {
+  background: var(--backdrop-bg);
+  backdrop-filter: blur(var(--backdrop-blur));
+  opacity: 0;
+  transition:
+    opacity var(--modal-duration) ease-in,
+    overlay var(--modal-duration) ease-in allow-discrete,
+    display var(--modal-duration) ease-in allow-discrete;
+}
+dialog.docs-modal[open]::backdrop {
+  opacity: 1;
+  transition:
+    opacity var(--modal-duration) ease-out,
+    overlay var(--modal-duration) ease-out allow-discrete,
+    display var(--modal-duration) ease-out allow-discrete;
+}
+@starting-style {
+  dialog.docs-modal[open]::backdrop { opacity: 0; }
+}
+
+body.modal-open::after { display: none; }
+
+.docs-modal .modal-frame {
+  position: relative;
+  border: 1px solid var(--border-hover);
+  background: var(--bg-elevated);
+  padding: 24px 28px;
+  max-height: 80vh;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--green-muted) transparent;
+  animation: docs-modal-breathe var(--beam-duration) linear infinite;
+}
+@keyframes docs-modal-breathe {
+  0%, 100% {
+    border-color: var(--green-muted);
+    box-shadow: 0 0 8px var(--green-glow), inset 0 0 4px var(--green-glow);
+  }
+  50% {
+    border-color: var(--green);
+    box-shadow: 0 0 24px var(--green-glow-strong), inset 0 0 14px var(--green-glow-strong);
+  }
+}
+/* .modal-frame webkit scrollbar: defined in utilities.css shared scrollbar block */
+
+.docs-modal .modal-header {
+  position: relative;
+  background: var(--bg-void);
+  background-image: var(--gradient-edge-top);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 16px 20px;
+}
+.docs-modal .modal-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  color: var(--green);
+  text-transform: uppercase;
+  text-shadow: 0 0 8px var(--green-glow-strong);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.docs-modal .modal-close { flex-shrink: 0; }
+
+.docs-modal .modal-section { margin-bottom: 24px; }
+.docs-modal .modal-section:last-child { margin-bottom: 0; }
+
+.docs-modal .section-label { margin-bottom: 10px; }
+
+.docs-modal .slot-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  border: 1px dashed var(--border-hover);
+  background: var(--bg-input);
+}
+
+.docs-modal .video-slot {
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--border-hover);
+  background: var(--bg-input);
+  color: var(--text-muted);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}

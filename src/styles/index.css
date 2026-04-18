@@ -1,0 +1,10 @@
+/* Global stylesheet barrel. Import order defines cascade:
+   tokens → base → utilities → hub → modal → responsive.
+   chat.css is imported directly by the multimodal-rag page (feature-scoped). */
+
+@import './tokens.css';
+@import './base.css';
+@import './utilities.css';
+@import './hub.css';
+@import './modal.css';
+@import './responsive.css';

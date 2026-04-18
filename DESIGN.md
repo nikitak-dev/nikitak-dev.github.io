@@ -177,7 +177,7 @@ body::after {
 Default: use global `body::after` overlay (single fixed layer, z-index 9999).
 Exception: pages with media content (images, video) — global `body::after` corrupts media rendering. Add class `no-global-scanlines` to `<body>` (via `scanlineMode="per-section"` prop in BaseLayout) and apply `.scanlines-section` utility class to individual containers (header, chat panel, input bar).
 
-**`.scanlines-section` utility** (defined in `global.css`): sets `position: relative` and adds `::after` overlay identical to `body::after` but scoped to the container. Use on any element that needs scanlines when global overlay is disabled.
+**`.scanlines-section` utility** (defined in `src/styles/utilities.css`): sets `position: relative` and adds `::after` overlay identical to `body::after` but scoped to the container. Use on any element that needs scanlines when global overlay is disabled.
 
 ### Button: `.btn-terminal`
 
