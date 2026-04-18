@@ -10,3 +10,6 @@ dist/
 
 # Source HTML for regenerating public/og-image.png via headless screenshot
 og-image.source.html
+
+# Windows Explorer metadata
+desktop.ini
