@@ -21,7 +21,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
-      - uses: withastro/action@v3
+      - uses: withastro/action@v6
         with:
           node-version: 22
         env:
