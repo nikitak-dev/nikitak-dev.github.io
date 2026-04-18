@@ -2,6 +2,27 @@
 import '../styles/global.css';
 import MatrixRain from '../components/MatrixRain.astro';
 import TypeLogo from '../components/TypeLogo.astro';
+
+interface Props {
+  title?: string;
+  logoText?: string;
+  subtitle?: string;
+  hideSocial?: boolean;
+  hideFooter?: boolean;
+  errorMode?: boolean;
+  brokenTyping?: boolean;
+  backHref?: string | null;
+  backHoverText?: string;
+  procLive?: number;
+  procTotal?: number;
+  scanlineMode?: 'global' | 'per-section';
+  description?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  noindex?: boolean;
+  preconnectWebhook?: boolean;
+}
+
 const {
   title = 'ABSOLUTE // Automations Portfolio',
   logoText = 'ABSOLUTE_AUTOMATIONS',

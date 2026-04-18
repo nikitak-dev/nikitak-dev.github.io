@@ -1,4 +1,9 @@
 ---
+interface Props {
+  text: string;
+  speed?: number;
+  broken?: boolean;
+}
 const { text, speed = 70, broken = false } = Astro.props;
 ---
 <script is:inline define:vars={{ text, speed, broken }}>
