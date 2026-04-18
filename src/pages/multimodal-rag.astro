@@ -14,6 +14,7 @@ import '../styles/chat.css';
   description="Multimodal RAG pipeline: query documents, images, and files through natural language. Built with n8n, Gemini, Pinecone, OpenRouter."
   ogTitle="MULTIMODAL_RAG // AI Document Intelligence"
   ogDescription="AI-powered document intelligence with multimodal retrieval. n8n + Gemini Embedding 2 + Pinecone + OpenRouter."
+  preconnectWebhook={true}
 >
   <button type="button" id="docs-trigger" class="btn-terminal" slot="header-action">[ DOCS &amp; VIDEO ]</button>
   <main id="chat-page" data-webhook={import.meta.env.PUBLIC_RAG_WEBHOOK}>
