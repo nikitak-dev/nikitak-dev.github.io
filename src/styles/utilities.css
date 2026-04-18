@@ -90,6 +90,40 @@ header::before,
   to   { background-position: 100vw 0; }
 }
 
+/* === AMBER BEAM (comet) ===
+   Dim amber baseline (--amber-deep via inherited background-color) is always
+   visible. A gradient paints a bright head at the right (leading edge) with a
+   dim tail fading to transparent on the left. Fill grows left-to-right over 12s,
+   rolls back to 0 over 0.25s (≈97.959% turnaround of a 12.25s cycle). A
+   synchronized brightness pulse peaks at the turnaround and drops with the rollback. */
+body[data-theme="amber"] header::before,
+body[data-theme="amber"] .beam-line::after,
+body[data-theme="amber"] .hub-footer::before,
+body[data-theme="amber"] .docs-modal .modal-header::before,
+body[data-theme="amber"] #input-bar::before {
+  background-image: linear-gradient(90deg,
+    transparent 0%,
+    var(--amber-dim) 80%,
+    var(--amber-bright) 100%
+  );
+  background-size: 0% 100%;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  animation: tickMarch 12.25s linear infinite, beamPulse 12.25s linear infinite;
+}
+
+@keyframes tickMarch {
+  0%       { background-size: 0%   100%; }
+  97.959%  { background-size: 100% 100%; }
+  100%     { background-size: 0%   100%; }
+}
+
+@keyframes beamPulse {
+  0%       { filter: drop-shadow(0 0 var(--beam-blur) var(--amber-dim)) brightness(0.5); }
+  97.959%  { filter: drop-shadow(0 0 var(--beam-blur) var(--amber-dim)) brightness(1.3); }
+  100%     { filter: drop-shadow(0 0 var(--beam-blur) var(--amber-dim)) brightness(0.5); }
+}
+
 /* === SHARED SCROLLBAR (webkit) — used by #hub, #chat, .modal-frame === */
 #hub::-webkit-scrollbar,
 #chat::-webkit-scrollbar,
