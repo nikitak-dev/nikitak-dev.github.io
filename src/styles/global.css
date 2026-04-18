@@ -593,7 +593,7 @@ header::before,
 }
 .theme-amber .card-id   { color: var(--amber-muted); }
 .theme-amber .card-title { color: var(--amber); text-shadow: 0 0 8px var(--amber-ghost); }
-.theme-amber .card-status.wip { color: var(--amber-dim); }
+.theme-amber .card-status.wip { color: var(--amber-muted); }
 .theme-amber .card-desc { color: var(--amber-mid); }
 .theme-amber .card-footer { border-top-color: var(--amber-deep); }
 .theme-amber .card-meta { color: var(--amber-muted); }
