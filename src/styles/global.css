@@ -15,6 +15,7 @@
   --green-dim: #009922;
   --green-muted: #00992a;
   --green-ghost: rgba(0, 255, 65, 0.08);
+  --green-glow-weak: rgba(0, 255, 65, 0.05);
   --green-glow: rgba(0, 255, 65, 0.1);
   --green-glow-strong: rgba(0, 255, 65, 0.25);
   --green-glow-label: rgba(0, 255, 65, 0.35);
@@ -29,6 +30,7 @@
   --user-border: rgba(0, 255, 65, 0.15);
   /* error scale */
   --error: #ff3333;
+  --error-bright: #ff7777;
   --error-mid: #cc2200;
   --error-dim: #991a00;
   --error-muted: #661000;
@@ -36,6 +38,14 @@
   --error-ghost: rgba(255, 51, 51, 0.08);
   --error-glow: rgba(255, 51, 51, 0.15);
   --error-glow-strong: rgba(255, 51, 51, 0.3);
+  --error-glow-label: rgba(255, 51, 51, 0.35);
+  --error-mid-glow: rgba(204, 34, 0, 0.4);
+  --matrix-trail-error: rgba(255, 51, 51, 0.4);
+  --bg-input-error: #0e0606;
+  --bg-elevated-error: #120606;
+  --user-bg-error: rgba(255, 51, 51, 0.05);
+  --user-border-error: rgba(255, 51, 51, 0.15);
+  --text-bright-error: #ffcccc;
   /* amber scale */
   --amber: #ffaa00;
   --amber-bright: #ffcc44;
@@ -54,6 +64,11 @@
   --beam-duration: 3s;
   --beam-blur: 3px;
   --shadow-inset-deep: inset 0 0 28px rgba(0, 0, 0, 0.75);
+  --scanline-line: rgba(0, 0, 0, 0.12);
+  --backdrop-bg: rgba(0, 0, 0, 0.85);
+  --backdrop-blur: 4px;
+  --modal-duration: 320ms;
+  --scale-press: 0.97;
 }
 
 body[data-error="true"] {
