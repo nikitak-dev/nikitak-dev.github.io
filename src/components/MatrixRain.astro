@@ -71,15 +71,13 @@
     let ghosts = [];
     let jumpsRemaining;
 
-    function drawMatrix(timestamp) {
-      rafId = requestAnimationFrame(drawMatrix);
-      if (timestamp - lastTime < interval) return;
-      lastTime = timestamp;
-
+    function clearCanvas() {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.font = `${fontSize}px ${fontFamily}`;
+    }
 
+    function renderColumns() {
       for (let i = 0; i < drops.length; i++) {
         if (drops[i] < 0) { drops[i] += speedFactors[i]; continue; }
 
@@ -127,33 +125,45 @@
         }
         drops[i] += speedFactors[i]; // 4.2 variable speed
       }
+    }
 
-      // Advance ghost jumps (error mode only; empty otherwise)
-      if (ghosts.length > 0) {
-        for (let g = ghosts.length - 1; g >= 0; g--) {
-          const ghost = ghosts[g];
-          const t0 = ghost.frame / ghost.totalFrames;
-          ghost.frame++;
-          const t1 = ghost.frame / ghost.totalFrames;
-          const x0 = ghost.startX + (ghost.targetX - ghost.startX) * t0;
-          const x1 = ghost.startX + (ghost.targetX - ghost.startX) * t1;
-          const dx = x1 - x0;
-          const stepSize = fontSize * 0.6;
-          const numSteps = Math.max(1, Math.ceil(Math.abs(dx) / stepSize));
-          ctx.fillStyle = mainColor;
-          for (let s = 1; s <= numSteps; s++) {
-            const xp = x0 + dx * (s / numSteps);
-            const ch = chars[Math.floor(Math.random() * chars.length)];
-            ctx.fillText(ch, xp, ghost.y);
-          }
-          if (ghost.frame >= ghost.totalFrames) ghosts.splice(g, 1);
+    function advanceGhosts() {
+      if (ghosts.length === 0) return;
+      for (let g = ghosts.length - 1; g >= 0; g--) {
+        const ghost = ghosts[g];
+        const t0 = ghost.frame / ghost.totalFrames;
+        ghost.frame++;
+        const t1 = ghost.frame / ghost.totalFrames;
+        const x0 = ghost.startX + (ghost.targetX - ghost.startX) * t0;
+        const x1 = ghost.startX + (ghost.targetX - ghost.startX) * t1;
+        const dx = x1 - x0;
+        const stepSize = fontSize * 0.6;
+        const numSteps = Math.max(1, Math.ceil(Math.abs(dx) / stepSize));
+        ctx.fillStyle = mainColor;
+        for (let s = 1; s <= numSteps; s++) {
+          const xp = x0 + dx * (s / numSteps);
+          const ch = chars[Math.floor(Math.random() * chars.length)];
+          ctx.fillText(ch, xp, ghost.y);
         }
+        if (ghost.frame >= ghost.totalFrames) ghosts.splice(g, 1);
       }
+    }
 
-      if (lensCtx) {
-        lensCtx.clearRect(0, 0, lens.width, lens.height);
-        lensCtx.drawImage(canvas, 0, 0);
-      }
+    function blitLens() {
+      if (!lensCtx) return;
+      lensCtx.clearRect(0, 0, lens.width, lens.height);
+      lensCtx.drawImage(canvas, 0, 0);
+    }
+
+    function drawMatrix(timestamp) {
+      rafId = requestAnimationFrame(drawMatrix);
+      if (timestamp - lastTime < interval) return;
+      lastTime = timestamp;
+
+      clearCanvas();
+      renderColumns();
+      advanceGhosts();
+      blitLens();
     }
 
     initMatrix();
