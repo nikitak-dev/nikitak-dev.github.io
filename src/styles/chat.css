@@ -14,8 +14,8 @@
   text-decoration: none;
 }
 
-/* Header-action button — fixed width to match page layout */
-#docs-trigger { width: 176px; }
+/* Header-action button — sized by its own label, no fragile hardcoded width. */
+#docs-trigger { min-width: max-content; }
 
 /* Chat area */
 #chat {
