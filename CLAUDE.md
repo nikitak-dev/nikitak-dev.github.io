@@ -82,12 +82,40 @@ Push to `main` → GitHub Actions (`.github/workflows/deploy.yml`) builds and de
 Format: `type: description` (English). Types: `feat`, `fix`, `style`, `chore`, `docs`.
 No Co-Authored-By footer.
 
-## Adding a New Project Page
+## Adding a new project
+
+Update `src/data/projects.ts` — append an entry to the `PROJECTS` array with all fields:
+
+- `id` — 3-digit string, e.g. `'005'`
+- `title` — `UPPER_SNAKE`, appears as card title
+- `status` — `'live' | 'private' | 'wip'`
+- `category` — `'ai' | 'automation'` (drives green vs amber theme)
+- `url` — optional, route for the project page (omit until page exists)
+- `desc` — 1–2 sentences, problem-framed
+- `stack` — `'A | B | C'` pipeline, appears under `//` comment
+- `meta` — short phrase, shown bottom-left of card
+- `button` — `{ label, disabled, ariaLabel? }`
+
+`liveCount()` and `totalCount()` derive from `PROJECTS`; footer counters update automatically.
+
+## Adding a new project page
 
 1. Create `src/pages/<project-name>.astro`
-2. Import and use `BaseLayout`
-3. Update the card in `index.astro`: set `data-url`, change status to `live`, enable button
-4. Follow `DESIGN.md` for all visual decisions
+2. Import `BaseLayout` and set props: `title`, `logoText`, `subtitle`, `description`, `ogTitle`, `ogDescription`
+3. Choose `scanlineMode`:
+   - `"global"` (default) — pages without media, uses `body::after` overlay
+   - `"per-section"` — pages with images/video; global overlay disabled, apply `.scanlines-section` to containers that need scanlines
+4. Feature-scoped CSS → create `src/styles/<feature>.css` and `import` it from the page (not from the barrel)
+5. Feature-scoped TS → create `src/scripts/<feature>.ts` (see structure below) and include via `<script>import '../scripts/<feature>';</script>`
+6. Set `url` on the corresponding `projects.ts` entry so the hub card routes to this page
+7. Cross-check against `DESIGN.md` for tokens and patterns
+
+## `src/scripts/` structure
+
+- One feature = `src/scripts/<feature>.ts` while the file stays under ~300 lines
+- If the feature grows — ≥3 concerns or >300 lines — promote to a folder: `src/scripts/<feature>/index.ts` + siblings (`messages.ts`, `conn.ts`, …)
+- Import from the page via `<script>import '../scripts/<feature>';</script>` (plain `<script>`, **not** `is:inline`). Vite bundles it.
+- Pattern reference: `src/pages/multimodal-rag.astro` importing `src/scripts/chat.ts`
 
 ## Maintenance & Refactoring
 
