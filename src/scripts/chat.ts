@@ -316,7 +316,7 @@ async function ask() {
   btn.disabled = true;
 
   const typing = document.createElement('div');
-  typing.className = 'typing bubble bubble--left';
+  typing.className = 'typing';
   typing.appendChild(makePrefix('< SYS'));
   const label = document.createElement('span');
   label.className = 'typing-label';
