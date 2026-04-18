@@ -68,6 +68,9 @@ body.modal-open::after { display: none; }
   scrollbar-width: thin;
   scrollbar-color: var(--green-muted) transparent;
   animation: docs-modal-breathe var(--beam-duration) linear infinite;
+  /* Promote to own compositor layer so the 1px border rasterizes
+     consistently across fractional browser zoom steps. */
+  will-change: transform;
 }
 @keyframes docs-modal-breathe {
   0%, 100% {

@@ -73,6 +73,9 @@ header::before,
   animation: beamWrap var(--beam-duration) linear infinite;
   pointer-events: none;
   filter: drop-shadow(0 0 var(--beam-blur) var(--green-dim));
+  /* Promote to own compositor layer so hairline rasterizes consistently
+     across fractional browser zoom steps (110%, 125%, …). */
+  will-change: transform;
 }
 
 header::before,
