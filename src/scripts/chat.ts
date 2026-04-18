@@ -251,6 +251,7 @@ docsTrigger?.addEventListener('click', () => {
   if (!modal) return;
   modal.showModal();
   document.body.classList.add('modal-open');
+  docsTrigger.setAttribute('aria-expanded', 'true');
 });
 
 /* Capture-phase img error fallback for chat media tiles */
