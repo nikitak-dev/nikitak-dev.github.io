@@ -73,9 +73,11 @@ body[data-error="true"] #input-bar::before {
   opacity: 0.25;
 }
 
-/* CRT scanline overlay — shared by global body and .scanlines-section containers */
+/* CRT scanline overlay — shared by global body, .scanlines-section containers
+   and .bubble chat messages. Full horizontal scanlines + RGB chromatic aberration. */
 body::after,
-.scanlines-section::after {
+.scanlines-section::after,
+.bubble::after {
   content: '';
   inset: 0;
   background:
@@ -97,7 +99,8 @@ body::after,
   z-index: 9999;
 }
 body::after { position: fixed; }
-.scanlines-section::after { position: absolute; display: block; }
+.scanlines-section::after,
+.bubble::after { position: absolute; display: block; }
 
 .overlay-vignette {
   position: fixed;

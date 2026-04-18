@@ -122,12 +122,10 @@ body.no-global-scanlines::after { display: none; }
 }
 
 /* Lite variant: horizontal scanlines only, no RGB chromatic aberration.
-   Intended for individual content boxes (chat messages) where the strong
-   global overlay would be visually harsh. Container must be positioned. */
+   Intended for individual content boxes where the strong global overlay
+   would be visually harsh. Container must be positioned. */
 .scanlines-lite { position: relative; }
-.scanlines-lite::after,
-.msg.user::after,
-.msg.assistant .answer::after {
+.scanlines-lite::after {
   content: '';
   position: absolute;
   inset: 0;

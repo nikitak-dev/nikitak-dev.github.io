@@ -19,8 +19,7 @@ Key structural elements follow a **4px grid**. Content elements follow a **2px g
 | `16px` | ×4 | Section headings, card titles |
 | `14px` | ×2 | Modal title |
 | `12px` | ×4 | Labels (`// STACK`), body text, buttons, footer, subtitle |
-| `10px` | ×2 | Secondary content (card IDs, status, meta info) |
-| `8px`  | ×4 | Micro-prefixes (`SYS >`, `YOU >`, `ERR >`) |
+| `10px` | ×2 | Secondary content (card IDs, status, meta info), micro-prefixes (`YOU >`, `< SYS`, `< ERR`) |
 
 ### Hierarchy Rules
 
@@ -212,6 +211,35 @@ Drop a `<div class="beam-line">` anywhere to render an animated beam separator l
 ```
 
 Renders a 1px horizontal line with base color `var(--border)` and an animated bright beam moving right-to-left (RTL, 3s loop). Header and footer use their own `::before` pseudo-elements with the same animation.
+
+### Chat bubble: `.bubble`
+
+Shared visual shell for chat messages in the multimodal-rag page. Apply `.bubble` plus a side modifier (`--left` / `--right`) and optionally a theme modifier (`--error`).
+
+```html
+<div class="bubble bubble--right">user message</div>
+<div class="bubble bubble--left">assistant answer</div>
+<div class="bubble bubble--left bubble--error">error message</div>
+```
+
+Renders: `--bg-void` background with a top-fading ghost tint, a 1px border on all four sides, and a vertical beam via `.bubble::before` on the active side — a `transparent 35% → bright 50% → transparent 65%` gradient with `drop-shadow` glow, matching the header/footer beam aesthetic. The transparent beam ends reveal the underlying border as the base color. Padding 10/16px, 12px body text at weight 300 with soft text-shadow. CRT scanlines + RGB chromatic aberration via `.bubble::after` (same pattern as `body::after`).
+
+Prefix label lives in a real `<span class="bubble-prefix">` child (not `::before`), since the pseudo is reserved for the beam.
+
+Palette is driven by custom properties:
+
+| Variable | Default | Role |
+|---|---|---|
+| `--bubble-beam` | `var(--green)` | Bright midpoint of the beam strip |
+| `--bubble-glow` | `var(--green-dim)` | `drop-shadow` halo around the beam |
+| `--bubble-border` | `var(--user-border)` | Static border + beam endpoints |
+| `--bubble-ghost` | `var(--green-ghost)` | Top fade of the background tint |
+| `--bubble-text` | `var(--green-mid)` | Body text color |
+| `--bubble-shadow` | `var(--green-mid-glow)` | Text glow |
+
+Beam side is picked by `.bubble--left` / `.bubble--right` modifiers (positioning the `::before` at the corresponding edge).
+
+`.bubble--error` remaps all six palette properties to the error scale (`--error`, `--error-dim`, `--error-glow`, `--error-ghost`, `--error`, `--error-mid-glow`).
 
 ### Section labels
 

@@ -86,7 +86,8 @@
   text-transform: uppercase;
 }
 
-.await-cursor {
+.await-cursor,
+.typing-cursor {
   display: inline-block;
   width: 2px;
   height: 14px;
@@ -106,56 +107,70 @@
   font-weight: 400;
 }
 
-.msg.user {
-  align-self: flex-end;
-  background: var(--bg-void);
-  border: 1px solid var(--user-border);
-  border-right: 2px solid var(--green-dim);
-  color: var(--green-mid);
-  padding: 10px 16px;
+/* === Bubble component ===
+   Shared visual shell for chat messages. Palette is driven by CSS custom
+   properties; modifiers select side (--left / --right) and theme (--error).
+   Beam = ::before (gradient + drop-shadow), CRT = ::after (base.css).
+   Underlying 1px border on all 4 sides acts as the base color for the beam;
+   the beam's transparent ends reveal the border. */
+.bubble {
+  --bubble-beam: var(--green);
+  --bubble-glow: var(--green-dim);
+  --bubble-border: var(--user-border);
+  --bubble-ghost: var(--green-ghost);
+  --bubble-text: var(--green-mid);
+  --bubble-shadow: var(--green-mid-glow);
+
   position: relative;
+  padding: 10px 16px;
+  color: var(--bubble-text);
   font-weight: 300;
-  text-shadow: 0 0 2px var(--green-mid-glow);
+  text-shadow: 0 0 2px var(--bubble-shadow);
+  background-color: var(--bg-void);
+  background-image: linear-gradient(to bottom, var(--bubble-ghost) 0%, transparent 100%);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  border: 1px solid var(--bubble-border);
 }
 
-.msg.user::before {
-  content: 'YOU >';
+.bubble::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent 0%, var(--bubble-beam) 50%, transparent 100%);
+  filter: drop-shadow(0 0 var(--beam-blur) var(--bubble-glow));
+  pointer-events: none;
+}
+
+.bubble--left  { align-self: flex-start; }
+.bubble--right { align-self: flex-end; }
+.bubble--left::before  { left: -1px; }
+.bubble--right::before { right: -1px; }
+.bubble--error {
+  --bubble-beam: var(--error);
+  --bubble-glow: var(--error-dim);
+  --bubble-border: var(--error-glow);
+  --bubble-ghost: var(--error-ghost);
+  --bubble-text: var(--error);
+  --bubble-shadow: var(--error-mid-glow);
+}
+
+/* Bubble prefix — real span element (frees ::before for the beam). */
+.bubble-prefix {
   display: block;
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.10em;
   color: var(--green-dim);
   margin-bottom: 4px;
 }
-
-/* .msg.user::after scanline overlay: defined in utilities.css scanlines-lite block */
+.bubble--error .bubble-prefix { color: var(--error-dim); }
 
 .msg.assistant { align-self: flex-start; }
 
 .msg--exit, .typing.msg--exit { animation: fadeSlideOut 0.3s ease-in forwards; }
-
-.msg.assistant .answer {
-  position: relative;
-  background: var(--bg-void);
-  padding: 16px 20px;
-  border: 1px solid var(--user-border);
-  border-left: 2px solid var(--green-dim);
-  color: var(--green-mid);
-  font-weight: 300;
-  text-shadow: 0 0 2px var(--green-mid-glow);
-}
-
-.msg.assistant .answer::before {
-  content: '< SYS';
-  display: block;
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.10em;
-  color: var(--green-muted);
-  margin-bottom: 8px;
-}
-
-/* .msg.assistant .answer::after scanline overlay: defined in utilities.css scanlines-lite block */
 
 .msg.assistant .sources {
   margin-top: 12px;
@@ -196,24 +211,6 @@
 
 .score-bar { width: 28px; height: 2px; background: var(--border); overflow: hidden; }
 .score-fill { height: 100%; background: var(--green-dim); transition: width 0.6s ease; box-shadow: 0 0 4px var(--green-ghost); }
-
-.msg.error {
-  color: var(--error);
-  font-size: 12px;
-  padding: 10px 16px;
-  border: 1px solid var(--error-glow);
-  border-left: 2px solid var(--error);
-  background: var(--bg-void);
-}
-
-.msg.error::before {
-  content: 'ERR >';
-  display: block;
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.10em;
-  margin-bottom: 4px;
-}
 
 /* Media in chat */
 .msg-media { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
@@ -289,41 +286,27 @@
 .msg-media-item iframe { width: 100%; max-width: 400px; aspect-ratio: 16 / 9; border: none; display: block; }
 .msg-media-item .media-error { padding: 12px 8px; color: var(--error); font-size: 10px; letter-spacing: 0.06em; }
 
-/* Typing indicator */
+/* Typing indicator — compact single-line variant of the bubble:
+   prefix stays inline, label + cursor follow on the same line. */
 .typing {
-  align-self: flex-start;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  padding: 12px 16px;
   animation: fadeSlideUp var(--transition) ease-out both;
   font-size: 12px;
-  color: var(--green-dim);
+  display: flex;
+  align-items: center;
 }
 
-.typing::before {
-  content: '< SYS ';
-  font-size: 8px;
+.typing .bubble-prefix {
+  display: inline;
+  margin-right: 6px;
+  margin-bottom: 0;
+}
+
+.typing-label {
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.10em;
-  color: var(--green-muted);
-  margin-right: 6px;
-}
-
-.typing-dot {
-  width: 6px;
-  height: 14px;
-  background: var(--green-dim);
-  animation: matrixPulse 1.4s ease-in-out infinite;
-  box-shadow: 0 0 4px var(--green-ghost);
-}
-
-.typing-dot:nth-child(2) { animation-delay: 0.2s; }
-.typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes matrixPulse {
-  0%, 80%, 100% { opacity: 0.2; transform: scaleY(0.6); }
-  40% { opacity: 1; transform: scaleY(1.4); }
+  color: var(--green-dim);
+  text-transform: uppercase;
 }
 
 /* Boot query suggestions */

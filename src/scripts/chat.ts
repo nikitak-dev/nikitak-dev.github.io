@@ -134,12 +134,20 @@ function buildSourcesList(sources: Source[]): HTMLElement {
   return srcEl;
 }
 
+function makePrefix(text: string): HTMLSpanElement {
+  const prefix = document.createElement('span');
+  prefix.className = 'bubble-prefix';
+  prefix.textContent = text;
+  return prefix;
+}
+
 function buildAssistantMessage(data: ChatResponse): HTMLElement {
   const wrapper = document.createElement('div');
   wrapper.className = 'msg assistant';
 
   const answerEl = document.createElement('div');
-  answerEl.className = 'answer';
+  answerEl.className = 'answer bubble bubble--left';
+  answerEl.appendChild(makePrefix('< SYS'));
   appendMultilineText(answerEl, String(data.answer ?? ''));
   wrapper.appendChild(answerEl);
 
@@ -169,8 +177,9 @@ function appendAndScroll(el: HTMLElement) {
 function addUserMsg(text: string) {
   hideEmptyState();
   const div = document.createElement('div');
-  div.className = 'msg user';
-  div.textContent = text;
+  div.className = 'msg user bubble bubble--right';
+  div.appendChild(makePrefix('YOU >'));
+  div.appendChild(document.createTextNode(text));
   appendAndScroll(div);
 }
 
@@ -182,12 +191,14 @@ function addAssistantMsg(data: ChatResponse) {
 function addErrorMsg(text: string) {
   hideEmptyState();
   const div = document.createElement('div');
-  div.className = 'msg error';
-  div.textContent = text;
+  div.className = 'msg error bubble bubble--left bubble--error';
+  div.appendChild(makePrefix('< ERR'));
+  div.appendChild(document.createTextNode(text));
   appendAndScroll(div);
 }
 
 clearBtn.addEventListener('click', () => {
+  inflight?.abort();
   const msgs = [...chat.querySelectorAll<HTMLElement>('.msg, .typing')];
   if (!msgs.length) { input.focus(); return; }
   msgs.forEach(el => el.classList.add('msg--exit'));
@@ -279,15 +290,16 @@ document.addEventListener('error', (e) => {
 }, true);
 
 let isLoading = false;
+let inflight: AbortController | null = null;
 
 const REQUEST_TIMEOUT_MS = 15000;
 
-async function sendQuestion(q: string, url: string): Promise<ChatResponse> {
+async function sendQuestion(q: string, url: string, signal: AbortSignal): Promise<ChatResponse> {
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ question: q }),
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    signal,
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json() as Promise<ChatResponse>;
@@ -304,21 +316,35 @@ async function ask() {
   btn.disabled = true;
 
   const typing = document.createElement('div');
-  typing.className = 'typing';
-  for (let i = 0; i < 3; i++) {
-    const dot = document.createElement('div');
-    dot.className = 'typing-dot';
-    typing.appendChild(dot);
-  }
+  typing.className = 'typing bubble bubble--left';
+  typing.appendChild(makePrefix('< SYS'));
+  const label = document.createElement('span');
+  label.className = 'typing-label';
+  label.textContent = 'PROCESSING';
+  const cursor = document.createElement('span');
+  cursor.className = 'typing-cursor';
+  const logoAnim = document.querySelector('.header-left h1 .cursor')?.getAnimations()[0];
+  const elapsed = typeof logoAnim?.currentTime === 'number' ? logoAnim.currentTime : performance.now();
+  cursor.style.animationDelay = `-${elapsed % 1000}ms`;
+  cursor.setAttribute('aria-hidden', 'true');
+  typing.appendChild(label);
+  typing.appendChild(cursor);
   chat.appendChild(typing);
   chat.scrollTop = chat.scrollHeight;
 
+  inflight = new AbortController();
+  const signal = AbortSignal.any([inflight.signal, AbortSignal.timeout(REQUEST_TIMEOUT_MS)]);
+
   try {
-    const data = await sendQuestion(q, WEBHOOK_URL);
+    const data = await sendQuestion(q, WEBHOOK_URL, signal);
     typing.remove();
     addAssistantMsg(data);
     setConnStatus('established');
   } catch (err) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      // User cancelled via CLR — CLR handles DOM cleanup.
+      return;
+    }
     typing.remove();
     const msg = err instanceof Error ? err.message : String(err);
     const isTimeoutErr = err instanceof DOMException && err.name === 'TimeoutError';
@@ -334,6 +360,7 @@ async function ask() {
       msg;
     addErrorMsg(userMsg);
   } finally {
+    inflight = null;
     isLoading = false;
     btn.disabled = false;
     input.focus();
