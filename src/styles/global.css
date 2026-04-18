@@ -440,6 +440,8 @@ header::before,
   letter-spacing: 0.04em;
 }
 
+.sys-status--end { margin-left: auto; }
+
 .status-cursor {
   animation: blink 1s step-end infinite;
   color: var(--green-dim);

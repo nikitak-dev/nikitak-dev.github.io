@@ -129,7 +129,7 @@ const structuredData = {
   {!hideFooter && (
   <footer class="hub-footer">
     {!errorMode && <span>© 2026 ABSOLUTE</span>}
-    <div class="sys-status" style={errorMode ? 'margin-left:auto' : ''}>
+    <div class:list={['sys-status', errorMode && 'sys-status--end']}>
       <span>{errorMode ? '[ SYS: ERROR ]' : '[ SYS: NOMINAL ]'}</span>
       <span>[ UPTIME: <span id="uptime-val">{errorMode ? '--' : '0d 0h'}</span> ]</span>
       <span>{errorMode ? `[ PROC: 0/${procTotal} LIVE ]` : `[ PROC: ${procLive}/${procTotal} LIVE ]`}</span>
