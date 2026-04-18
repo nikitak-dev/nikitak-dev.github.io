@@ -185,11 +185,6 @@ header {
   border-color: var(--green);
   box-shadow: var(--shadow-inset-deep), 0 0 30px var(--green-glow);
 }
-.project-card.theme-amber:focus-visible,
-.project-card.theme-amber.selected {
-  border-color: var(--amber);
-  box-shadow: var(--shadow-inset-deep), 0 0 30px var(--amber-glow);
-}
 
 .project-grid.ready .project-card          { animation: fadeSlideUp 0.4s ease-out forwards; }
 .project-grid.ready .project-card:nth-child(1) { animation-delay: 0.00s; }
@@ -213,9 +208,6 @@ header {
 .project-card.kb-pulse::before {
   animation: kbPulseRing 1.5s ease-out;
 }
-.project-card.theme-amber.kb-pulse::before {
-  animation: kbPulseRingAmber 1.5s ease-out;
-}
 
 @keyframes kbPulseRing {
   from {
@@ -230,39 +222,33 @@ header {
   }
 }
 
-@keyframes kbPulseRingAmber {
-  from {
-    opacity: 1;
-    border-color: var(--amber-bright);
-    box-shadow: 0 0 30px var(--amber-glow-strong), 0 0 10px var(--amber);
-  }
-  to {
-    opacity: 0;
-    border-color: var(--amber);
-    box-shadow: none;
-  }
+/* === AMBER THEME (automation cards) ===
+   Scoped palette remap: green-* → amber-*. Same pattern as body[data-theme="amber"]
+   but confined to the card. Base rules (.project-card, .btn-terminal, kbPulseRing,
+   .card-title, .card-status, .card-footer, etc.) auto-theme via var() substitution.
+   Intentional color deviations live as explicit overrides below. */
+.theme-amber {
+  --green: var(--amber);
+  --green-bright: var(--amber-bright);
+  --green-mid: var(--amber-mid);
+  --green-dim: var(--amber-dim);
+  --green-muted: var(--amber-muted);
+  --green-ghost: var(--amber-ghost);
+  --green-glow: var(--amber-glow);
+  --green-glow-strong: var(--amber-glow-strong);
+  --text-muted: var(--amber-muted);
+  --text-bright: var(--text-bright-amber);
+  --bg-elevated: var(--bg-elevated-amber);
+  --bg-input: var(--bg-input-amber);
+  --border: var(--amber-deep);
+  --user-border: var(--user-border-amber);
 }
 
-/* === AMBER THEME (automation cards) === */
-.theme-amber { border-color: var(--amber-deep); background: var(--bg-elevated-amber); }
-@media (hover: hover) and (pointer: fine) {
-  .theme-amber:hover:not(.selected):not(:focus-visible) { border-color: var(--amber-dim); box-shadow: 0 0 20px var(--amber-ghost); }
-}
-.theme-amber .card-id   { color: var(--amber-muted); }
-.theme-amber .card-title { color: var(--amber); text-shadow: 0 0 8px var(--amber-ghost); }
-.theme-amber .card-status.wip { color: var(--amber-muted); }
+/* Brighter than --text-muted → --amber-muted for legibility on amber bg */
 .theme-amber .card-desc { color: var(--amber-mid); }
-.theme-amber .card-footer { border-top-color: var(--amber-deep); }
-.theme-amber .card-meta { color: var(--amber-muted); }
-.theme-amber .card-launch { border-color: var(--amber-dim); color: var(--amber); }
-.theme-amber .card-launch:disabled { border-color: var(--amber-muted); color: var(--amber-mid); }
-@media (hover: hover) and (pointer: fine) {
-  .theme-amber .card-launch:not(:disabled):hover { border-color: var(--amber); box-shadow: 0 0 12px var(--amber-glow); }
-}
-.theme-amber .card-launch:focus-visible:not(:disabled),
-.theme-amber .card-launch:active:not(:disabled) {
-  border-color: var(--amber); box-shadow: 0 0 12px var(--amber-glow);
-}
+
+/* Keep disabled label readable after .btn-terminal:disabled opacity 0.3 */
+.theme-amber .card-launch:disabled { color: var(--amber-mid); }
 
 /* === GRID LEGEND === */
 .grid-legend {
@@ -450,3 +436,6 @@ header {
   .hub-footer a:hover { color: var(--green); }
 }
 .hub-footer a:focus-visible { color: var(--green); }
+
+/* Empty-footer: keep layout/height + beam animation, hide only the content */
+.hub-footer--empty > * { visibility: hidden; }
