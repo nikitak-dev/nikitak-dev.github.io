@@ -1,5 +1,6 @@
 /* Design tokens — colors, surfaces, typography, layout.
-   Error mode is expressed by remapping green-* to error-* via body[data-error="true"]. */
+   Error mode remaps green-* to error-* via body[data-error="true"].
+   Amber theme remaps green-* to amber-* via body[data-theme="amber"]. */
 
 :root {
   /* surfaces */
@@ -57,8 +58,15 @@
   --amber-muted: #8a5700;
   --amber-deep: #3d2605;
   --amber-ghost: rgba(255, 170, 0, 0.08);
+  --amber-glow-weak: rgba(255, 170, 0, 0.05);
   --amber-glow: rgba(255, 170, 0, 0.15);
   --amber-glow-strong: rgba(255, 170, 0, 0.3);
+  --amber-glow-label: rgba(255, 170, 0, 0.35);
+  --amber-mid-glow: rgba(229, 148, 0, 0.4);
+  --matrix-trail-amber: rgba(255, 170, 0, 0.4);
+  --bg-input-amber: #0e0906;
+  --user-bg-amber: rgba(255, 170, 0, 0.05);
+  --user-border-amber: rgba(255, 170, 0, 0.15);
   --text-bright-amber: #fff0cc;
   /* layout tokens */
   --font: 'JetBrains Mono', monospace;
@@ -102,4 +110,31 @@ body[data-error="true"] {
   --text-bright: var(--text-bright-error);
   --gradient-edge-top: linear-gradient(to top, var(--error-ghost) 0%, transparent 100%);
   --gradient-edge-bottom: linear-gradient(to bottom, var(--error-ghost) 0%, transparent 100%);
+}
+
+body[data-theme="amber"] {
+  --green: var(--amber);
+  --green-bright: var(--amber-bright);
+  --green-mid: var(--amber-mid);
+  --green-dim: var(--amber-dim);
+  --green-muted: var(--amber-muted);
+  --green-ghost: var(--amber-ghost);
+  --green-glow-weak: var(--amber-glow-weak);
+  --green-glow: var(--amber-glow);
+  --green-glow-strong: var(--amber-glow-strong);
+  --green-glow-label: var(--amber-glow-label);
+  --green-mid-glow: var(--amber-mid-glow);
+  --matrix-trail: var(--matrix-trail-amber);
+  --text-primary: var(--amber);
+  --text-secondary: var(--amber-mid);
+  --text-muted: var(--amber-muted);
+  --border: var(--amber-deep);
+  --border-hover: var(--amber-dim);
+  --bg-input: var(--bg-input-amber);
+  --bg-elevated: var(--bg-elevated-amber);
+  --user-bg: var(--user-bg-amber);
+  --user-border: var(--user-border-amber);
+  --text-bright: var(--text-bright-amber);
+  --gradient-edge-top: linear-gradient(to top, var(--amber-ghost) 0%, transparent 100%);
+  --gradient-edge-bottom: linear-gradient(to bottom, var(--amber-ghost) 0%, transparent 100%);
 }
