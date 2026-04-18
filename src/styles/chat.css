@@ -428,8 +428,6 @@
 #send, #clear {
   width: 80px;
   padding: 8px 0;
-  font-weight: 700;
-  letter-spacing: 0.08em;
   flex-shrink: 0;
 }
 
