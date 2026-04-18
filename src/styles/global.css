@@ -616,8 +616,6 @@ header::before,
   border: 1px solid var(--border);
   background: var(--bg-elevated);
   box-shadow: var(--shadow-inset-deep);
-  font-size: 12px;
-  letter-spacing: 0.06em;
 }
 /* Global section-label — per DESIGN.md (12px / 700 / 0.10em / green-mid / glow / uppercase) */
 .section-label {

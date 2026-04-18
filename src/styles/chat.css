@@ -192,7 +192,7 @@
   .source-tag:hover { border-color: var(--green-dim); color: var(--green-mid); }
 }
 
-.score-bar { width: 28px; height: 3px; background: var(--border); overflow: hidden; }
+.score-bar { width: 28px; height: 2px; background: var(--border); overflow: hidden; }
 .score-fill { height: 100%; background: var(--green-dim); transition: width 0.6s ease; box-shadow: 0 0 4px var(--green-ghost); }
 
 .msg.error {
@@ -246,7 +246,7 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .msg-media-item:hover { box-shadow: 0 0 20px var(--green-ghost), 0 0 40px rgba(0, 255, 65, 0.04); }
+  .msg-media-item:hover { box-shadow: 0 0 20px var(--green-ghost), 0 0 40px var(--green-glow-weak); }
   .msg-media-item:hover::before { border-color: var(--green-mid); }
 }
 
@@ -284,7 +284,7 @@
   white-space: nowrap;
 }
 
-.msg-media-item iframe { width: 400px; height: 225px; border: none; }
+.msg-media-item iframe { width: 100%; max-width: 400px; aspect-ratio: 16 / 9; border: none; display: block; }
 .msg-media-item .media-error { padding: 12px 8px; color: var(--error); font-size: 10px; letter-spacing: 0.06em; }
 
 /* Typing indicator */
@@ -393,7 +393,7 @@
 
 .input-wrap:focus-within {
   border-color: var(--green-mid);
-  box-shadow: 0 0 20px rgba(0, 255, 65, 0.1), 0 0 40px rgba(0, 255, 65, 0.05), inset 0 0 20px rgba(0, 255, 65, 0.05);
+  box-shadow: 0 0 20px var(--green-glow), 0 0 40px var(--green-glow-weak), inset 0 0 20px var(--green-glow-weak);
 }
 
 .input-wrap:focus-within::before { color: var(--green); text-shadow: 0 0 8px var(--green-glow); }
