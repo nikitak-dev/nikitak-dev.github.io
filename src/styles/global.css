@@ -70,6 +70,8 @@
   --backdrop-blur: 4px;
   --modal-duration: 320ms;
   --scale-press: 0.97;
+  --gradient-edge-top: linear-gradient(to top, var(--green-ghost) 0%, transparent 100%);
+  --gradient-edge-bottom: linear-gradient(to bottom, var(--green-ghost) 0%, transparent 100%);
 }
 
 body[data-error="true"] {
@@ -252,7 +254,7 @@ header {
   z-index: 1;
   padding: 16px 32px;
   background: var(--bg-void);
-  background-image: linear-gradient(to top, var(--green-ghost) 0%, transparent 100%);
+  background-image: var(--gradient-edge-top);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -765,7 +767,7 @@ header::before,
   color: var(--text-muted);
   flex-shrink: 0;
   background: var(--bg-void);
-  background-image: linear-gradient(to bottom, var(--green-ghost) 0%, transparent 100%);
+  background-image: var(--gradient-edge-bottom);
   user-select: none;
   box-shadow: 0 -4px 24px var(--green-ghost);
 }
@@ -883,7 +885,7 @@ body.modal-open::after { display: none; }
 .docs-modal .modal-header {
   position: relative;
   background: var(--bg-void);
-  background-image: linear-gradient(to top, var(--green-ghost) 0%, transparent 100%);
+  background-image: var(--gradient-edge-top);
   display: flex;
   align-items: center;
   justify-content: space-between;
