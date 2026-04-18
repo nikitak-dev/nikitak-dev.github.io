@@ -280,6 +280,19 @@ document.addEventListener('error', (e) => {
 
 let isLoading = false;
 
+const REQUEST_TIMEOUT_MS = 15000;
+
+async function sendQuestion(q: string, url: string): Promise<ChatResponse> {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question: q }),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json() as Promise<ChatResponse>;
+}
+
 async function ask() {
   const q = input.value.trim();
   if (!q || isLoading || !WEBHOOK_URL) return;
@@ -301,26 +314,20 @@ async function ask() {
   chat.scrollTop = chat.scrollHeight;
 
   try {
-    const res = await fetch(WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: q }),
-    });
-
+    const data = await sendQuestion(q, WEBHOOK_URL);
     typing.remove();
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-    const data: ChatResponse = await res.json();
     addAssistantMsg(data);
     setConnStatus('established');
   } catch (err) {
     typing.remove();
     const msg = err instanceof Error ? err.message : String(err);
-    const isNetworkErr = msg.includes('fetch') || msg.includes('NetworkError');
+    const isTimeoutErr = err instanceof DOMException && err.name === 'TimeoutError';
+    const isNetworkErr = !isTimeoutErr && (msg.includes('fetch') || msg.includes('NetworkError'));
     const isServerErr = /^HTTP 5/.test(msg);
     const isClientErr = /^HTTP 4/.test(msg);
-    if (isNetworkErr || isServerErr) setConnStatus('lost'); else setConnStatus('established');
+    if (isTimeoutErr || isNetworkErr || isServerErr) setConnStatus('lost'); else setConnStatus('established');
     const userMsg =
+      isTimeoutErr ? 'Request timed out. The service is slow or unreachable.' :
       isNetworkErr ? 'Connection error. Check your network.' :
       isServerErr ? 'Service unavailable. Try again later.' :
       isClientErr ? 'Request rejected by server. The service may be misconfigured.' :
