@@ -191,6 +191,8 @@ clearBtn.addEventListener('click', () => {
 
 /* Rotating placeholder typewriter on input */
 (function () {
+  // QUERIES is non-empty and qIdx is always in bounds via `% QUERIES.length`,
+  // so `!` assertions on array access are safe under noUncheckedIndexedAccess.
   const QUERIES = [
     'What is symmetric encryption?',
     'Explain the Agile sprint cycle',
@@ -199,12 +201,12 @@ clearBtn.addEventListener('click', () => {
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduced) {
-    input.placeholder = QUERIES[0];
+    input.placeholder = QUERIES[0]!;
     return;
   }
 
   let qIdx = 0;
-  let currentQuery = QUERIES[0];
+  let currentQuery: string = QUERIES[0]!;
 
   input.addEventListener('click', () => {
     if (!input.value) {
@@ -221,7 +223,7 @@ clearBtn.addEventListener('click', () => {
   (async function cycle() {
     while (true) {
       while (busy()) await sleep(100);
-      currentQuery = QUERIES[qIdx];
+      currentQuery = QUERIES[qIdx]!;
       let broken = false;
       for (let i = 1; i <= currentQuery.length; i++) {
         if (busy()) { broken = true; break; }
