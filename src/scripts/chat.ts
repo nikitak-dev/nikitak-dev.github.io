@@ -181,7 +181,7 @@ function addErrorMsg(text: string) {
 clearBtn.addEventListener('click', () => {
   const msgs = [...chat.querySelectorAll<HTMLElement>('.msg, .typing')];
   if (!msgs.length) { input.focus(); return; }
-  msgs.forEach(el => { el.style.animation = 'fadeSlideOut 0.3s ease-in forwards'; });
+  msgs.forEach(el => el.classList.add('msg--exit'));
   setTimeout(() => {
     msgs.forEach(el => el.remove());
     if (emptyState) emptyState.classList.remove('hidden');

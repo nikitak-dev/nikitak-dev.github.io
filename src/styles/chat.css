@@ -132,6 +132,8 @@
 
 .msg.assistant { align-self: flex-start; }
 
+.msg--exit, .typing.msg--exit { animation: fadeSlideOut 0.3s ease-in forwards; }
+
 .msg.assistant .answer {
   position: relative;
   background: var(--bg-void);
