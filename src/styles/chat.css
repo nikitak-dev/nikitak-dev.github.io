@@ -128,13 +128,7 @@
   margin-bottom: 4px;
 }
 
-.msg.user::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.12) 1px, rgba(0,0,0,0.12) 2px);
-  pointer-events: none;
-}
+/* .msg.user::after scanline overlay: defined in global.css scanlines-lite block */
 
 .msg.assistant { align-self: flex-start; }
 
@@ -159,13 +153,7 @@
   margin-bottom: 8px;
 }
 
-.msg.assistant .answer::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.12) 1px, rgba(0,0,0,0.12) 2px);
-  pointer-events: none;
-}
+/* .msg.assistant .answer::after scanline overlay: defined in global.css scanlines-lite block */
 
 .msg.assistant .sources {
   margin-top: 12px;

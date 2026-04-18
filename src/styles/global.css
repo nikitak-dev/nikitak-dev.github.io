@@ -182,8 +182,8 @@ body::after,
       0deg,
       transparent,
       transparent 1px,
-      rgba(0, 0, 0, 0.12) 1px,
-      rgba(0, 0, 0, 0.12) 2px
+      var(--scanline-line) 1px,
+      var(--scanline-line) 2px
     ),
     linear-gradient(
       90deg,
@@ -791,6 +791,26 @@ body.no-global-scanlines::after { display: none; }
    scanline block above. */
 .scanlines-section {
   position: relative;
+}
+
+/* Lite variant: horizontal scanlines only, no RGB chromatic aberration.
+   Intended for individual content boxes (chat messages) where the strong
+   global overlay would be visually harsh. Container must be positioned. */
+.scanlines-lite { position: relative; }
+.scanlines-lite::after,
+.msg.user::after,
+.msg.assistant .answer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    var(--scanline-line) 1px,
+    var(--scanline-line) 2px
+  );
+  pointer-events: none;
 }
 
 
