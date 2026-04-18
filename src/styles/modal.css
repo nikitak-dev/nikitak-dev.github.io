@@ -71,12 +71,12 @@ body.modal-open::after { display: none; }
 }
 @keyframes docs-modal-breathe {
   0%, 100% {
-    border-color: var(--green-muted);
-    box-shadow: 0 0 8px var(--green-glow), inset 0 0 4px var(--green-glow);
-  }
-  50% {
     border-color: var(--green);
     box-shadow: 0 0 24px var(--green-glow-strong), inset 0 0 14px var(--green-glow-strong);
+  }
+  50% {
+    border-color: var(--green-muted);
+    box-shadow: 0 0 8px var(--green-glow), inset 0 0 4px var(--green-glow);
   }
 }
 /* .modal-frame webkit scrollbar: defined in utilities.css shared scrollbar block */
