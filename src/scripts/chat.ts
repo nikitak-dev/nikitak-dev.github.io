@@ -46,6 +46,94 @@ function appendMultilineText(parent: HTMLElement, text: string) {
   });
 }
 
+function buildMediaList(media: MediaItem[]): HTMLElement | null {
+  const mediaEl = document.createElement('div');
+  mediaEl.className = 'msg-media';
+
+  for (const m of media) {
+    if (!isSafeUrl(m.url)) continue;
+    if (!isSafeDriveId(m.driveFileId)) continue;
+
+    const item = document.createElement('div');
+    item.className = 'msg-media-item';
+    const filename = typeof m.filename === 'string' ? m.filename : '';
+
+    if (m.type === 'image') {
+      const link = document.createElement('a');
+      link.href = `https://drive.google.com/file/d/${m.driveFileId}/view`;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+
+      const img = document.createElement('img');
+      img.className = 'loading';
+      img.src = m.url;
+      img.alt = filename;
+      img.loading = 'lazy';
+      img.addEventListener('load', () => img.classList.remove('loading'), { once: true });
+
+      link.appendChild(img);
+      item.appendChild(link);
+    } else if (m.type === 'video' || m.type === 'pdf') {
+      const iframe = document.createElement('iframe');
+      iframe.src = m.url;
+      iframe.loading = 'lazy';
+      iframe.title = filename || 'media';
+      iframe.allow = 'fullscreen';
+      iframe.allowFullscreen = true;
+      item.appendChild(iframe);
+    } else {
+      continue;
+    }
+
+    const label = document.createElement('div');
+    label.className = 'media-label';
+    label.textContent = filename;
+    item.appendChild(label);
+
+    mediaEl.appendChild(item);
+  }
+
+  return mediaEl.childElementCount > 0 ? mediaEl : null;
+}
+
+function buildSourcesList(sources: Source[]): HTMLElement {
+  const srcEl = document.createElement('div');
+  srcEl.className = 'sources';
+
+  const label = document.createElement('span');
+  label.className = 'sources-label';
+  label.textContent = 'src';
+  srcEl.appendChild(label);
+
+  for (const s of sources) {
+    const scoreNum = Number(s.score) || 0;
+    const pct = (scoreNum * 100).toFixed(0);
+
+    const tag = document.createElement('div');
+    tag.className = 'source-tag';
+
+    const name = document.createElement('span');
+    name.textContent = typeof s.filename === 'string' ? s.filename : '';
+    tag.appendChild(name);
+
+    const bar = document.createElement('div');
+    bar.className = 'score-bar';
+    const fill = document.createElement('div');
+    fill.className = 'score-fill';
+    fill.style.width = `${pct}%`;
+    bar.appendChild(fill);
+    tag.appendChild(bar);
+
+    const pctEl = document.createElement('span');
+    pctEl.textContent = `${pct}%`;
+    tag.appendChild(pctEl);
+
+    srcEl.appendChild(tag);
+  }
+
+  return srcEl;
+}
+
 function buildAssistantMessage(data: ChatResponse): HTMLElement {
   const wrapper = document.createElement('div');
   wrapper.className = 'msg assistant';
@@ -56,91 +144,12 @@ function buildAssistantMessage(data: ChatResponse): HTMLElement {
   wrapper.appendChild(answerEl);
 
   if (Array.isArray(data.media) && data.media.length > 0) {
-    const mediaEl = document.createElement('div');
-    mediaEl.className = 'msg-media';
-
-    for (const m of data.media) {
-      if (!isSafeUrl(m.url)) continue;
-      if (!isSafeDriveId(m.driveFileId)) continue;
-
-      const item = document.createElement('div');
-      item.className = 'msg-media-item';
-      const filename = typeof m.filename === 'string' ? m.filename : '';
-
-      if (m.type === 'image') {
-        const link = document.createElement('a');
-        link.href = `https://drive.google.com/file/d/${m.driveFileId}/view`;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-
-        const img = document.createElement('img');
-        img.className = 'loading';
-        img.src = m.url;
-        img.alt = filename;
-        img.loading = 'lazy';
-        img.addEventListener('load', () => img.classList.remove('loading'), { once: true });
-
-        link.appendChild(img);
-        item.appendChild(link);
-      } else if (m.type === 'video' || m.type === 'pdf') {
-        const iframe = document.createElement('iframe');
-        iframe.src = m.url;
-        iframe.loading = 'lazy';
-        iframe.title = filename || 'media';
-        iframe.allow = 'fullscreen';
-        iframe.allowFullscreen = true;
-        item.appendChild(iframe);
-      } else {
-        continue;
-      }
-
-      const label = document.createElement('div');
-      label.className = 'media-label';
-      label.textContent = filename;
-      item.appendChild(label);
-
-      mediaEl.appendChild(item);
-    }
-
-    if (mediaEl.childElementCount > 0) wrapper.appendChild(mediaEl);
+    const mediaEl = buildMediaList(data.media);
+    if (mediaEl) wrapper.appendChild(mediaEl);
   }
 
   if (Array.isArray(data.sources) && data.sources.length > 0) {
-    const srcEl = document.createElement('div');
-    srcEl.className = 'sources';
-
-    const label = document.createElement('span');
-    label.className = 'sources-label';
-    label.textContent = 'src';
-    srcEl.appendChild(label);
-
-    for (const s of data.sources) {
-      const scoreNum = Number(s.score) || 0;
-      const pct = (scoreNum * 100).toFixed(0);
-
-      const tag = document.createElement('div');
-      tag.className = 'source-tag';
-
-      const name = document.createElement('span');
-      name.textContent = typeof s.filename === 'string' ? s.filename : '';
-      tag.appendChild(name);
-
-      const bar = document.createElement('div');
-      bar.className = 'score-bar';
-      const fill = document.createElement('div');
-      fill.className = 'score-fill';
-      fill.style.width = `${pct}%`;
-      bar.appendChild(fill);
-      tag.appendChild(bar);
-
-      const pctEl = document.createElement('span');
-      pctEl.textContent = `${pct}%`;
-      tag.appendChild(pctEl);
-
-      srcEl.appendChild(tag);
-    }
-
-    wrapper.appendChild(srcEl);
+    wrapper.appendChild(buildSourcesList(data.sources));
   }
 
   return wrapper;
