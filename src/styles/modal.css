@@ -82,6 +82,23 @@ body.modal-open::after { display: none; }
     box-shadow: 0 0 8px var(--green-glow), inset 0 0 4px var(--green-glow);
   }
 }
+
+/* Amber theme: sync the frame's breathe with the beam cycle. Border ramps up
+   with the beam's fill (0 → ≈97.959% of 12.25s cycle), then drops back with the
+   rollback (97.959% → 100%, 0.25s) — matches the beam's fill/rollback exactly. */
+body[data-theme="amber"] .docs-modal .modal-frame {
+  animation: docs-modal-breathe-amber 12.25s linear infinite;
+}
+@keyframes docs-modal-breathe-amber {
+  0%, 100% {
+    border-color: var(--amber-muted);
+    box-shadow: 0 0 8px var(--amber-glow), inset 0 0 4px var(--amber-glow);
+  }
+  97.959% {
+    border-color: var(--amber);
+    box-shadow: 0 0 24px var(--amber-glow-strong), inset 0 0 14px var(--amber-glow-strong);
+  }
+}
 /* .modal-frame webkit scrollbar: defined in utilities.css shared scrollbar block */
 
 .docs-modal .modal-header {
