@@ -657,6 +657,8 @@ header::before,
   display: flex;
   align-items: center;
   gap: 6px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
   cursor: pointer;
   outline: none;
   transition: color var(--transition), text-shadow var(--transition);
