@@ -93,7 +93,7 @@ const structuredData = {
   {preconnectWebhook && webhookOrigin && <link rel="preconnect" href={webhookOrigin} crossorigin />}
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <script type="application/ld+json" set:html={JSON.stringify(structuredData)}></script>
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)}></script>
 </head>
 <body data-error={errorMode ? 'true' : 'false'} class={scanlineMode !== 'global' ? 'no-global-scanlines' : ''}>
   <MatrixRain />

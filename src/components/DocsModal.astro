@@ -63,7 +63,7 @@ const titleId = `${id}-title`;
        If native closedby works, it fires close() — our drag-fix above still guards against accidental drag-close. */
     const supportsClosedBy = 'closedBy' in modal;
     if (!supportsClosedBy) {
-      modal.addEventListener('cancel', e => { /* Escape already closes via native cancel event */ });
+      modal.addEventListener('cancel', () => { /* Escape already closes via native cancel event */ });
     }
   })();
 </script>
