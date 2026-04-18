@@ -59,6 +59,7 @@ Key structural elements follow a **4px grid**. Content elements follow a **2px g
 --green-dim: #009922;
 --green-muted: #00992a;
 --green-ghost: rgba(0, 255, 65, 0.08);
+--green-glow-weak: rgba(0, 255, 65, 0.05);    /* input focus-within, soft hover */
 --green-glow: rgba(0, 255, 65, 0.1);
 --green-glow-strong: rgba(0, 255, 65, 0.25);
 --green-glow-label: rgba(0, 255, 65, 0.35);  /* section-label text-shadow */
@@ -87,13 +88,23 @@ Key structural elements follow a **4px grid**. Content elements follow a **2px g
 
 ```css
 --error: #ff3333;
+--error-bright: #ff7777;                      /* keyboard-pulse ring (error mode) */
 --error-mid: #cc2200;
 --error-dim: #991a00;
 --error-muted: #661000;
 --error-deep: #3a0d0d;
 --error-ghost: rgba(255, 51, 51, 0.08);
+--error-glow-weak: rgba(255, 51, 51, 0.05);
 --error-glow: rgba(255, 51, 51, 0.15);
 --error-glow-strong: rgba(255, 51, 51, 0.3);
+--error-glow-label: rgba(255, 51, 51, 0.35);
+--error-mid-glow: rgba(204, 34, 0, 0.4);
+--matrix-trail-error: rgba(255, 51, 51, 0.4); /* matrix rain trail in error mode */
+--bg-input-error: #0e0606;
+--bg-elevated-error: #120606;
+--user-bg-error: rgba(255, 51, 51, 0.05);
+--user-border-error: rgba(255, 51, 51, 0.15);
+--text-bright-error: #ffcccc;
 ```
 
 ### Chat message variants
@@ -117,9 +128,14 @@ In error mode (`body[data-error="true"]`) the green-scale variables are remapped
 --beam-duration: 3s;               /* beam sweep loop */
 --beam-blur: 3px;                  /* beam drop-shadow blur */
 --shadow-inset-deep: inset 0 0 28px rgba(0, 0, 0, 0.75);  /* panel depth */
+--scanline-line: rgba(0, 0, 0, 0.12);           /* single scanline stripe color */
+--backdrop-bg: rgba(0, 0, 0, 0.85);             /* dialog backdrop */
+--backdrop-blur: 4px;                            /* dialog backdrop-filter blur */
+--modal-duration: 320ms;                         /* dialog open/close transition */
+--scale-press: 0.97;                             /* active-state tactile squish */
 ```
 
-Used by beam separators, panels (`.project-card`, `.grid-legend`), modal animations.
+Used by beam separators, panels (`.project-card`, `.grid-legend`), scanline overlays, modal animations, button active-state.
 
 ---
 
