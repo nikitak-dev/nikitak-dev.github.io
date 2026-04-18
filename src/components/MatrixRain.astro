@@ -46,8 +46,19 @@
     const trailColor = bodyStyles.getPropertyValue('--matrix-trail').trim();
     const fontFamily = bodyStyles.getPropertyValue('--font').trim() || 'monospace';
 
-    const chars = errorMode ? 'ERR!?@#$%^&*<>/\\~|:;' : '01';
-    const glyphCyclingRate = errorMode ? 0.05 : 0;
+    const chars = errorMode ? 'ERR!' : '01';
+    const glitchChars = '?@#$%^&*<>/\\~|:;';
+    const glyphCyclingRate = 0;
+
+    /* Error mode spells ERR! vertically using row index; normal mode is random */
+    const pickChar = errorMode
+      ? (y) => {
+          const row = Math.floor(y / fontSize);
+          return chars[((row % chars.length) + chars.length) % chars.length];
+        }
+      : () => chars[Math.floor(Math.random() * chars.length)];
+
+    const pickGlitchChar = () => glitchChars[Math.floor(Math.random() * glitchChars.length)];
 
     let columns, drops, speedFactors, cells;
 
@@ -83,20 +94,20 @@
 
         const x = i * fontSize;
         const y = Math.floor(drops[i]) * fontSize;
-        const char = chars[Math.floor(Math.random() * chars.length)];
+        const char = pickChar(y);
 
         ctx.fillStyle = mainColor;
         ctx.fillText(char, x, y);
         if (y - fontSize > 0) {
           ctx.fillStyle = trailColor;
-          ctx.fillText(chars[Math.floor(Math.random() * chars.length)], x, y - fontSize);
+          ctx.fillText(pickChar(y - fontSize), x, y - fontSize);
         }
 
         // 4.4 In-place glyph cycling (error mode only)
         if (glyphCyclingRate > 0 && cells[i].length > 0 && Math.random() < glyphCyclingRate) {
           const cell = cells[i][Math.floor(Math.random() * cells[i].length)];
           ctx.fillStyle = mainColor;
-          ctx.fillText(chars[Math.floor(Math.random() * chars.length)], cell.x, cell.y);
+          ctx.fillText(pickChar(cell.y), cell.x, cell.y);
         }
 
         cells[i].push({ x, y });
@@ -110,7 +121,7 @@
               startX: x,
               targetX: targetCol * fontSize,
               y,
-              char: chars[Math.floor(Math.random() * chars.length)],
+              char: pickChar(y),
               frame: 0,
               totalFrames: 4 + Math.floor(Math.random() * 3),
             });
@@ -142,8 +153,7 @@
         ctx.fillStyle = mainColor;
         for (let s = 1; s <= numSteps; s++) {
           const xp = x0 + dx * (s / numSteps);
-          const ch = chars[Math.floor(Math.random() * chars.length)];
-          ctx.fillText(ch, xp, ghost.y);
+          ctx.fillText(errorMode ? pickGlitchChar() : pickChar(ghost.y), xp, ghost.y);
         }
         if (ghost.frame >= ghost.totalFrames) ghosts.splice(g, 1);
       }
