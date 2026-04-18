@@ -39,14 +39,16 @@
     const lensCtx = lens ? lens.getContext('2d') : null;
     const fontSize = 14;
     const errorMode = document.body.dataset.error === 'true';
+    const amberMode = !errorMode && document.body.dataset.theme === 'amber';
 
-    /* Read from body: error-mode overrides cascade from body[data-error="true"] */
+    /* Read from body: error-mode / amber remap cascade through custom properties */
     const bodyStyles = getComputedStyle(document.body);
     const mainColor  = bodyStyles.getPropertyValue('--green').trim();
     const trailColor = bodyStyles.getPropertyValue('--matrix-trail').trim();
     const fontFamily = bodyStyles.getPropertyValue('--font').trim() || 'monospace';
 
-    const chars = errorMode ? 'ERR!' : '01';
+    const HEX = '0123456789ABCDEF';
+    const chars = errorMode ? 'ERR!' : (amberMode ? HEX : '01');
     const glitchChars = '?@#$%^&*<>/\\~|:;';
     const glyphCyclingRate = 0;
 
@@ -59,20 +61,66 @@
       : () => chars[Math.floor(Math.random() * chars.length)];
 
     const pickGlitchChar = () => glitchChars[Math.floor(Math.random() * glitchChars.length)];
+    const pickHex = () => HEX[Math.floor(Math.random() * HEX.length)];
 
     let columns, drops, speedFactors, cells;
+    let gridCols, gridRows, clusters, traces, packets;
+    let yOffset = 0;           // pixel offset applied to row 0's top edge
+    let initialized = false;   // set true once the first initMatrix completes
+
+    /* Safe rendering band: between the bottom of the fixed <header> and the
+       top of the lowest fixed bottom element (footer or #input-bar). Snapping
+       the character grid to this band prevents half-char clipping at either
+       boundary. Falls back to full viewport if nothing matched. */
+    function measureSafeArea() {
+      const header = document.querySelector('header');
+      const top = header ? Math.ceil(header.getBoundingClientRect().bottom) : 0;
+      let bottom = window.innerHeight;
+      const bottomEls = [
+        document.querySelector('footer.hub-footer'),
+        document.getElementById('input-bar'),
+      ];
+      for (const el of bottomEls) {
+        if (!el) continue;
+        const t = Math.floor(el.getBoundingClientRect().top);
+        if (t < bottom) bottom = t;
+      }
+      return { top, bottom };
+    }
 
     function initMatrix() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       if (lens) { lens.width = window.innerWidth; lens.height = window.innerHeight; }
-      const rows = Math.ceil(canvas.height / fontSize);
-      columns = Math.floor(canvas.width / fontSize);
-      drops = Array.from({ length: columns }, () => -Math.floor(Math.random() * rows));
-      speedFactors = Array.from({ length: columns }, () => 0.5 + Math.random());
-      cells = Array.from({ length: columns }, () => []);
-      jumpsRemaining = Array.from({ length: columns }, () => errorMode ? 2 : 0);
-      ghosts = [];
+
+      const { top, bottom } = measureSafeArea();
+      const safeH = Math.max(fontSize, bottom - top);
+      const rowCount = Math.max(1, Math.floor(safeH / fontSize));
+      /* Center any sub-fontSize slack so the leftover pixel is split between
+         edges rather than piling up at the bottom. */
+      yOffset = top + Math.floor((safeH - rowCount * fontSize) / 2);
+
+      if (amberMode) {
+        gridCols = Math.floor(canvas.width / fontSize);
+        gridRows = rowCount;
+        /* Clusters first so traces can route around them. */
+        clusters = spawnClusters();
+        traces = generateTraces();
+        markTraceOverlaps();
+        /* Fewer packets than traces — flow is sparse, traces stay as visible
+           "idle" network between passing packets. */
+        const packetCount = Math.max(6, Math.min(14, Math.floor(canvas.width / 180)));
+        packets = Array.from({ length: packetCount }, () => spawnPacket(false));
+      } else {
+        columns = Math.floor(canvas.width / fontSize);
+        gridRows = rowCount;
+        drops = Array.from({ length: columns }, () => -Math.floor(Math.random() * rowCount));
+        speedFactors = Array.from({ length: columns }, () => 0.5 + Math.random());
+        cells = Array.from({ length: columns }, () => []);
+        jumpsRemaining = Array.from({ length: columns }, () => errorMode ? 2 : 0);
+        ghosts = [];
+      }
+      initialized = true;
     }
 
     let lastTime = 0;
@@ -88,7 +136,258 @@
       ctx.font = `${fontSize}px ${fontFamily}`;
     }
 
+    /* === Amber pipeline mode ===
+       A static network of grid-aligned traces is generated once at init — these
+       are the "wires". Each trace cell holds a fixed hex char rendered dim each
+       frame, so the network is always visible. Data "packets" (bright head +
+       fading tail) flow along randomly chosen traces at random speeds; when one
+       packet finishes a trace it respawns on another one with new parameters. */
+
+    /* Build the permanent network from the hand-designed AMBER_TRACES list.
+       Each entry specifies two cluster ids and the elbow direction; we walk
+       a single-elbow L centre-to-centre. Cells passing through cluster
+       interiors are hidden later by the brighter cluster render, so packets
+       appear to enter one node and exit another. */
+    function generateTraces() {
+      const result = [];
+      const buildL = (a, b, elbow) => {
+        const sx = a.cx, sy = a.cy, ex = b.cx, ey = b.cy;
+        const xStep = sx < ex ? 1 : sx > ex ? -1 : 0;
+        const yStep = sy < ey ? 1 : sy > ey ? -1 : 0;
+        const cells = [];
+        let x = sx, y = sy;
+        const walk = (steps, axis) => {
+          for (let k = 0; k < steps; k++) {
+            cells.push({ x, y, char: pickHex() });
+            if (axis === 'x') x += xStep; else y += yStep;
+          }
+        };
+        if (elbow === 'h') {
+          walk(Math.abs(ex - sx), 'x');
+          walk(Math.abs(ey - sy), 'y');
+        } else {
+          walk(Math.abs(ey - sy), 'y');
+          walk(Math.abs(ex - sx), 'x');
+        }
+        cells.push({ x, y, char: pickHex() });
+        return cells;
+      };
+
+      for (const def of AMBER_TRACES) {
+        const a = clustersById[def.from];
+        const b = clustersById[def.to];
+        if (!a || !b) continue;
+        const trace = buildL(a, b, def.elbow);
+        if (trace.length >= 2) result.push(trace);
+      }
+      return result;
+    }
+
+    /* Create a packet bound to a random trace. `fresh=true` starts it at cell 0
+       (visibly enters the trace); `fresh=false` drops it at a random position
+       so the initial pool is already spread out. */
+    function spawnPacket(fresh) {
+      if (!traces.length) return null;
+      const pathIdx = Math.floor(Math.random() * traces.length);
+      const len = traces[pathIdx].length;
+      return {
+        pathIdx,
+        pos: fresh ? 0 : Math.random() * len,
+        speed: 0.25 + Math.random() * 0.55,            // cells per tick
+        tailLen: 5 + Math.floor(Math.random() * 8),    // 5..12
+        delay: fresh ? Math.floor(Math.random() * 60) : 0,
+      };
+    }
+
+    function advancePackets() {
+      for (let i = 0; i < packets.length; i++) {
+        const p = packets[i];
+        if (!p) continue;
+        if (p.delay > 0) { p.delay--; continue; }
+        p.pos += p.speed;
+        /* Packet is fully gone once even its tail has cleared the trace end */
+        if (p.pos >= traces[p.pathIdx].length + p.tailLen) {
+          packets[i] = spawnPacket(true);
+        }
+      }
+    }
+
+    /* One-shot dedup pass after clusters + traces are built. For every trace
+       cell we flag:
+         .inCluster — cell falls inside any cluster's bounding box (cluster
+                      handles the render; trace and packet both stay silent)
+         .owned     — this trace is the first to claim the cell; later traces
+                      passing through the same position skip render so one cell
+                      shows exactly one character instead of stacking glyphs. */
+    function markTraceOverlaps() {
+      const claimed = new Set();
+      const inAnyCluster = (x, y) => {
+        for (const c of clusters) {
+          const b = c.bounds;
+          if (x >= b.x0 && x < b.x0 + b.w && y >= b.y0 && y < b.y0 + b.h) return true;
+        }
+        return false;
+      };
+      for (const c of clusters) {
+        for (const cell of c.cells) claimed.add(cell.x + ',' + cell.y);
+      }
+      for (const trace of traces) {
+        for (const cell of trace) {
+          const key = cell.x + ',' + cell.y;
+          cell.inCluster = inAnyCluster(cell.x, cell.y);
+          if (cell.inCluster) {
+            cell.owned = false;
+          } else if (claimed.has(key)) {
+            cell.owned = false;
+          } else {
+            cell.owned = true;
+            claimed.add(key);
+          }
+        }
+      }
+    }
+
+    function renderTraces() {
+      /* Dim static layer — the "wires" themselves. Skip cells owned by an
+         earlier trace (dedup) and cells inside clusters (node owns them). */
+      ctx.globalAlpha = 0.15;
+      ctx.fillStyle = mainColor;
+      for (const trace of traces) {
+        for (const cell of trace) {
+          if (!cell.owned) continue;
+          ctx.fillText(cell.char, cell.x * fontSize, cell.y * fontSize + fontSize + yOffset);
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function renderPackets() {
+      for (const p of packets) {
+        if (!p || p.delay > 0) continue;
+        const trace = traces[p.pathIdx];
+        const headIdx = Math.floor(p.pos);
+        for (let i = 0; i <= p.tailLen; i++) {
+          const idx = headIdx - i;
+          if (idx < 0 || idx >= trace.length) continue;
+          const cell = trace[idx];
+          /* Packet is invisible while crossing a cluster — data "enters" the
+             node, is processed (stays hidden), and emerges on the other side. */
+          if (cell.inCluster) continue;
+          const isHead = i === 0;
+          const t = p.tailLen > 0 ? 1 - i / p.tailLen : 1;
+          ctx.globalAlpha = isHead ? 1 : Math.max(0.05, t * t);
+          ctx.fillStyle = isHead ? mainColor : trailColor;
+          ctx.fillText(cell.char, cell.x * fontSize, cell.y * fontSize + fontSize + yOffset);
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    /* === Amber background fill ===
+       Clusters: persistent 3×3..5×5 hex blocks at random positions, slowly
+       mutate a random cell over time. Render each tick at medium alpha so
+       they feel like scattered databases/tables.
+       Noise: a handful of single hex chars flash at random cells per tick,
+       at low alpha — fades naturally via canvas-clear for a twinkling ambient. */
+    /* Place up to N non-overlapping clusters with 1-cell padding between them.
+       Uses a temporary occupancy grid to reject candidate positions whose cells
+       or padding collide with an earlier placement. Up to 30 attempts per
+       cluster — if all fail (grid saturated), we stop early and return whatever
+       we managed to place. Never crashes, never overlaps, never touches. */
+    /* Fixed layout — hand-designed network. Cluster positions are stored as
+       fractions of the safe area (so the schematic scales with viewport size)
+       while cluster SIZES stay in absolute grid cells (so nodes remain
+       readable). Edges between clusters with their preferred elbow direction
+       live in AMBER_TRACES; the trace builder later walks the single L. */
+    const AMBER_CLUSTERS = [
+      { id: 'c1',  xFrac: 0.10, yFrac: 0.16, w: 2, h: 2 },
+      { id: 'c2',  xFrac: 0.42, yFrac: 0.24, w: 2, h: 2 },
+      { id: 'c3',  xFrac: 0.55, yFrac: 0.28, w: 4, h: 2 },
+      { id: 'c4',  xFrac: 0.78, yFrac: 0.16, w: 2, h: 2 },
+      { id: 'c5',  xFrac: 0.15, yFrac: 0.40, w: 3, h: 2 },
+      { id: 'c6',  xFrac: 0.25, yFrac: 0.44, w: 2, h: 2 },
+      { id: 'c7',  xFrac: 0.65, yFrac: 0.44, w: 2, h: 3 },
+      { id: 'c8',  xFrac: 0.45, yFrac: 0.68, w: 2, h: 2 },
+      { id: 'c9',  xFrac: 0.10, yFrac: 0.80, w: 3, h: 2 },
+      { id: 'c10', xFrac: 0.78, yFrac: 0.80, w: 3, h: 3 },
+    ];
+
+    /* elbow: 'h' = horizontal-first L,  'v' = vertical-first L */
+    const AMBER_TRACES = [
+      { from: 'c1',  to: 'c2',  elbow: 'h' },
+      { from: 'c2',  to: 'c3',  elbow: 'h' },
+      { from: 'c4',  to: 'c3',  elbow: 'v' },
+      { from: 'c3',  to: 'c7',  elbow: 'v' },
+      { from: 'c5',  to: 'c6',  elbow: 'h' },
+      { from: 'c6',  to: 'c8',  elbow: 'v' },
+      { from: 'c8',  to: 'c9',  elbow: 'h' },
+      { from: 'c8',  to: 'c10', elbow: 'h' },
+      { from: 'c7',  to: 'c10', elbow: 'v' },
+    ];
+
+    let clustersById = {};
+
+    function spawnClusters() {
+      clustersById = {};
+      const result = [];
+      for (const def of AMBER_CLUSTERS) {
+        /* Clamp into grid so tight viewports don't push nodes off-screen. */
+        const x0 = Math.max(0, Math.min(gridCols - def.w, Math.round(def.xFrac * gridCols)));
+        const y0 = Math.max(0, Math.min(gridRows - def.h, Math.round(def.yFrac * gridRows)));
+        const cellList = [];
+        for (let j = 0; j < def.h; j++) {
+          for (let i = 0; i < def.w; i++) {
+            cellList.push({ x: x0 + i, y: y0 + j, char: pickHex() });
+          }
+        }
+        const node = {
+          id: def.id,
+          cells: cellList,
+          mutateRate: 0.12 + Math.random() * 0.15,
+          cx: x0 + Math.floor(def.w / 2),
+          cy: y0 + Math.floor(def.h / 2),
+          bounds: { x0, y0, w: def.w, h: def.h },
+        };
+        clustersById[def.id] = node;
+        result.push(node);
+      }
+      return result;
+    }
+
+    function advanceClusters() {
+      for (const c of clusters) {
+        if (Math.random() < c.mutateRate) {
+          const cell = c.cells[Math.floor(Math.random() * c.cells.length)];
+          cell.char = pickHex();
+        }
+      }
+    }
+
+    function renderClusters() {
+      ctx.globalAlpha = 0.28;
+      ctx.fillStyle = mainColor;
+      for (const c of clusters) {
+        for (const cell of c.cells) {
+          ctx.fillText(cell.char, cell.x * fontSize, cell.y * fontSize + fontSize + yOffset);
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function renderNoise() {
+      const noiseCount = 4;
+      ctx.globalAlpha = 0.12;
+      ctx.fillStyle = mainColor;
+      for (let i = 0; i < noiseCount; i++) {
+        const nx = Math.floor(Math.random() * gridCols);
+        const ny = Math.floor(Math.random() * gridRows);
+        ctx.fillText(pickHex(), nx * fontSize, ny * fontSize + fontSize + yOffset);
+      }
+      ctx.globalAlpha = 1;
+    }
+
     function renderColumns() {
+      const safeBottom = gridRows * fontSize;
       for (let i = 0; i < drops.length; i++) {
         if (drops[i] < 0) { drops[i] += speedFactors[i]; continue; }
 
@@ -97,24 +396,24 @@
         const char = pickChar(y);
 
         ctx.fillStyle = mainColor;
-        ctx.fillText(char, x, y);
+        ctx.fillText(char, x, y + yOffset);
         if (y - fontSize > 0) {
           ctx.fillStyle = trailColor;
-          ctx.fillText(pickChar(y - fontSize), x, y - fontSize);
+          ctx.fillText(pickChar(y - fontSize), x, y - fontSize + yOffset);
         }
 
         // 4.4 In-place glyph cycling (error mode only)
         if (glyphCyclingRate > 0 && cells[i].length > 0 && Math.random() < glyphCyclingRate) {
           const cell = cells[i][Math.floor(Math.random() * cells[i].length)];
           ctx.fillStyle = mainColor;
-          ctx.fillText(pickChar(cell.y), cell.x, cell.y);
+          ctx.fillText(pickChar(cell.y), cell.x, cell.y + yOffset);
         }
 
         cells[i].push({ x, y });
         if (cells[i].length > 20) cells[i].shift();
 
         // Error-mode: rare head-jump to another lane, leaves a trail
-        if (jumpsRemaining[i] > 0 && y > 0 && y < canvas.height && Math.random() < 0.004) {
+        if (jumpsRemaining[i] > 0 && y > 0 && y < safeBottom && Math.random() < 0.004) {
           const targetCol = Math.floor(Math.random() * columns);
           if (targetCol !== i) {
             ghosts.push({
@@ -129,7 +428,7 @@
           }
         }
 
-        if (y > canvas.height && Math.random() > 0.975) {
+        if (y > safeBottom && Math.random() > 0.975) {
           drops[i] = -Math.floor(Math.random() * 30);
           cells[i].length = 0;
           if (errorMode) jumpsRemaining[i] = 2;
@@ -153,7 +452,7 @@
         ctx.fillStyle = mainColor;
         for (let s = 1; s <= numSteps; s++) {
           const xp = x0 + dx * (s / numSteps);
-          ctx.fillText(errorMode ? pickGlitchChar() : pickChar(ghost.y), xp, ghost.y);
+          ctx.fillText(errorMode ? pickGlitchChar() : pickChar(ghost.y), xp, ghost.y + yOffset);
         }
         if (ghost.frame >= ghost.totalFrames) ghosts.splice(g, 1);
       }
@@ -167,21 +466,60 @@
 
     function drawMatrix(timestamp) {
       rafId = requestAnimationFrame(drawMatrix);
+      if (!initialized) return;
       if (timestamp - lastTime < interval) return;
       lastTime = timestamp;
 
       clearCanvas();
-      renderColumns();
-      advanceGhosts();
+      if (amberMode) {
+        advanceClusters();
+        /* Order matters — traces underlay, clusters overlay to hide trace
+           cells that pass through node interiors, noise peppers, packets on top. */
+        renderTraces();
+        renderClusters();
+        renderNoise();
+        advancePackets();
+        renderPackets();
+      } else {
+        renderColumns();
+        advanceGhosts();
+      }
       blitLens();
     }
 
-    initMatrix();
+    /* Debounced reinit — both viewport resize and header/footer size changes
+       funnel through here so the grid stays snapped to the current safe area. */
     let resizeTimer = null;
-    window.addEventListener('resize', () => {
+    const scheduleInit = () => {
       if (resizeTimer) clearTimeout(resizeTimer);
       resizeTimer = setTimeout(initMatrix, 100);
-    });
+    };
+
+    /* Defer the first init until DOM is parsed (header/footer are siblings
+       rendered after this component, so their metrics aren't available on
+       inline-script evaluation). The draw loop runs but no-ops until ready. */
+    function bootstrap() {
+      initMatrix();
+      /* ResizeObserver catches content-driven size changes (fonts loading,
+         dynamic header bits, footer toggles) that don't fire window resize. */
+      if (typeof ResizeObserver === 'function') {
+        const targets = [
+          document.querySelector('header'),
+          document.querySelector('footer.hub-footer'),
+          document.getElementById('input-bar'),
+        ].filter(Boolean);
+        if (targets.length) {
+          const ro = new ResizeObserver(scheduleInit);
+          for (const t of targets) ro.observe(t);
+        }
+      }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bootstrap, { once: true });
+    } else {
+      bootstrap();
+    }
+    window.addEventListener('resize', scheduleInit);
     rafId = requestAnimationFrame(drawMatrix);
 
     /* Cursor lens tracking with smooth lerp follow */
