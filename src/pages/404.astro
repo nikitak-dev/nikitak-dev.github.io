@@ -1,11 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
-<BaseLayout title="404 // NOT FOUND" logoText="VBSOLXTE_VXTOMVTIONS" subtitle="// Segmentation fault :: this page does not exist" hideSocial={true} errorMode={true} brokenTyping={true} noindex={true}>
+<BaseLayout title="404 // NOT FOUND" logoText="VBSOLXTE_VXTOMVTIONS" subtitle="ERR!: Segmentation fault :: this page does not exist" hideSocial={true} errorMode={true} brokenTyping={true} noindex={true}>
   <main class="error-hub">
     <div class="glitch-text" data-text="[ 404 ]">[ 404 ]</div>
     <p class="error-caption"><span id="page-scramble">// PAGE NOT FOUND</span></p>
-    <a href="/" class="btn-terminal btn-back">BACK TO HUB</a>
+    <a href="/" class="btn-terminal btn-back">REBOOT SYSTEM</a>
   </main>
 </BaseLayout>
 
@@ -23,11 +23,15 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   .error-caption {
     color: var(--green-dim);
-    font-size: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
   }
 
   .btn-back {
-    padding: 10px 24px;
+    padding: 12px 32px;
+    font-size: 16px;
     text-decoration: none;
   }
 
@@ -82,7 +86,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
     function makeRandomSubtitle() {
       const len = 44;
-      let s = '// ';
+      let s = 'ERR!: ';
       for (let i = 0; i < len; i++) s += subtitleGlyphs[Math.floor(Math.random() * subtitleGlyphs.length)];
       return s;
     }
