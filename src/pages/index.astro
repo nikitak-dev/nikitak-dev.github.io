@@ -1,10 +1,12 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import DocsModal from '../components/DocsModal.astro';
-import { PROJECTS, liveCount, totalCount, STATUS_SYMBOL, STATUS_LABEL } from '../data/projects';
+import { PROJECTS, liveCount, totalCount, categoryCount, STATUS_SYMBOL, STATUS_LABEL } from '../data/projects';
 
 const live = liveCount();
 const total = totalCount();
+const aiCount = categoryCount('ai');
+const autoCount = categoryCount('automation');
 const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Berlin' });
 ---
 <BaseLayout procLive={live} procTotal={total}>
@@ -16,8 +18,8 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
   <main id="hub">
     <div class="grid-legend">
       <span class="section-label">// LEGEND:</span>
-      <span class="legend-item legend-ai" data-filter="ai" tabindex="0"><span class="legend-dot"></span>AI-POWERED</span>
-      <span class="legend-item legend-auto" data-filter="automation" tabindex="0"><span class="legend-dot"></span>AUTOMATION</span>
+      <button type="button" class="legend-item legend-ai" data-filter="ai" aria-pressed="false"><span class="legend-dot"></span>AI-POWERED <span class="legend-count">[{aiCount}]</span></button>
+      <button type="button" class="legend-item legend-auto" data-filter="automation" aria-pressed="false"><span class="legend-dot"></span>AUTOMATION <span class="legend-count">[{autoCount}]</span></button>
       <button
         type="button"
         id="shortcuts-trigger"
@@ -165,16 +167,49 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
       (e.currentTarget).setAttribute('aria-expanded', 'true');
     });
 
-    /* Legend filter on hover/focus */
-    document.querySelectorAll('.legend-item').forEach(item => {
+    /* Legend filter — hover/focus previews, click pins (toggle), Esc clears */
+    const legendItems = document.querySelectorAll('.legend-item[data-filter]');
+    let pinnedFilter = null;
+
+    function applyFilter(filter) {
+      grid.classList.remove('filter-ai', 'filter-automation');
+      if (filter) grid.classList.add(`filter-${filter}`);
+    }
+
+    function syncPressed() {
+      legendItems.forEach(i => i.setAttribute('aria-pressed', i.dataset.filter === pinnedFilter ? 'true' : 'false'));
+    }
+
+    legendItems.forEach(item => {
       const filter = item.dataset.filter;
-      if (!filter) return;
-      const on = () => grid.classList.add(`filter-${filter}`);
-      const off = () => grid.classList.remove(`filter-${filter}`);
-      item.addEventListener('mouseenter', on);
-      item.addEventListener('mouseleave', off);
-      item.addEventListener('focus', on);
-      item.addEventListener('blur', off);
+      /* Suppress mouse-click focus so the button doesn't keep focus and re-trigger
+         the filter on window refocus (minimize → restore). Keyboard Tab still focuses. */
+      item.addEventListener('mousedown', e => e.preventDefault());
+      /* Hover/focus only previews when nothing is pinned. Pinned wins until clicked. */
+      item.addEventListener('mouseenter', () => { if (!pinnedFilter) applyFilter(filter); });
+      item.addEventListener('mouseleave', () => { if (!pinnedFilter) applyFilter(null); });
+      item.addEventListener('focus', () => { if (!pinnedFilter) applyFilter(filter); });
+      item.addEventListener('blur', () => {
+        /* Skip blur caused by window losing focus — focus returns on restore,
+           keeping the filter applied avoids a visible flash. */
+        if (!document.hasFocus()) return;
+        if (!pinnedFilter) applyFilter(null);
+      });
+      item.addEventListener('click', () => {
+        pinnedFilter = pinnedFilter === filter ? null : filter;
+        syncPressed();
+        /* Keep preview if user is still hovering after unpin (desktop), else clear (touch) */
+        applyFilter(pinnedFilter || (item.matches(':hover') ? filter : null));
+      });
+    });
+
+    /* Click on empty area inside the legend bar clears the pinned filter */
+    document.querySelector('.grid-legend')?.addEventListener('click', e => {
+      if (e.target.closest('.legend-item, #shortcuts-trigger')) return;
+      if (!pinnedFilter) return;
+      pinnedFilter = null;
+      syncPressed();
+      applyFilter(null);
     });
 
     /* --- Card selection & keyboard navigation --- */
@@ -225,6 +260,8 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
 
     document.addEventListener('keydown', e => {
       if (!bootDone) return;
+      /* Suppress hub shortcuts while a modal is open — Esc/Enter/digits belong to the dialog */
+      if (document.body.classList.contains('modal-open')) return;
       if (/^[1-9]$/.test(e.key)) {
         const idx = parseInt(e.key) - 1;
         if (cards[idx]) { selectCard(cards[idx]); kbPulse(cards[idx]); }
@@ -242,6 +279,11 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
         launchSelected();
       } else if (e.key === 'Escape') {
         selectCard(null);
+        if (pinnedFilter) {
+          pinnedFilter = null;
+          syncPressed();
+          applyFilter(null);
+        }
       }
     });
   </script>

@@ -59,6 +59,7 @@
   --amber-ghost: rgba(255, 170, 0, 0.08);
   --amber-glow: rgba(255, 170, 0, 0.15);
   --amber-glow-strong: rgba(255, 170, 0, 0.3);
+  --text-bright-amber: #fff0cc;
   /* layout tokens */
   --font: 'JetBrains Mono', monospace;
   --content-max: 1000px;

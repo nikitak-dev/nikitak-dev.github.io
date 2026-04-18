@@ -302,17 +302,30 @@ header {
   letter-spacing: 0.04em;
 }
 .legend-item {
+  /* button reset */
+  border: 1px solid transparent;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  /* layout */
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 12px;
   letter-spacing: 0.06em;
+  padding: 2px 6px;
   cursor: pointer;
   outline: none;
-  transition: color var(--transition), text-shadow var(--transition);
+  transition: color var(--transition), text-shadow var(--transition), border-color var(--transition), background var(--transition), box-shadow var(--transition);
 }
 .legend-item:hover,
 .legend-item:focus-visible { text-shadow: 0 0 8px currentColor; }
+.legend-count { font-weight: 300; }
+.legend-ai   .legend-count { color: var(--green-muted); }
+.legend-auto .legend-count { color: var(--amber-muted); }
+.legend-item:hover .legend-count,
+.legend-item:focus-visible .legend-count,
+.legend-item[aria-pressed="true"] .legend-count { color: inherit; }
 .legend-dot { width: 8px; height: 8px; border-radius: 1px; display: inline-block; }
 .legend-ai   .legend-dot { background: var(--green); box-shadow: 0 0 6px var(--green-glow); }
 .legend-auto .legend-dot { background: var(--amber); box-shadow: 0 0 6px var(--amber-glow-strong); }
@@ -320,6 +333,21 @@ header {
 .legend-auto { color: var(--amber-dim); }
 .legend-ai:hover, .legend-ai:focus-visible   { color: var(--green); }
 .legend-auto:hover, .legend-auto:focus-visible { color: var(--amber); }
+/* Pinned state — mirrors .btn-terminal:hover, per-category palette */
+.legend-ai[aria-pressed="true"] {
+  background: var(--user-border);
+  border-color: var(--green);
+  color: var(--text-bright);
+  box-shadow: 0 0 20px var(--green-glow-strong), inset 0 0 10px var(--green-glow);
+  text-shadow: 0 0 8px var(--green-glow-strong);
+}
+.legend-auto[aria-pressed="true"] {
+  background: var(--amber-glow);
+  border-color: var(--amber);
+  color: var(--text-bright-amber);
+  box-shadow: 0 0 20px var(--amber-glow-strong), inset 0 0 10px var(--amber-glow);
+  text-shadow: 0 0 8px var(--amber-glow-strong);
+}
 
 /* Legend filter: dim off-category cards */
 .project-grid.filter-ai        .project-card.theme-amber,

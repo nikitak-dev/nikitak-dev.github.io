@@ -59,6 +59,7 @@ export const PROJECTS: Project[] = [
 
 export const liveCount = (): number => PROJECTS.filter(p => p.status === 'live').length;
 export const totalCount = (): number => PROJECTS.length;
+export const categoryCount = (c: ProjectCategory): number => PROJECTS.filter(p => p.category === c).length;
 
 export const STATUS_SYMBOL: Record<ProjectStatus, string> = {
   live: '●',
