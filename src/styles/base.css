@@ -28,25 +28,48 @@ body {
 body[data-error="true"] {
   animation: crtJitter 5s linear infinite;
 }
+/* Error beam is a stuttery continuous red stripe — keep repeat-x so the tile
+   loops seamlessly (the shared green rule is no-repeat, which would leave
+   gaps incompatible with the glitch aesthetic). */
+body[data-error="true"] header::before,
+body[data-error="true"] .beam-line::after,
+body[data-error="true"] .hub-footer::before,
+body[data-error="true"] .docs-modal .modal-header::before,
+body[data-error="true"] #input-bar::before {
+  background-repeat: repeat-x;
+}
+/* Each beam runs the wrap (stuttery movement) and a second uncorrelated
+   beamFlicker (brief opacity dips). Durations differ so flickers are
+   desynchronized across beams — reinforces the broken-CRT feel. */
 body[data-error="true"] header::before {
-  animation: beamWrapError 1.4s steps(10, end) infinite;
-  animation-delay: -0.3s;
+  animation:
+    beamWrapError 1.4s steps(10, end) infinite,
+    beamFlicker   3.7s linear        infinite;
+  animation-delay: -0.3s, -0.5s;
 }
 body[data-error="true"] .beam-line::after {
-  animation: beamWrapError 1.7s steps(10, end) infinite;
-  animation-delay: -0.9s;
+  animation:
+    beamWrapError 1.7s steps(10, end) infinite,
+    beamFlicker   2.9s linear        infinite;
+  animation-delay: -0.9s, -1.1s;
 }
 body[data-error="true"] .hub-footer::before {
-  animation: beamWrapError 1.1s steps(10, end) infinite;
-  animation-delay: -1.2s;
+  animation:
+    beamWrapError 1.1s steps(10, end) infinite,
+    beamFlicker   4.3s linear        infinite;
+  animation-delay: -1.2s, -0.2s;
 }
 body[data-error="true"] .docs-modal .modal-header::before {
-  animation: beamWrapError 1.5s steps(10, end) infinite;
-  animation-delay: -0.6s;
+  animation:
+    beamWrapError 1.5s steps(10, end) infinite,
+    beamFlicker   3.1s linear        infinite;
+  animation-delay: -0.6s, -1.8s;
 }
 body[data-error="true"] #input-bar::before {
-  animation: beamWrapError 1.3s steps(10, end) infinite;
-  animation-delay: -0.7s;
+  animation:
+    beamWrapError 1.3s steps(10, end) infinite,
+    beamFlicker   2.3s linear        infinite;
+  animation-delay: -0.7s, -0.9s;
 }
 
 @keyframes crtJitter {
@@ -57,13 +80,34 @@ body[data-error="true"] #input-bar::before {
   92% { filter: brightness(0.88); }
 }
 
+/* Positions scaled by --beam-span (from utilities.css) so the glitch travel
+   matches the beam's container — 100vw for shell beams, --modal-beam-tile
+   for the modal. The keyframe curve is intentionally non-linear: short
+   holds, sudden forward lurches, small backward glitches. Paired with
+   steps(10, end), the 10 samples per cycle land on wildly uneven positions
+   — producing a pseudo-random speed feel without real randomness. */
 @keyframes beamWrapError {
   0%   { background-position: 0 0; }
-  30%  { background-position: 40vw 0; }
-  35%  { background-position: 30vw 0; }
-  65%  { background-position: 80vw 0; }
-  70%  { background-position: 70vw 0; }
-  100% { background-position: 100vw 0; }
+  6%   { background-position: calc(var(--beam-span) * 0.02) 0; }  /* crawl */
+  18%  { background-position: calc(var(--beam-span) * 0.48) 0; }  /* lurch */
+  22%  { background-position: calc(var(--beam-span) * 0.35) 0; }  /* back */
+  40%  { background-position: calc(var(--beam-span) * 0.42) 0; }  /* hold */
+  46%  { background-position: calc(var(--beam-span) * 0.78) 0; }  /* sprint */
+  55%  { background-position: calc(var(--beam-span) * 0.60) 0; }  /* back */
+  78%  { background-position: calc(var(--beam-span) * 0.72) 0; }  /* creep */
+  85%  { background-position: calc(var(--beam-span) * 0.94) 0; }  /* jump */
+  100% { background-position: var(--beam-span) 0; }
+}
+
+/* Four irregular opacity dips per cycle — ~37ms each. Varying depth so the
+   eye catches some but not others. Paired with uncorrelated per-beam
+   durations to avoid rhythmic synchronization. */
+@keyframes beamFlicker {
+  0%, 12%, 13%, 34%, 35%, 58%, 59%, 83%, 84%, 100% { opacity: 1; }
+  12.5% { opacity: 0.4;  }
+  34.5% { opacity: 0.15; }
+  58.5% { opacity: 0.7;  }
+  83.5% { opacity: 0.05; }
 }
 
 #matrix-bg {
