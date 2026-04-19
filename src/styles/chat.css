@@ -338,6 +338,11 @@
   .media-body--file:hover .file-open { color: var(--green); text-shadow: 0 0 8px var(--green-glow); }
 }
 
+.media-body:focus { outline: none; }
+.msg-media-item:focus-within { border-color: var(--green-dim); box-shadow: var(--shadow-inset-deep), 0 0 20px var(--green-ghost); }
+.msg-media-item:focus-within .media-body--image img { filter: saturate(1) brightness(1); }
+.media-body--file:focus-visible .file-open { color: var(--green); text-shadow: 0 0 8px var(--green-glow); }
+
 /* Typing indicator — minimal inline status row, no bubble chrome. */
 .typing {
   align-self: flex-start;
