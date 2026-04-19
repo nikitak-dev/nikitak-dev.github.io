@@ -72,14 +72,26 @@ body.modal-open::after { display: none; }
      consistently across fractional browser zoom steps. */
   will-change: transform;
 }
+/* 6.67% / 93.33% correspond to the moments the gradient's bright edge first
+   enters / last leaves the beam line (bg-position = ∓0.65*tile on a
+   ±0.75*tile travel). Between these points the outline ramps; outside, it
+   holds dim. */
 @keyframes docs-modal-breathe {
   0%, 100% {
+    border-color: var(--green-muted);
+    box-shadow: 0 0  8px var(--green-glow),        inset 0 0  4px var(--green-glow);
+  }
+  6.67% {
+    border-color: var(--green-muted);
+    box-shadow: 0 0  8px var(--green-glow),        inset 0 0  4px var(--green-glow);
+  }
+  50% {
     border-color: var(--green);
     box-shadow: 0 0 24px var(--green-glow-strong), inset 0 0 14px var(--green-glow-strong);
   }
-  50% {
+  93.33% {
     border-color: var(--green-muted);
-    box-shadow: 0 0 8px var(--green-glow), inset 0 0 4px var(--green-glow);
+    box-shadow: 0 0  8px var(--green-glow),        inset 0 0  4px var(--green-glow);
   }
 }
 
@@ -151,16 +163,12 @@ body[data-theme="amber"] .docs-modal .modal-frame {
 }
 .docs-modal .modal-close { flex-shrink: 0; }
 
-/* Beam override: shared rule uses 100vw; scale tile to the header's padding-box
-   width so the beam wraps exactly at the edges — portal effect. 100cqw is the
-   content-box size, so we add 2 * padding-inline to match the ::before's span. */
+/* Modal-header's pseudo spans padding-box (content + 2×padding-inline) but cqw
+   resolves to content-box. Retarget the shared --beam-span so the beam's travel
+   matches the actual beam line width — everything else (size, keyframes,
+   breathe sync) is derived from --beam-span in utilities.css. */
 .docs-modal .modal-header::before {
-  background-size: var(--modal-beam-tile) 100%;
-  animation-name: beamWrapModal;
-}
-@keyframes beamWrapModal {
-  from { background-position: 0 0; }
-  to   { background-position: var(--modal-beam-tile) 0; }
+  --beam-span: var(--modal-beam-tile);
 }
 
 .docs-modal .modal-section { margin-bottom: 24px; }

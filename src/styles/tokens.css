@@ -73,7 +73,7 @@
   --content-max: 1000px;
   --transition: 0.2s;
   --beam-height: 1px;
-  --beam-duration: 3s;
+  --beam-duration: 4.5s;
   --beam-blur: 3px;
   --shadow-inset-deep: inset 0 0 28px rgba(0, 0, 0, 0.75);
   --scanline-line: rgba(0, 0, 0, 0.12);
