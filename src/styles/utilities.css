@@ -31,7 +31,8 @@
   }
 }
 .btn-terminal:focus-visible:not(:disabled),
-.btn-terminal:active:not(:disabled) {
+.btn-terminal:active:not(:disabled),
+.btn-terminal.kbd-press:not(:disabled) {
   background: var(--user-border);
   border-color: var(--green);
   color: var(--text-bright);
@@ -39,7 +40,8 @@
   text-shadow: 0 0 8px var(--green-glow-strong);
 }
 
-.btn-terminal:active:not(:disabled) {
+.btn-terminal:active:not(:disabled),
+.btn-terminal.kbd-press:not(:disabled) {
   transform: scale(0.97);
   transition: transform 80ms ease-out;
 }
