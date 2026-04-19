@@ -26,7 +26,7 @@ Key structural elements follow a **4px grid**. Content elements follow a **2px g
 - **Logo / h1**: `20px`, `font-weight: 700`
 - **Subtitle** (header tagline): `12px`, `font-weight: 400`, `color: var(--text-muted)`, `letter-spacing: 0.02em`
 - **Card title**: `16px`, `font-weight: 700`, `color: var(--green)`, `text-shadow: 0 0 8px var(--green-ghost)`
-- **Stack label** (`// n8n | ...`): `12px`, `font-weight: 700`, `color: var(--green)`, `letter-spacing: 0.06em`, `text-shadow: 0 0 8px var(--green-ghost)` — scaled-down card-title
+- **Stack label** (`// n8n | ...`): `12px`, `font-weight: 400`, `color: var(--green)`, `letter-spacing: 0.06em`, no glow — calm technical caption, readable but recessive vs `.card-title`
 - **Section labels** (`// KNOWLEDGE BASE`): `12px`, `font-weight: 700`, `letter-spacing: 0.10em`, `color: var(--green-mid)`, `text-shadow: 0 0 10px var(--green-glow-label)`, `text-transform: uppercase`
 - **Body text / descriptions**: `12px`, `font-weight: 400`, `color: var(--text-muted)`
 - **Buttons**: `12px`, `font-weight: 400`, `letter-spacing: 0.06em`, `text-transform: uppercase`
@@ -141,7 +141,7 @@ Used by beam separators, panels (`.project-card`, `.grid-legend`), scanline over
 ## Conventions
 
 - `// LABEL:` pattern for section headers — uppercase, `letter-spacing: 0.10em`, `color: var(--green-mid)`, bold, with glow
-- `// stack | comment` pattern for tech stack — same weight/color as card title, smaller scale, no uppercase
+- `// stack | comment` pattern for tech stack — same color as card title (`--green`), lighter weight (`400`), smaller scale, no uppercase, no glow
 - `[ KEY: VALUE ]` pattern for status blocks in ribbons/footers
 - `[ 001 ]` pattern for card IDs — `10px`, `color: var(--text-muted)`
 - Status labels: `.card-status.live / .private / .wip` — `10px`, `letter-spacing: 0.06em`, color-coded (`--green` / `--green-dim` / `--green-muted`); `.live` pulses via `connPulse` animation. Dot primitive intentionally omitted — availability is already conveyed by the card's launch button.
