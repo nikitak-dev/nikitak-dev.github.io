@@ -28,7 +28,7 @@ import '../styles/chat.css';
   <main id="chat-page" data-webhook={import.meta.env.PUBLIC_RAG_WEBHOOK}>
     <div id="chat" role="log" aria-live="polite" aria-atomic="false" aria-label="Conversation">
       <div id="chat-spacer"></div>
-      <div id="empty-state" class="scanlines-section">
+      <div id="empty-state" class="scanlines-section" data-cascade-item>
         <div class="empty-main">
           <div class="empty-icon">[?]</div>
           <h2><span>Awaiting input</span><span class="await-cursor" aria-hidden="true"></span></h2>
@@ -36,7 +36,7 @@ import '../styles/chat.css';
       </div>
     </div>
 
-    <div id="input-bar" class="scanlines-section">
+    <div id="input-bar" class="scanlines-section" data-cascade-item="slide">
       <div class="input-status">
         <span class="input-status-left">// TRY TO ASK:</span>
         <span class="input-status-right">

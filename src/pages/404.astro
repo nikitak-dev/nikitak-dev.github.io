@@ -3,9 +3,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 <BaseLayout title="404 // NOT FOUND" logoText="VBSOLXTE_VXTOMVTIONS" subtitle="ERR!: Segmentation fault :: this page does not exist" hideSocial={true} errorMode={true} brokenTyping={true} noindex={true}>
   <main class="error-hub">
-    <div class="glitch-text" data-text="[ 404 ]">[ 404 ]</div>
-    <p class="error-caption"><span id="page-scramble">PAGE NOT FOUND</span></p>
-    <a href="/" class="btn-terminal btn-back">REBOOT SYSTEM</a>
+    <div class="error-main" data-cascade-item>
+      <div class="glitch-text" data-text="[ 404 ]">[ 404 ]</div>
+      <p class="error-caption"><span id="page-scramble">PAGE NOT FOUND</span></p>
+    </div>
+    <a href="/" class="btn-terminal btn-back" data-cascade-item>REBOOT SYSTEM</a>
   </main>
 </BaseLayout>
 
@@ -19,6 +21,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     flex-direction: column;
     gap: 24px;
     text-align: center;
+  }
+
+  .error-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
   }
 
   .error-caption {

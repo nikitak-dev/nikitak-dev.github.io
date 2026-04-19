@@ -174,3 +174,25 @@ body.no-global-scanlines::after { display: none; }
   );
   pointer-events: none;
 }
+
+/* === CASCADE SYSTEM ===
+   Elements marked [data-cascade-item] start invisible and fade in sequentially
+   on .cascade-ready. BaseLayout's runtime assigns per-item delays via the
+   --cascade-delay custom property and adds .cascade-ready when the page is
+   ready (DOMContentLoaded on normal pages, endBoot on hub).
+
+   Items use opacity-only so transforms can't extend a scroll container's
+   overflow and flash a scrollbar mid-animation. Slide is reserved for the
+   shell (header / footer), which always live outside scroll containers. */
+[data-cascade-item] { opacity: 0; }
+
+[data-cascade-item].cascade-ready {
+  animation: fadeIn 0.4s ease-out var(--cascade-delay, 0s) forwards;
+}
+
+/* Slide variant — use for shell-like items that live outside a scroll container
+   and should rise into place (e.g. input bar acting as a bottom shell on pages
+   without a footer). */
+[data-cascade-item="slide"].cascade-ready {
+  animation: fadeSlideUp 0.4s ease-out var(--cascade-delay, 0s) forwards;
+}

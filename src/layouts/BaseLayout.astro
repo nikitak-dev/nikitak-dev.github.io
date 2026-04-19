@@ -176,6 +176,54 @@ const structuredData = {
   </footer>
   )}
 
+  <script is:inline>
+    /* Cascade runtime — walks [data-cascade-item] elements in document order,
+       assigns a staggered --cascade-delay, then activates the footer with a
+       computed --footer-delay so it always appears after the last item. Fires
+       on DOMContentLoaded, except on pages with a boot-screen (hub): there,
+       the page's own endBoot() invokes window._runCascade() after the boot
+       sequence completes. */
+    (function () {
+      const STEP = 0.2;
+
+      /* Once the entry animation ends, release the fill-mode hold so that
+         interactive state styles (e.g. :active { transform: scale(...) }) can
+         take over. Without this the animation keeps transform pinned to the
+         final keyframe forever. */
+      function release(el) {
+        el.addEventListener('animationend', () => {
+          el.style.animation = 'none';
+          el.style.opacity = '1';
+        }, { once: true });
+      }
+
+      function runCascade() {
+        const header = document.querySelector('header');
+        if (header) { header.classList.add('cascade-ready'); release(header); }
+        const items = document.querySelectorAll('[data-cascade-item]');
+        items.forEach((el, i) => {
+          el.style.setProperty('--cascade-delay', ((i + 1) * STEP) + 's');
+          el.classList.add('cascade-ready');
+          release(el);
+        });
+        const footer = document.querySelector('.hub-footer');
+        if (footer) {
+          footer.style.setProperty('--footer-delay', ((items.length + 1) * STEP) + 's');
+          footer.classList.add('ready');
+          release(footer);
+        }
+      }
+
+      if (document.getElementById('boot-screen')) {
+        window._runCascade = runCascade;
+      } else if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', runCascade, { once: true });
+      } else {
+        runCascade();
+      }
+    })();
+  </script>
+
   <script is:inline define:vars={{ buildTime }}>
     /* --- Logo loop --- */
     var logoLoopTimer = null;
