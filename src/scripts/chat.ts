@@ -46,21 +46,7 @@ function appendMultilineText(parent: HTMLElement, text: string) {
   });
 }
 
-function buildMediaHeader(filename: string): HTMLElement {
-  const header = document.createElement('div');
-  header.className = 'media-header';
-  const label = document.createElement('span');
-  label.className = 'media-header-label';
-  label.textContent = '// FILE:';
-  const name = document.createElement('span');
-  name.className = 'media-header-name';
-  name.textContent = filename;
-  header.appendChild(label);
-  header.appendChild(name);
-  return header;
-}
-
-function buildFileCard(type: 'pdf' | 'video', viewUrl: string): HTMLElement {
+function buildFileCard(type: 'pdf' | 'video', viewUrl: string, filename: string): HTMLElement {
   const link = document.createElement('a');
   link.className = 'media-body media-body--file';
   link.href = viewUrl;
@@ -71,6 +57,13 @@ function buildFileCard(type: 'pdf' | 'video', viewUrl: string): HTMLElement {
   icon.className = 'file-icon';
   icon.textContent = type === 'pdf' ? '[PDF]' : '[VID]';
   link.appendChild(icon);
+
+  if (filename) {
+    const name = document.createElement('div');
+    name.className = 'file-name';
+    name.textContent = filename;
+    link.appendChild(name);
+  }
 
   const open = document.createElement('div');
   open.className = 'file-open';
@@ -111,12 +104,11 @@ function buildMediaList(media: MediaItem[]): HTMLElement | null {
 
     const item = document.createElement('div');
     item.className = 'msg-media-item';
-    item.appendChild(buildMediaHeader(filename));
 
     if (m.type === 'image') {
       item.appendChild(buildImageBody(m.url, filename, viewUrl));
     } else if (m.type === 'video' || m.type === 'pdf') {
-      item.appendChild(buildFileCard(m.type, viewUrl));
+      item.appendChild(buildFileCard(m.type, viewUrl, filename));
     } else {
       continue;
     }
