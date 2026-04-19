@@ -167,7 +167,7 @@ const structuredData = {
     <div class:list={['sys-status', errorMode && 'sys-status--end']}>
       <span>{errorMode ? '[ SYS: ERROR ]' : '[ SYS: NOMINAL ]'}</span>
       <span>[ UPTIME: <span id="uptime-val">{errorMode ? '--' : '0d 0h'}</span> ]</span>
-      <span>{errorMode ? `[ PROC: 0/${procTotal} LIVE ]` : `[ PROC: ${procLive}/${procTotal} LIVE ]`}</span>
+      <span>{errorMode ? '[ PROC: 0/? LIVE ]' : `[ PROC: ${procLive}/${procTotal} LIVE ]`}</span>
       {errorMode
         ? <span class="status-block-dead">[ CONN: LOST ]</span>
         : <span class="status-block-live">[ CONN: ESTABLISHED ]</span>
