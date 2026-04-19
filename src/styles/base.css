@@ -77,7 +77,10 @@ body[data-error="true"] #input-bar::before {
    and .bubble chat messages. Full horizontal scanlines + RGB chromatic aberration. */
 body::after,
 .scanlines-section::after,
-.bubble::after {
+.bubble::after,
+.msg-media-item::after,
+.sources-toggle::after,
+.sources-tags::after {
   content: '';
   inset: 0;
   background:
@@ -100,7 +103,10 @@ body::after,
 }
 body::after { position: fixed; }
 .scanlines-section::after,
-.bubble::after { position: absolute; display: block; }
+.bubble::after,
+.msg-media-item::after,
+.sources-toggle::after,
+.sources-tags::after { position: absolute; display: block; }
 
 .overlay-vignette {
   position: fixed;

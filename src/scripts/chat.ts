@@ -46,6 +46,58 @@ function appendMultilineText(parent: HTMLElement, text: string) {
   });
 }
 
+function buildMediaHeader(filename: string): HTMLElement {
+  const header = document.createElement('div');
+  header.className = 'media-header';
+  const label = document.createElement('span');
+  label.className = 'media-header-label';
+  label.textContent = '// FILE:';
+  const name = document.createElement('span');
+  name.className = 'media-header-name';
+  name.textContent = filename;
+  header.appendChild(label);
+  header.appendChild(name);
+  return header;
+}
+
+function buildFileCard(type: 'pdf' | 'video', viewUrl: string): HTMLElement {
+  const link = document.createElement('a');
+  link.className = 'media-body media-body--file';
+  link.href = viewUrl;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+
+  const icon = document.createElement('div');
+  icon.className = 'file-icon';
+  icon.textContent = type === 'pdf' ? '[PDF]' : '[VID]';
+  link.appendChild(icon);
+
+  const open = document.createElement('div');
+  open.className = 'file-open';
+  open.textContent = '[ OPEN ]';
+  link.appendChild(open);
+
+  return link;
+}
+
+function buildImageBody(src: string, alt: string, viewUrl: string): HTMLElement {
+  const link = document.createElement('a');
+  link.className = 'media-body media-body--image';
+  link.href = viewUrl;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+
+  const img = document.createElement('img');
+  img.className = 'loading';
+  img.src = src;
+  img.alt = alt;
+  img.loading = 'lazy';
+  img.addEventListener('load', () => img.classList.remove('loading'), { once: true });
+
+  link.appendChild(img);
+  return link;
+}
+
 function buildMediaList(media: MediaItem[]): HTMLElement | null {
   const mediaEl = document.createElement('div');
   mediaEl.className = 'msg-media';
@@ -54,41 +106,20 @@ function buildMediaList(media: MediaItem[]): HTMLElement | null {
     if (!isSafeUrl(m.url)) continue;
     if (!isSafeDriveId(m.driveFileId)) continue;
 
+    const filename = typeof m.filename === 'string' ? m.filename : '';
+    const viewUrl = `https://drive.google.com/file/d/${m.driveFileId}/view`;
+
     const item = document.createElement('div');
     item.className = 'msg-media-item';
-    const filename = typeof m.filename === 'string' ? m.filename : '';
+    item.appendChild(buildMediaHeader(filename));
 
     if (m.type === 'image') {
-      const link = document.createElement('a');
-      link.href = `https://drive.google.com/file/d/${m.driveFileId}/view`;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-
-      const img = document.createElement('img');
-      img.className = 'loading';
-      img.src = m.url;
-      img.alt = filename;
-      img.loading = 'lazy';
-      img.addEventListener('load', () => img.classList.remove('loading'), { once: true });
-
-      link.appendChild(img);
-      item.appendChild(link);
+      item.appendChild(buildImageBody(m.url, filename, viewUrl));
     } else if (m.type === 'video' || m.type === 'pdf') {
-      const iframe = document.createElement('iframe');
-      iframe.src = m.url;
-      iframe.loading = 'lazy';
-      iframe.title = filename || 'media';
-      iframe.allow = 'fullscreen';
-      iframe.allowFullscreen = true;
-      item.appendChild(iframe);
+      item.appendChild(buildFileCard(m.type, viewUrl));
     } else {
       continue;
     }
-
-    const label = document.createElement('div');
-    label.className = 'media-label';
-    label.textContent = filename;
-    item.appendChild(label);
 
     mediaEl.appendChild(item);
   }
@@ -96,14 +127,37 @@ function buildMediaList(media: MediaItem[]): HTMLElement | null {
   return mediaEl.childElementCount > 0 ? mediaEl : null;
 }
 
+let sourcesUid = 0;
+
 function buildSourcesList(sources: Source[]): HTMLElement {
   const srcEl = document.createElement('div');
   srcEl.className = 'sources';
 
-  const label = document.createElement('span');
-  label.className = 'sources-label';
-  label.textContent = 'src';
-  srcEl.appendChild(label);
+  const tagsId = `sources-tags-${++sourcesUid}`;
+
+  const toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.className = 'sources-toggle btn-terminal';
+  toggle.setAttribute('aria-expanded', 'false');
+  toggle.setAttribute('aria-controls', tagsId);
+  toggle.textContent = 'SHOW SOURCES';
+
+  const tags = document.createElement('div');
+  tags.className = 'sources-tags';
+  tags.id = tagsId;
+  tags.hidden = true;
+
+  const header = document.createElement('div');
+  header.className = 'sources-header';
+  const hName = document.createElement('span');
+  hName.className = 'sources-header-name';
+  hName.textContent = 'SOURCE';
+  const hMetric = document.createElement('span');
+  hMetric.className = 'sources-header-metric';
+  hMetric.textContent = 'RELEVANCE';
+  header.appendChild(hName);
+  header.appendChild(hMetric);
+  tags.appendChild(header);
 
   for (const s of sources) {
     const scoreNum = Number(s.score) || 0;
@@ -113,6 +167,7 @@ function buildSourcesList(sources: Source[]): HTMLElement {
     tag.className = 'source-tag';
 
     const name = document.createElement('span');
+    name.className = 'source-name';
     name.textContent = typeof s.filename === 'string' ? s.filename : '';
     tag.appendChild(name);
 
@@ -125,12 +180,40 @@ function buildSourcesList(sources: Source[]): HTMLElement {
     tag.appendChild(bar);
 
     const pctEl = document.createElement('span');
+    pctEl.className = 'source-pct';
     pctEl.textContent = `${pct}%`;
     tag.appendChild(pctEl);
 
-    srcEl.appendChild(tag);
+    tags.appendChild(tag);
   }
 
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const frames: Keyframe[] = [
+    { opacity: 0, transform: 'translateY(10px)' },
+    { opacity: 1, transform: 'translateY(0)' },
+  ];
+  let anim: Animation | null = null;
+
+  toggle.addEventListener('click', () => {
+    const expanded = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!expanded));
+    toggle.textContent = expanded ? 'SHOW SOURCES' : 'HIDE SOURCES';
+
+    anim?.cancel();
+    const duration = reduced ? 0 : 300;
+
+    if (expanded) {
+      anim = tags.animate(frames, { duration, easing: 'ease-in', direction: 'reverse', fill: 'forwards' });
+      anim.onfinish = () => { tags.hidden = true; };
+    } else {
+      tags.hidden = false;
+      anim = tags.animate(frames, { duration, easing: 'ease-out', fill: 'forwards' });
+      requestAnimationFrame(() => { chat.scrollTop = chat.scrollHeight; });
+    }
+  });
+
+  srcEl.appendChild(toggle);
+  srcEl.appendChild(tags);
   return srcEl;
 }
 
@@ -282,11 +365,11 @@ document.addEventListener('error', (e) => {
   if (!target || target.tagName !== 'IMG') return;
   const item = target.closest('.msg-media-item') as HTMLElement | null;
   if (!item) return;
-  const label = item.querySelector('.media-label');
+  const body = item.querySelector('.media-body');
   const errorDiv = document.createElement('div');
-  errorDiv.className = 'media-error';
-  errorDiv.textContent = `[ IMAGE UNAVAILABLE: ${label?.textContent ?? 'file'} ]`;
-  item.replaceChildren(errorDiv);
+  errorDiv.className = 'media-body media-error';
+  errorDiv.textContent = '[ IMAGE UNAVAILABLE ]';
+  if (body) body.replaceWith(errorDiv); else item.appendChild(errorDiv);
 }, true);
 
 let isLoading = false;
