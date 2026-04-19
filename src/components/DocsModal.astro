@@ -40,16 +40,12 @@ const titleId = `${id}-title`;
     const closeBtn = modal.querySelector('.modal-close');
     closeBtn && closeBtn.addEventListener('click', () => modal.close());
 
-    /* body.modal-open cleanup on close — parent sets it on open.
-       Also blur the trigger after native focus-restore: Escape-close restores focus with
-       keyboard context, so :focus-visible lingers on the opener and it looks "selected". */
+    /* body.modal-open cleanup on close — parent sets it on open. Native <dialog>
+       restores focus to the opener on close; we leave it so keyboard users keep
+       their place in the tab order. */
     modal.addEventListener('close', () => {
       document.body.classList.remove('modal-open');
       document.querySelectorAll(`[aria-controls="${id}"]`).forEach(t => t.setAttribute('aria-expanded', 'false'));
-      requestAnimationFrame(() => {
-        const active = document.activeElement;
-        if (active instanceof HTMLElement && active !== document.body) active.blur();
-      });
     });
 
     /* Drag-close fix: only close on backdrop click if mousedown+mouseup both on dialog itself */
