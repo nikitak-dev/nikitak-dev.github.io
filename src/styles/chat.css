@@ -65,8 +65,12 @@
 #empty-state .empty-icon,
 #empty-state h2 { user-select: none; }
 
-#empty-state.hidden {
+#empty-state.hidden,
+#empty-state.hidden * {
   pointer-events: none;
+}
+
+#empty-state.hidden {
   animation: fadeSlideOut 0.5s ease-in forwards;
 }
 
