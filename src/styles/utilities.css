@@ -92,38 +92,68 @@ header::before,
   to   { background-position: 100vw 0; }
 }
 
-/* === AMBER BEAM (comet) ===
-   Dim amber baseline (--amber-deep via inherited background-color) is always
-   visible. A gradient paints a bright head at the right (leading edge) with a
-   dim tail fading to transparent on the left. Fill grows left-to-right over 12s,
-   rolls back to 0 over 0.25s (≈97.959% turnaround of a 12.25s cycle). A
-   synchronized brightness pulse peaks at the turnaround and drops with the rollback. */
+/* === AMBER BEAM (matrix snake) ===
+   Baseline: constant --amber-deep (background-color). A fixed-length gradient
+   "snake" (~30% of span) traverses left→right on the lower layer. On impact,
+   an overlay layer (top background-image, solid amber-bright) rises sharply
+   via --flash-alpha (registered @property) and covers everything — snake and
+   baseline — giving a uniform flash independent of snake position. The overlay
+   then fades back through alpha to reveal baseline. Brightness filter ramps
+   head intensity during traversal and spikes at flash. Drop-shadow halo static.
+   Cycle: 12.25s, linear, infinite. */
+@property --flash-alpha {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
 body[data-theme="amber"] header::before,
 body[data-theme="amber"] .beam-line::after,
 body[data-theme="amber"] .hub-footer::before,
 body[data-theme="amber"] .docs-modal .modal-header::before,
 body[data-theme="amber"] #input-bar::before {
-  background-image: linear-gradient(90deg,
-    transparent 0%,
-    var(--amber-dim) 80%,
-    var(--amber-bright) 100%
-  );
-  background-size: 0% 100%;
-  background-position: 0 0;
-  background-repeat: no-repeat;
-  animation: tickMarch 12.25s linear infinite, beamPulse 12.25s linear infinite;
+  --snake-span: 100cqw;
+  --flash-alpha: 0;
+  background-color: var(--amber-deep);
+  background-image:
+    linear-gradient(90deg, rgba(255, 204, 68, var(--flash-alpha)), rgba(255, 204, 68, var(--flash-alpha))),
+    linear-gradient(90deg, transparent 0%, var(--amber-dim) 40%, var(--amber-bright) 100%);
+  background-size:
+    100% 100%,
+    calc(var(--snake-span) * 0.3) 100%;
+  background-position:
+    0 0,
+    calc(var(--snake-span) * -0.3) 0;
+  background-repeat:
+    no-repeat,
+    no-repeat;
+  animation: amberSnake 12.25s linear infinite, amberFlash 12.25s linear infinite;
 }
 
-@keyframes tickMarch {
-  0%       { background-size: 0%   100%; }
-  97.959%  { background-size: 100% 100%; }
-  100%     { background-size: 0%   100%; }
+/* Modal-header's pseudo spans padding-box (content + 2×padding-inline) but cqw
+   resolves to content-box. Use the existing --modal-beam-tile so the snake's
+   traversal end matches the actual beam width. */
+body[data-theme="amber"] .docs-modal .modal-header::before {
+  --snake-span: var(--modal-beam-tile);
 }
 
-@keyframes beamPulse {
-  0%       { filter: drop-shadow(0 0 var(--beam-blur) var(--amber-dim)) brightness(0.5); }
-  97.959%  { filter: drop-shadow(0 0 var(--beam-blur) var(--amber-dim)) brightness(1.3); }
-  100%     { filter: drop-shadow(0 0 var(--beam-blur) var(--amber-dim)) brightness(0.5); }
+@keyframes amberSnake {
+  0%   { background-position: 0 0, calc(var(--snake-span) * -0.3) 0; }
+  86%  { background-position: 0 0, calc(var(--snake-span) *  0.7) 0; }   /* head reaches right edge — impact */
+  87%  { background-position: 0 0, var(--snake-span) 0; }                /* snake exits (covered by overlay) */
+  100% { background-position: 0 0, var(--snake-span) 0; }                /* hold off-screen */
+}
+
+@keyframes amberFlash {
+  0%    { --flash-alpha: 0;    filter: drop-shadow(0 0 var(--beam-blur) var(--amber-dim)) brightness(1.0); }
+  3%    { --flash-alpha: 0;    filter: drop-shadow(0 0 var(--beam-blur) var(--amber-dim)) brightness(1.0); }
+  60%   { --flash-alpha: 0;    filter: drop-shadow(0 0 var(--beam-blur) var(--amber-dim)) brightness(1.15); }
+  85.9% { --flash-alpha: 0;    filter: drop-shadow(0 0 var(--beam-blur) var(--amber-dim)) brightness(1.4); }
+  86%   { --flash-alpha: 1;    filter: drop-shadow(0 0 var(--beam-blur) var(--amber-dim)) brightness(2.0); }
+  89%   { --flash-alpha: 1;    filter: drop-shadow(0 0 var(--beam-blur) var(--amber-dim)) brightness(2.0); }
+  92%   { --flash-alpha: 0.6;  filter: drop-shadow(0 0 var(--beam-blur) var(--amber-dim)) brightness(1.5); }
+  95%   { --flash-alpha: 0.25; filter: drop-shadow(0 0 var(--beam-blur) var(--amber-dim)) brightness(1.1); }
+  100%  { --flash-alpha: 0;    filter: drop-shadow(0 0 var(--beam-blur) var(--amber-dim)) brightness(1.0); }
 }
 
 /* === SHARED SCROLLBAR (webkit) — used by #hub, #chat, .modal-frame === */

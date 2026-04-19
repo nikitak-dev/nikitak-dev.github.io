@@ -83,20 +83,42 @@ body.modal-open::after { display: none; }
   }
 }
 
-/* Amber theme: sync the frame's breathe with the beam cycle. Border ramps up
-   with the beam's fill (0 → ≈97.959% of 12.25s cycle), then drops back with the
-   rollback (97.959% → 100%, 0.25s) — matches the beam's fill/rollback exactly. */
+/* Amber theme: sync the frame's breathe with the snake beam cycle. The outline
+   mirrors the snake's intensity — quiet baseline through the traversal, ramps
+   up as the head approaches the right edge (60 → 86%), peaks on the impact
+   flash (87 → 89%), then decays through mid/dim/muted back to baseline, matching
+   the amberFlash keyframe percentages. */
 body[data-theme="amber"] .docs-modal .modal-frame {
   animation: docs-modal-breathe-amber 12.25s linear infinite;
 }
 @keyframes docs-modal-breathe-amber {
   0%, 100% {
     border-color: var(--amber-muted);
-    box-shadow: 0 0 8px var(--amber-glow), inset 0 0 4px var(--amber-glow);
+    box-shadow: 0 0  8px var(--amber-glow),        inset 0 0  4px var(--amber-glow);
   }
-  97.959% {
+  60% {
+    border-color: var(--amber-muted);
+    box-shadow: 0 0 10px var(--amber-glow),        inset 0 0  5px var(--amber-glow);
+  }
+  86% {
+    border-color: var(--amber-mid);
+    box-shadow: 0 0 18px var(--amber-glow-strong), inset 0 0 10px var(--amber-glow-strong);
+  }
+  87% {
     border-color: var(--amber);
-    box-shadow: 0 0 24px var(--amber-glow-strong), inset 0 0 14px var(--amber-glow-strong);
+    box-shadow: 0 0 32px var(--amber-glow-strong), inset 0 0 18px var(--amber-glow-strong);
+  }
+  89% {
+    border-color: var(--amber);
+    box-shadow: 0 0 32px var(--amber-glow-strong), inset 0 0 18px var(--amber-glow-strong);
+  }
+  92% {
+    border-color: var(--amber-mid);
+    box-shadow: 0 0 18px var(--amber-glow-strong), inset 0 0 10px var(--amber-glow-strong);
+  }
+  95% {
+    border-color: var(--amber-dim);
+    box-shadow: 0 0 12px var(--amber-glow),        inset 0 0  6px var(--amber-glow);
   }
 }
 /* .modal-frame webkit scrollbar: defined in utilities.css shared scrollbar block */
