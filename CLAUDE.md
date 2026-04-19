@@ -50,7 +50,7 @@ See `DESIGN.md` for the full reference. Key rules:
 - CRT scanline effect: global `body::after` overlay (`z-index: 9999`). Exception: pages with images/video — disable global, apply per-section
 - Section labels: `// LABEL:` pattern, `letter-spacing: 0.10em`, uppercase, bold, `var(--green-mid)`
 - Card IDs: `[ 001 ]` pattern, `10px`, `var(--text-muted)`
-- Status symbols: `●` live, `○` non-live (not `◌`)
+- Status labels: `.card-status.live / .private / .wip` — `10px`, color-coded (green / green-dim / green-muted), `.live` pulses via `connPulse`
 - Transitions: `0.2s` on hover for `background`, `border-color`, `color`, `box-shadow`, `text-shadow`
 - Grid: 4px grid for structure, 2px grid for content
 

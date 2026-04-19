@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import DocsModal from '../components/DocsModal.astro';
-import { PROJECTS, liveCount, totalCount, categoryCount, STATUS_SYMBOL, STATUS_LABEL } from '../data/projects';
+import { PROJECTS, liveCount, totalCount, categoryCount, STATUS_LABEL } from '../data/projects';
 
 const live = liveCount();
 const total = totalCount();
@@ -41,7 +41,7 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
           >
             <div class="card-header">
               <span class="card-id">[ {p.id} ]</span>
-              <span class={`card-status ${p.status}`}>{STATUS_SYMBOL[p.status]} {STATUS_LABEL[p.status]}</span>
+              <span class={`card-status ${p.status}`}>{STATUS_LABEL[p.status]}</span>
             </div>
             <div class="card-body">
               <h2 class="card-title">{p.title}</h2>

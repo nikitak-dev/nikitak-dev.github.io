@@ -144,7 +144,7 @@ Used by beam separators, panels (`.project-card`, `.grid-legend`), scanline over
 - `// stack | comment` pattern for tech stack — same weight/color as card title, smaller scale, no uppercase
 - `[ KEY: VALUE ]` pattern for status blocks in ribbons/footers
 - `[ 001 ]` pattern for card IDs — `10px`, `color: var(--text-muted)`
-- Status symbols: `●` for live (solid), `○` for non-live (outline) — avoid `◌` (dotted, breaks under scanline)
+- Status labels: `.card-status.live / .private / .wip` — `10px`, `letter-spacing: 0.06em`, color-coded (`--green` / `--green-dim` / `--green-muted`); `.live` pulses via `connPulse` animation. Dot primitive intentionally omitted — availability is already conveyed by the card's launch button.
 - Border style: `border-left: 2px solid var(--green-dim)` for message blocks
 - All interactive elements: `transition` on `background`, `border-color`, `color`, `box-shadow`, `text-shadow` — use `var(--transition)` (`0.2s`)
 

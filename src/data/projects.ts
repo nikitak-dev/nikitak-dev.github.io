@@ -62,12 +62,6 @@ export const liveCount = (): number => PROJECTS.filter(p => p.status === 'live')
 export const totalCount = (): number => PROJECTS.length;
 export const categoryCount = (c: ProjectCategory): number => PROJECTS.filter(p => p.category === c).length;
 
-export const STATUS_SYMBOL: Record<ProjectStatus, string> = {
-  live: '●',
-  private: '○',
-  wip: '○',
-};
-
 export const STATUS_LABEL: Record<ProjectStatus, string> = {
   live: 'LIVE',
   private: 'PRIVATE',
