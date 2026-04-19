@@ -155,7 +155,7 @@
 /* Bubble prefix — real span element (frees ::before for the beam). */
 .bubble-prefix {
   display: block;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.10em;
   color: var(--green-dim);
@@ -343,7 +343,7 @@
   align-items: center;
   padding: 10px 16px;
   animation: fadeSlideUp var(--transition) ease-out both;
-  font-size: 12px;
+  font-size: 10px;
   color: var(--green-mid);
 }
 
@@ -354,7 +354,7 @@
 }
 
 .typing-label {
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.10em;
   color: var(--green-dim);
