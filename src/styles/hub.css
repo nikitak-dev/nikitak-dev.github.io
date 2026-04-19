@@ -264,6 +264,7 @@ header {
 }
 
 .grid-legend .legend-help { margin-left: auto; }
+.grid-legend .section-label { text-shadow: none; }
 
 .shortcuts-list { display: flex; flex-direction: column; gap: 8px; }
 .shortcut-row {
