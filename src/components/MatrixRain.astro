@@ -146,10 +146,29 @@
        move, it "explodes" — head flashes for a few ticks, a handful of hex
        fragments scatter around and fade. */
     const MAX_SNAKES = 100;
-    const TAIL_LEN = 10;
     const MIN_STRAIGHT = 5;
     const MAX_TURNS = 4;
     const TURN_PROB = 0.15;
+    const LOOKAHEAD = 3;          // cells ahead to scan for proactive turn
+    const TURN_SCORE_DEPTH = 10;  // cells scanned when weighting turn choice
+
+    /* Species define the "traffic mix" — short-fast vs long-slow streams. The
+       weight field drives spawn distribution (summed = 1.0). */
+    const SPECIES = [
+      { tailMin: 5,  tailMax: 7,  speedMin: 1.0, speedMax: 1.5, weight: 0.4 },
+      { tailMin: 8,  tailMax: 12, speedMin: 0.6, speedMax: 1.0, weight: 0.4 },
+      { tailMin: 15, tailMax: 20, speedMin: 0.3, speedMax: 0.6, weight: 0.2 },
+    ];
+
+    function pickSpecies() {
+      const r = Math.random();
+      let acc = 0;
+      for (const sp of SPECIES) {
+        acc += sp.weight;
+        if (r < acc) return sp;
+      }
+      return SPECIES[SPECIES.length - 1];
+    }
     const EXPLODE_FRAMES = 12;
     const FLASH_FRAMES = 4;
     /* Flash envelope — dim spark → build → peak → decay → hand off to ring. */
@@ -166,16 +185,24 @@
       else if (side === 1) { x = gridCols - 1;                         y = Math.floor(Math.random() * gridRows); dir = 3; }
       else if (side === 2) { x = Math.floor(Math.random() * gridCols); y = gridRows - 1;  dir = 0; }
       else                 { x = 0;                                    y = Math.floor(Math.random() * gridRows); dir = 1; }
+      const sp = pickSpecies();
       return {
         id: nextSnakeId++,
         alive: true,
         delay: initialDelay,
         segments: [{ x, y, char: pickHex() }],   // newest (head) at end
         dir,
-        speed: 0.5 + Math.random(),              // 0.5..1.5 cells/tick
+        speed: sp.speedMin + Math.random() * (sp.speedMax - sp.speedMin),
+        tailLen: sp.tailMin + Math.floor(Math.random() * (sp.tailMax - sp.tailMin + 1)),
         speedAccum: 0,
         turnsUsed: 0,
         sinceTurn: 0,
+        pausing: 0,
+        /* Minimum inward travel before discretionary turns kick in. Keeps new
+           snakes from turning along the perimeter and leaving the center bare.
+           Forced turns (blocked ahead) still trigger regardless. */
+        penetration: 15 + Math.floor(Math.random() * 26),    // 15..40 cells
+        cellsMoved: 0,
         explode: null,
       };
     }
@@ -186,6 +213,17 @@
       const owner = snakeOccupancy.get(x + ',' + y);
       if (owner === undefined) return null;
       return owner === selfId ? 'self' : 'other';
+    }
+
+    /* How many consecutive free cells starting one step from (x,y) in dir. */
+    function freeCellsAhead(x, y, dir, selfId, maxDepth) {
+      const [dx, dy] = DIRS[dir];
+      let count = 0;
+      for (let k = 1; k <= maxDepth; k++) {
+        if (cellBlocker(x + dx * k, y + dy * k, selfId) !== null) break;
+        count++;
+      }
+      return count;
     }
 
     function startExplosion(s) {
@@ -214,72 +252,101 @@
         if (s.explode.frame >= EXPLODE_FRAMES) s.alive = false;
         return;
       }
+      /* Pause = deliberation before a committed turn. Head char flickers so
+         the pause reads as "thinking", not as a stuck snake. */
+      if (s.pausing > 0) {
+        s.pausing--;
+        const head = s.segments[s.segments.length - 1];
+        head.char = pickHex();
+        return;
+      }
 
       s.speedAccum += s.speed;
       if (s.speedAccum < 1) return;
       s.speedAccum -= 1;
 
       const head = s.segments[s.segments.length - 1];
-      const [dx, dy] = DIRS[s.dir];
-      const aheadBlock = cellBlocker(head.x + dx, head.y + dy, s.id);
       const canTurn = s.sinceTurn >= MIN_STRAIGHT && s.turnsUsed < MAX_TURNS;
 
-      /* Turn triggers:
-           - ahead is self-tail or other-tail → must turn
-           - ahead is border AND turn budget remains → must turn
-           - voluntary roll when turning is legal */
-      let mustTurn = aheadBlock === 'self' || aheadBlock === 'other';
-      if (aheadBlock === 'border' && s.turnsUsed < MAX_TURNS) mustTurn = true;
-      const voluntaryTurn = !mustTurn && canTurn && Math.random() < TURN_PROB;
+      /* First-cell block determines forced-turn semantics. */
+      const [fdx, fdy] = DIRS[s.dir];
+      const firstBlock = cellBlocker(head.x + fdx, head.y + fdy, s.id);
+      let mustTurn = firstBlock === 'self' || firstBlock === 'other';
+      if (firstBlock === 'border' && s.turnsUsed < MAX_TURNS) mustTurn = true;
 
-      if (mustTurn || voluntaryTurn) {
-        if (!canTurn) {
-          /* Forced to turn but can't (too soon or out of budget) and can't go
-             straight either — dead end. */
-          startExplosion(s);
-          return;
+      /* Discretionary turns gate on penetration — keeps fresh snakes ploughing
+         inward until they've travelled `penetration` cells. Forced turns
+         (blocked ahead) still trigger. */
+      const discretionaryAllowed = s.cellsMoved >= s.penetration;
+
+      let proactiveTurn = false;
+      if (!mustTurn && canTurn && discretionaryAllowed) {
+        const freeAhead = freeCellsAhead(head.x, head.y, s.dir, s.id, LOOKAHEAD);
+        if (freeAhead < LOOKAHEAD) {
+          const urgency = (LOOKAHEAD - freeAhead) / LOOKAHEAD;
+          if (Math.random() < urgency * 0.5 + 0.05) proactiveTurn = true;
         }
+      }
+
+      const voluntaryTurn = !mustTurn && !proactiveTurn && canTurn &&
+                            discretionaryAllowed && Math.random() < TURN_PROB;
+
+      if (mustTurn || proactiveTurn || voluntaryTurn) {
+        if (!canTurn) { startExplosion(s); return; }
         const left = (s.dir + 3) % 4;
         const right = (s.dir + 1) % 4;
+        const centerX = gridCols / 2, centerY = gridRows / 2;
+        const toCenterX = Math.sign(centerX - head.x);
+        const toCenterY = Math.sign(centerY - head.y);
+        /* Score each valid perpendicular by (open runway) + centripetal bonus
+           so turns drift inward rather than hugging the perimeter. */
         const options = [];
         for (const d of [left, right]) {
           const [ldx, ldy] = DIRS[d];
-          if (cellBlocker(head.x + ldx, head.y + ldy, s.id) === null) options.push(d);
+          if (cellBlocker(head.x + ldx, head.y + ldy, s.id) !== null) continue;
+          let score = freeCellsAhead(head.x + ldx, head.y + ldy, d, s.id,
+                                     TURN_SCORE_DEPTH);
+          if (ldx !== 0 && ldx === toCenterX) score += 3;
+          if (ldy !== 0 && ldy === toCenterY) score += 3;
+          options.push({ dir: d, score });
         }
-        if (options.length === 0) {
-          startExplosion(s);
-          return;
+        if (options.length === 0) { startExplosion(s); return; }
+        /* Prefer the option with more runway; tie breaks randomly. */
+        let chosen;
+        if (options.length === 1 || options[0].score === options[1].score) {
+          chosen = options[Math.floor(Math.random() * options.length)];
+        } else {
+          chosen = options[0].score > options[1].score ? options[0] : options[1];
         }
-        s.dir = options[Math.floor(Math.random() * options.length)];
+        s.dir = chosen.dir;
         s.turnsUsed++;
         s.sinceTurn = 0;
+        s.pausing = 1 + Math.floor(Math.random() * 2);   // 1..2 tick pause
+        return;   // move happens after the pause
       }
 
+      /* Straight step. */
       const [ndx, ndy] = DIRS[s.dir];
       const nextX = head.x + ndx, nextY = head.y + ndy;
       const finalBlock = cellBlocker(nextX, nextY, s.id);
 
       if (finalBlock === 'border') {
-        /* Turn budget exhausted — snake walks off-screen and respawns. */
         if (s.turnsUsed >= MAX_TURNS) { s.alive = false; return; }
-        startExplosion(s);
-        return;
+        startExplosion(s); return;
       }
       if (finalBlock === 'self' || finalBlock === 'other') {
-        startExplosion(s);
-        return;
+        startExplosion(s); return;
       }
 
-      /* Advance head. Occupancy is updated in-place so subsequent snakes this
-         tick see the new position. */
       s.segments.push({ x: nextX, y: nextY, char: pickHex() });
       snakeOccupancy.set(nextX + ',' + nextY, s.id);
-      if (s.segments.length > TAIL_LEN) {
+      if (s.segments.length > s.tailLen) {
         const dropped = s.segments.shift();
         const key = dropped.x + ',' + dropped.y;
         if (snakeOccupancy.get(key) === s.id) snakeOccupancy.delete(key);
       }
       s.sinceTurn++;
+      s.cellsMoved++;
     }
 
     function advanceSnakes() {
