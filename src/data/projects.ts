@@ -22,7 +22,7 @@ export const PROJECTS: Project[] = [
     desc: 'Never miss a lead because no one picked up the phone. An AI agent handles inbound calls 24/7 — qualifies prospects, schedules meetings and logs key metrics to a database automatically. Built on voice AI infrastructure.',
     stack: 'VAPI | n8n | Airtable | Google Calendar',
     meta: 'For companies paying humans to answer routine calls',
-    button: { label: 'CONTACT', disabled: true, ariaLabel: 'Contact about VOICE_AGENT project' },
+    button: { label: 'LOCKED', disabled: true, ariaLabel: 'VOICE_AGENT is private' },
   },
   {
     id: '002',
