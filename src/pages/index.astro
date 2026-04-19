@@ -27,7 +27,7 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
         aria-haspopup="dialog"
         aria-controls="shortcuts-modal"
         aria-expanded="false"
-      >[ SHORTCUTS ]</button>
+      >SHORTCUTS</button>
     </div>
     <div class="project-grid">
       {PROJECTS.map((p, i) => {
@@ -53,13 +53,13 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
             <div class="card-footer">
               <span class="card-meta">{p.meta}</span>
               {p.url ? (
-                <span class="card-launch btn-terminal" aria-hidden="true">[ {p.button.label} ]</span>
+                <span class="card-launch btn-terminal" aria-hidden="true">{p.button.label}</span>
               ) : (
                 <button
                   class="card-launch btn-terminal"
                   disabled={p.button.disabled}
                   aria-label={p.button.ariaLabel}
-                >[ {p.button.label} ]</button>
+                >{p.button.label}</button>
               )}
             </div>
           </CardTag>
