@@ -82,6 +82,7 @@ function buildImageBody(src: string, alt: string, viewUrl: string): HTMLElement 
 
   const img = document.createElement('img');
   img.className = 'loading';
+  img.referrerPolicy = 'no-referrer';
   img.src = src;
   img.alt = alt;
   img.loading = 'lazy';
