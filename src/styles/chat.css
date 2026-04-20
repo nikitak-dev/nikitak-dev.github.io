@@ -176,7 +176,22 @@
 
 .sources-toggle { position: relative; align-self: flex-start; }
 
+/* Height animation via grid-template-rows 0fr→1fr — smoothly expands and
+   collapses without JS height measurement. Padding/border live on the inner
+   wrapper so the outer box fully collapses when closed. */
 .sources-tags {
+  display: grid;
+  grid-template-rows: minmax(0, 0fr);
+  transition: grid-template-rows 0.6s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.sources-tags.expanded { grid-template-rows: minmax(0, 1fr); }
+
+.sources-tags-inner {
+  min-height: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -184,10 +199,15 @@
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-inset-deep);
-  position: relative;
+  transform: translateY(-10px);
+  opacity: 0;
+  transition: transform 0.6s ease-out, opacity 0.6s ease-out;
 }
 
-.sources-tags[hidden] { display: none; }
+.sources-tags.expanded .sources-tags-inner {
+  transform: translateY(0);
+  opacity: 1;
+}
 
 .sources-header {
   display: flex;
@@ -258,14 +278,16 @@
   color: inherit;
 }
 
+/* Image tiles keep the pristine source — disable scanline overlay. Non-image
+   tiles (media-error, files) still get scanlines via .msg-media-item::after. */
+.msg-media-item--image::after { display: none; }
+
 .media-body--image img {
   display: block;
   max-width: 100%;
   height: auto;
   min-height: 80px;
   background: var(--bg-elevated);
-  filter: saturate(0.85) brightness(0.95);
-  transition: filter var(--transition);
 }
 
 .media-body--image img.loading { animation: imgLoad 1.5s ease-in-out infinite; }
@@ -276,6 +298,7 @@
 }
 
 .media-body--file {
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -316,24 +339,54 @@
   transition: text-shadow var(--transition), color var(--transition);
 }
 
+/* Mirrors .media-body--file layout with the error palette. */
 .media-error {
-  padding: 24px 16px;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 28px 16px;
+  min-height: 140px;
+  color: var(--error-dim);
+}
+
+.error-icon {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   color: var(--error);
-  font-size: 10px;
-  letter-spacing: 0.10em;
-  text-transform: uppercase;
+  text-shadow: 0 0 6px var(--error-glow);
+}
+
+.error-name {
+  max-width: 100%;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  color: var(--error-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   text-align: center;
+}
+
+.error-status {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--error);
+  text-transform: uppercase;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .msg-media-item:not(:has(.media-error)):hover { border-color: var(--green-dim); box-shadow: var(--shadow-inset-deep), 0 0 20px var(--green-ghost); }
-  .msg-media-item:not(:has(.media-error)):hover .media-body--image img { filter: saturate(1) brightness(1); }
   .media-body--file:hover .file-open { color: var(--green); text-shadow: 0 0 8px var(--green-glow); }
 }
 
 .media-body:focus { outline: none; }
 .msg-media-item:focus-within { border-color: var(--green-dim); box-shadow: var(--shadow-inset-deep), 0 0 20px var(--green-ghost); }
-.msg-media-item:focus-within .media-body--image img { filter: saturate(1) brightness(1); }
 .media-body--file:focus-visible .file-open { color: var(--green); text-shadow: 0 0 8px var(--green-glow); }
 
 /* Typing indicator — minimal inline status row, no bubble chrome. */

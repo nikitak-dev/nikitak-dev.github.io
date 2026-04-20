@@ -105,6 +105,7 @@ function buildMediaList(media: MediaItem[]): HTMLElement | null {
 
     const item = document.createElement('div');
     item.className = 'msg-media-item';
+    if (m.type === 'image') item.classList.add('msg-media-item--image');
 
     if (m.type === 'image') {
       item.appendChild(buildImageBody(m.url, filename, viewUrl));
@@ -138,7 +139,10 @@ function buildSourcesList(sources: Source[]): HTMLElement {
   const tags = document.createElement('div');
   tags.className = 'sources-tags';
   tags.id = tagsId;
-  tags.hidden = true;
+
+  const inner = document.createElement('div');
+  inner.className = 'sources-tags-inner';
+  tags.appendChild(inner);
 
   const header = document.createElement('div');
   header.className = 'sources-header';
@@ -150,7 +154,7 @@ function buildSourcesList(sources: Source[]): HTMLElement {
   hMetric.textContent = 'RELEVANCE';
   header.appendChild(hName);
   header.appendChild(hMetric);
-  tags.appendChild(header);
+  inner.appendChild(header);
 
   for (const s of sources) {
     const scoreNum = Number(s.score) || 0;
@@ -177,31 +181,24 @@ function buildSourcesList(sources: Source[]): HTMLElement {
     pctEl.textContent = `${pct}%`;
     tag.appendChild(pctEl);
 
-    tags.appendChild(tag);
+    inner.appendChild(tag);
   }
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const frames: Keyframe[] = [
-    { opacity: 0, transform: 'translateY(10px)' },
-    { opacity: 1, transform: 'translateY(0)' },
-  ];
-  let anim: Animation | null = null;
 
   toggle.addEventListener('click', () => {
     const expanded = toggle.getAttribute('aria-expanded') === 'true';
     toggle.setAttribute('aria-expanded', String(!expanded));
     toggle.textContent = expanded ? 'SHOW SOURCES' : 'HIDE SOURCES';
+    tags.classList.toggle('expanded');
 
-    anim?.cancel();
-    const duration = reduced ? 0 : 300;
-
-    if (expanded) {
-      anim = tags.animate(frames, { duration, easing: 'ease-in', direction: 'reverse', fill: 'forwards' });
-      anim.onfinish = () => { tags.hidden = true; };
-    } else {
-      tags.hidden = false;
-      anim = tags.animate(frames, { duration, easing: 'ease-out', fill: 'forwards' });
-      requestAnimationFrame(() => { chat.scrollTop = chat.scrollHeight; });
+    // When opening, smooth-scroll to reveal the expanded block after the
+    // grid-template-rows transition finishes (height has settled by then).
+    if (!expanded) {
+      const delay = reduced ? 0 : 600;
+      setTimeout(() => {
+        chat.scrollTo({ top: chat.scrollHeight, behavior: reduced ? 'auto' : 'smooth' });
+      }, delay);
     }
   });
 
@@ -365,16 +362,37 @@ docsTrigger?.addEventListener('click', () => {
   docsTrigger.setAttribute('aria-expanded', 'true');
 });
 
-/* Capture-phase img error fallback for chat media tiles */
+/* Capture-phase img error fallback for chat media tiles. Mirrors the file-card
+   layout (icon + name + status) with the error palette. */
 document.addEventListener('error', (e) => {
   const target = e.target as HTMLElement | null;
   if (!target || target.tagName !== 'IMG') return;
   const item = target.closest('.msg-media-item') as HTMLElement | null;
   if (!item) return;
+  item.classList.remove('msg-media-item--image');
   const body = item.querySelector('.media-body');
+  const filename = (target as HTMLImageElement).alt || '';
+
   const errorDiv = document.createElement('div');
   errorDiv.className = 'media-body media-error';
-  errorDiv.textContent = '[ IMAGE UNAVAILABLE ]';
+
+  const icon = document.createElement('div');
+  icon.className = 'error-icon';
+  icon.textContent = '[!]';
+  errorDiv.appendChild(icon);
+
+  if (filename) {
+    const name = document.createElement('div');
+    name.className = 'error-name';
+    name.textContent = filename;
+    errorDiv.appendChild(name);
+  }
+
+  const status = document.createElement('div');
+  status.className = 'error-status';
+  status.textContent = '[ LOAD_FAILED ]';
+  errorDiv.appendChild(status);
+
   if (body) body.replaceWith(errorDiv); else item.appendChild(errorDiv);
 }, true);
 
@@ -467,4 +485,40 @@ input.addEventListener('keydown', (e) => {
 /* Skip initial focus on touch devices — prevents auto-opening the soft keyboard */
 if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
   input.focus();
+}
+
+/* DEV-only visual QA harness for media tiles. Opt in with ?mock=1 in the URL
+   (e.g. http://localhost:4321/multimodal-rag/?mock=1). Renders a sample
+   assistant message with three media tiles: working image, broken image
+   (→ [ LOAD_FAILED ] fallback), PDF card. Stripped from prod builds by
+   Vite dead-code elimination when import.meta.env.DEV is false. */
+if (import.meta.env.DEV && new URLSearchParams(location.search).has('mock')) {
+  addAssistantMsg({
+    answer: '**Mock response** for visual QA of media tiles. Image tile should render pristine (no scanline overlay). The broken tile should fall back to the error-card fallback with scanlines. The PDF tile should keep scanlines.',
+    sources: [
+      { filename: 'encryption_basics.txt', score: 0.56 },
+      { filename: 'symmetric-encryption.png', score: 0.14 },
+      { filename: 'doc.pdf', score: 0.10 },
+    ],
+    media: [
+      {
+        filename: 'symmetric-encryption.png',
+        type: 'image',
+        driveFileId: '1KkNVWVwyptgloZvwLqeP0gz4A9P8akah',
+        url: 'https://drive.google.com/thumbnail?id=1KkNVWVwyptgloZvwLqeP0gz4A9P8akah&sz=w800',
+      },
+      {
+        filename: 'broken.png',
+        type: 'image',
+        driveFileId: 'mockbrokenid',
+        url: 'https://drive.google.com/thumbnail?id=mockbrokenid&sz=w800',
+      },
+      {
+        filename: 'doc.pdf',
+        type: 'pdf',
+        driveFileId: 'mockpdfid',
+        url: 'https://drive.google.com/file/d/mockpdfid/preview',
+      },
+    ],
+  });
 }
