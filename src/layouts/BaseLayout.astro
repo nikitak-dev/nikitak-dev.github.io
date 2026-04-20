@@ -189,12 +189,18 @@ const structuredData = {
       /* Once the entry animation ends, release the fill-mode hold so that
          interactive state styles (e.g. :active { transform: scale(...) }) can
          take over. Without this the animation keeps transform pinned to the
-         final keyframe forever. */
+         final keyframe forever. Filter by animationName: if the entry animation
+         is interrupted (e.g. a quickly-following fadeOut), we must ignore the
+         interrupter's animationend — otherwise release would undo the new
+         hidden state. */
       function release(el) {
-        el.addEventListener('animationend', () => {
+        function onEnd(e) {
+          if (!/^(fadeIn|fadeSlideUp|fadeSlideDown)$/.test(e.animationName)) return;
           el.style.animation = 'none';
           el.style.opacity = '1';
-        }, { once: true });
+          el.removeEventListener('animationend', onEnd);
+        }
+        el.addEventListener('animationend', onEnd);
       }
 
       function runCascade() {
