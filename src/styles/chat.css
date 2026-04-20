@@ -326,8 +326,8 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .msg-media-item:hover { border-color: var(--green-dim); box-shadow: var(--shadow-inset-deep), 0 0 20px var(--green-ghost); }
-  .msg-media-item:hover .media-body--image img { filter: saturate(1) brightness(1); }
+  .msg-media-item:not(:has(.media-error)):hover { border-color: var(--green-dim); box-shadow: var(--shadow-inset-deep), 0 0 20px var(--green-ghost); }
+  .msg-media-item:not(:has(.media-error)):hover .media-body--image img { filter: saturate(1) brightness(1); }
   .media-body--file:hover .file-open { color: var(--green); text-shadow: 0 0 8px var(--green-glow); }
 }
 
