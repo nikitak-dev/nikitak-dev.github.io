@@ -240,6 +240,10 @@ function buildAssistantMessage(data: ChatResponse): HTMLElement {
 
 function hideEmptyState() {
   if (emptyState && !emptyState.classList.contains('hidden')) {
+    // BaseLayout's cascade `release()` pins inline `animation: none; opacity: 1`
+    // after the fadeIn ends. Clear both so the `.hidden` fadeSlideOut can run.
+    emptyState.style.animation = '';
+    emptyState.style.opacity = '';
     emptyState.classList.add('hidden');
   }
 }
@@ -279,7 +283,17 @@ clearBtn.addEventListener('click', () => {
   msgs.forEach(el => el.classList.add('msg--exit'));
   setTimeout(() => {
     msgs.forEach(el => el.remove());
-    if (emptyState) emptyState.classList.remove('hidden');
+    if (emptyState) {
+      emptyState.classList.remove('hidden');
+      emptyState.style.animation = '';
+      emptyState.style.opacity = '0';
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const reveal = emptyState.animate(
+        [{ opacity: 0 }, { opacity: 1 }],
+        { duration: reducedMotion ? 0 : 400, easing: 'ease-out' },
+      );
+      reveal.onfinish = () => { emptyState.style.opacity = '1'; };
+    }
     input.focus();
   }, 300);
 });
