@@ -54,7 +54,7 @@ const webhookOrigin = webhookUrl ? new URL(webhookUrl).origin : '';
 const csp = [
   "default-src 'self'",
   `connect-src 'self'${webhookOrigin ? ' ' + webhookOrigin : ''}`,
-  "img-src 'self' data: https://drive.google.com",
+  "img-src 'self' data: https://drive.google.com https://lh3.googleusercontent.com",
   "frame-src https://drive.google.com",
   "font-src https://fonts.gstatic.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
