@@ -285,14 +285,13 @@ clearBtn.addEventListener('click', () => {
     msgs.forEach(el => el.remove());
     if (emptyState) {
       emptyState.classList.remove('hidden');
-      emptyState.style.animation = '';
-      emptyState.style.opacity = '0';
+      emptyState.style.animation = 'none';
+      emptyState.style.opacity = '1';
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const reveal = emptyState.animate(
+      emptyState.animate(
         [{ opacity: 0 }, { opacity: 1 }],
         { duration: reducedMotion ? 0 : 400, easing: 'ease-out' },
       );
-      reveal.onfinish = () => { emptyState.style.opacity = '1'; };
     }
     input.focus();
   }, 300);
