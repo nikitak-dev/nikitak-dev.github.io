@@ -99,7 +99,7 @@
 .msg {
   max-width: 700px;
   line-height: 1.7;
-  animation: fadeIn var(--anim-content) ease-out both;
+  animation: fadeIn var(--anim-message) ease-out both;
   font-size: 12px;
   font-weight: 400;
 }
@@ -165,10 +165,11 @@
 
 .msg.assistant { align-self: flex-start; }
 
-.msg--exit, .typing.msg--exit { animation: fadeOut var(--anim-content) ease-in forwards; }
+.msg--exit, .typing.msg--exit { animation: fadeOut var(--anim-message) ease-in forwards; }
 
-/* Rehydrated on page refresh: single-delay opacity fade (history = one object).
-   Delay is assigned from chat.ts via --cascade-delay (= cascade-step × 1). */
+/* Rehydrated on page refresh: history is part of the page cascade, not a live
+   message — uses content tempo (0.5s), not message tempo. Single shared delay
+   so the whole transcript fades in as one unit. Delay from chat.ts. */
 .msg--rehydrated { opacity: 0; animation: fadeIn var(--anim-content) ease-out var(--cascade-delay, 0s) forwards; }
 
 .msg.assistant .sources {
@@ -393,13 +394,14 @@
 .msg-media-item:focus-within { border-color: var(--green-dim); box-shadow: var(--shadow-inset-deep), 0 0 20px var(--green-ghost); }
 .media-body--file:focus-visible .file-open { color: var(--green); text-shadow: 0 0 8px var(--green-glow); }
 
-/* Typing indicator — minimal inline status row, no bubble chrome. */
+/* Typing indicator — minimal inline status row, no bubble chrome. Delay so it
+   starts after the user's bubble finishes with a 100ms tail overlap. */
 .typing {
   align-self: flex-start;
   display: flex;
   align-items: center;
   padding: 10px 16px;
-  animation: fadeIn var(--anim-content) ease-out both;
+  animation: fadeIn var(--anim-message) ease-out calc(var(--anim-message) - 0.1s) both;
   font-size: 10px;
   color: var(--green-mid);
 }

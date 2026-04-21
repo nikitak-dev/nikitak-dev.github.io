@@ -130,11 +130,12 @@ In error mode (`body[data-error="true"]`) the green-scale variables are remapped
 --scanline-line: rgba(0, 0, 0, 0.12);           /* single scanline stripe color */
 --backdrop-bg: rgba(0, 0, 0, 0.85);             /* dialog backdrop */
 --backdrop-blur: 3px;                            /* dialog backdrop-filter blur */
---modal-duration: 500ms;                         /* dialog open/close transition */
+--modal-duration: 300ms;                         /* dialog open/close transition */
 --scale-press: 0.97;                             /* active-state tactile squish */
 --anim-content: 0.5s;                            /* entry/exit of content elements */
 --anim-shell: 0.5s;                              /* header/footer/bottom-shell slide */
 --anim-reveal: 0.5s;                             /* interactive reveal (sources expand, score bars) */
+--anim-message: 0.3s;                            /* chat message entry/exit (.msg, rehydrated) */
 --cascade-step: 0.4s;                            /* delay between sequential cascade items */
 ```
 
@@ -150,9 +151,10 @@ Entry/exit animations across the site follow a unified rhythm driven by four tok
 
 | Token | Value | Applies to |
 |-------|-------|------------|
-| `--anim-content` | `0.5s` | Entry and exit of content: `[data-cascade-item]` fadeIn, `.msg` (new message), `.msg--exit` (CLR), `.msg--rehydrated` (history restore), `.typing` indicator, `#empty-state.hidden` (fadeOut), `#boot-screen.done` (fadeSlideOut) |
+| `--anim-content` | `0.5s` | Entry and exit of content: `[data-cascade-item]` fadeIn, `.msg--rehydrated` (session history = part of page cascade), `.typing` indicator, `#empty-state.hidden` (fadeOut), `#boot-screen.done` (fadeSlideOut) |
 | `--anim-shell` | `0.5s` | Slide of page shell: `<header>` fadeSlideDown, `.hub-footer` fadeSlideUp, `[data-cascade-item="slide"]` (used when a non-footer element plays the role of bottom shell, e.g. `#input-bar` on `/multimodal-rag`) |
 | `--anim-reveal` | `0.5s` | Content reveal on interaction: `.sources-tags` expand/collapse, `.sources-tags-inner` transform/opacity, `.score-fill` width growth. Separate from content/shell — their durations may drift in the future |
+| `--anim-message` | `0.3s` | Live chat message animations: `.msg` (new message arriving during conversation), `.msg--exit` (CLR). Faster than content — feels snappy in dialog |
 | `--cascade-step` | `0.4s` | Delay between consecutive cascade items. Overlap between items = `duration − step = 100ms` |
 
 ### Sequence

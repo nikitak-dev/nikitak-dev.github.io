@@ -30,6 +30,7 @@ function tokenMs(name: string, fallback: number): number {
 }
 const ANIM_CONTENT_MS = tokenMs('--anim-content', 500);
 const ANIM_REVEAL_MS = tokenMs('--anim-reveal', 500);
+const ANIM_MESSAGE_MS = tokenMs('--anim-message', 300);
 
 type ConnState = 'established' | 'lost' | 'missing';
 
@@ -328,7 +329,7 @@ clearBtn.addEventListener('click', () => {
       );
     }
     input.focus();
-  }, ANIM_CONTENT_MS);
+  }, ANIM_MESSAGE_MS);
 });
 
 /* Rotating placeholder typewriter on input */
@@ -505,9 +506,15 @@ async function ask() {
   inflight = new AbortController();
   const signal = AbortSignal.any([inflight.signal, AbortSignal.timeout(REQUEST_TIMEOUT_MS)]);
 
+  // Fade out the typing indicator before the next message arrives.
+  const retireTyping = () => new Promise<void>((resolve) => {
+    typing.classList.add('msg--exit');
+    setTimeout(() => { typing.remove(); resolve(); }, ANIM_MESSAGE_MS);
+  });
+
   try {
     const data = await sendQuestion(q, WEBHOOK_URL, signal);
-    typing.remove();
+    await retireTyping();
     addAssistantMsg(data);
     setConnStatus('established');
     chatHistory.push({ role: 'user', content: q });
@@ -521,7 +528,7 @@ async function ask() {
       // User cancelled via CLR — CLR handles DOM cleanup.
       return;
     }
-    typing.remove();
+    await retireTyping();
     const msg = err instanceof Error ? err.message : String(err);
     const isTimeoutErr = err instanceof DOMException && err.name === 'TimeoutError';
     const isNetworkErr = !isTimeoutErr && (msg.includes('fetch') || msg.includes('NetworkError'));

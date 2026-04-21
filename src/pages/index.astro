@@ -16,7 +16,8 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
   </div>
 
   <main id="hub">
-    <div class="grid-legend" data-cascade-item>
+   <div class="hub-content" data-cascade-item>
+    <div class="grid-legend">
       <span class="section-label">// LEGEND:</span>
       <span class="legend-item legend-ai"><span class="legend-dot"></span>AI-POWERED <span class="legend-count">[{aiCount}]</span></span>
       <span class="legend-item legend-auto"><span class="legend-dot"></span>AUTOMATION <span class="legend-count">[{autoCount}]</span></span>
@@ -29,7 +30,7 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
         aria-expanded="false"
       >SHORTCUTS</button>
     </div>
-    <div class="project-grid" data-cascade-item>
+    <div class="project-grid">
       {PROJECTS.map((p, i) => {
         const CardTag = p.url ? 'a' : 'div';
         return (
@@ -66,6 +67,7 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
         );
       })}
     </div>
+   </div>
   </main>
 
   <DocsModal id="shortcuts-modal" title="HUB :: KEYBOARD SHORTCUTS" sections={['overview']}>

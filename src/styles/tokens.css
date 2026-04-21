@@ -79,12 +79,13 @@
   --scanline-line: rgba(0, 0, 0, 0.12);
   --backdrop-bg: rgba(0, 0, 0, 0.85);
   --backdrop-blur: 3px;
-  --modal-duration: 500ms;
+  --modal-duration: 300ms;
   --scale-press: 0.97;
   /* animation system — see DESIGN.md "Animation System" */
   --anim-content: 0.5s;
   --anim-shell: 0.5s;
   --anim-reveal: 0.5s;
+  --anim-message: 0.3s;
   --cascade-step: 0.4s;
   --gradient-edge-top: linear-gradient(to top, var(--green-ghost) 0%, transparent 100%);
   --gradient-edge-bottom: linear-gradient(to bottom, var(--green-ghost) 0%, transparent 100%);
