@@ -13,10 +13,10 @@ export function tokenMs(name: string, fallback: number): number {
   return Number.isFinite(n) ? n * 1000 : fallback;
 }
 
-export const isSafeUrl = (u: unknown): u is string =>
+const isSafeUrl = (u: unknown): u is string =>
   typeof u === 'string' && /^https:\/\//i.test(u);
 
-export const isSafeDriveId = (id: unknown): id is string =>
+const isSafeDriveId = (id: unknown): id is string =>
   typeof id === 'string' && /^[A-Za-z0-9_-]+$/.test(id);
 
 export function makePrefix(text: string): HTMLSpanElement {
@@ -26,7 +26,7 @@ export function makePrefix(text: string): HTMLSpanElement {
   return prefix;
 }
 
-export function appendMultilineText(parent: HTMLElement, text: string): void {
+function appendMultilineText(parent: HTMLElement, text: string): void {
   const lines = text.split('\n');
   lines.forEach((line, i) => {
     if (i > 0) parent.appendChild(document.createElement('br'));
@@ -34,7 +34,7 @@ export function appendMultilineText(parent: HTMLElement, text: string): void {
   });
 }
 
-export function buildFileCard(type: 'pdf' | 'video', viewUrl: string, filename: string): HTMLElement {
+function buildFileCard(type: 'pdf' | 'video', viewUrl: string, filename: string): HTMLElement {
   const link = document.createElement('a');
   link.className = 'media-body media-body--file';
   link.href = viewUrl;
@@ -61,7 +61,7 @@ export function buildFileCard(type: 'pdf' | 'video', viewUrl: string, filename: 
   return link;
 }
 
-export function buildImageBody(src: string, alt: string, viewUrl: string): HTMLElement {
+function buildImageBody(src: string, alt: string, viewUrl: string): HTMLElement {
   const link = document.createElement('a');
   link.className = 'media-body media-body--image';
   link.href = viewUrl;
@@ -80,7 +80,7 @@ export function buildImageBody(src: string, alt: string, viewUrl: string): HTMLE
   return link;
 }
 
-export function buildMediaList(media: MediaItem[]): HTMLElement | null {
+function buildMediaList(media: MediaItem[]): HTMLElement | null {
   const mediaEl = document.createElement('div');
   mediaEl.className = 'msg-media';
 
@@ -111,7 +111,7 @@ export function buildMediaList(media: MediaItem[]): HTMLElement | null {
 
 let sourcesUid = 0;
 
-export function buildSourcesList(sources: Source[], animRevealMs: number, chatEl: HTMLElement): HTMLElement {
+function buildSourcesList(sources: Source[], animRevealMs: number, chatEl: HTMLElement): HTMLElement {
   const srcEl = document.createElement('div');
   srcEl.className = 'sources';
 

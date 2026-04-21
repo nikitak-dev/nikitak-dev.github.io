@@ -26,7 +26,7 @@ function appendAndScroll(el: HTMLElement): void {
   chatEl!.scrollTop = chatEl!.scrollHeight;
 }
 
-export function hideEmptyState(): void {
+function hideEmptyState(): void {
   if (emptyStateEl && !emptyStateEl.classList.contains('hidden')) {
     // BaseLayout's cascade `release()` pins inline `animation: none; opacity: 1`
     // after the fadeIn ends. Clear both so the `.hidden` fadeSlideOut can run.

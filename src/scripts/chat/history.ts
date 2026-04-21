@@ -5,7 +5,7 @@
 import type { ChatResponse, HistoryItem, TranscriptItem } from './types';
 
 const HISTORY_KEY = 'rag_chat_transcript';
-export const HISTORY_MAX_TURNS = 10;
+const HISTORY_MAX_TURNS = 10;
 
 let chatHistory: HistoryItem[] = [];
 let transcript: TranscriptItem[] = [];

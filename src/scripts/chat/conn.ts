@@ -22,7 +22,7 @@ export function setConnStatus(state: ConnState): void {
   connStatusEl.className = state === 'established' ? 'status-block-live' : 'status-block-dead';
 }
 
-export type ClassifiedError = {
+type ClassifiedError = {
   /* Whether the user's cancel triggered this — callers skip UI retirement. */
   aborted: boolean;
   /* Only meaningful when aborted is false. */
