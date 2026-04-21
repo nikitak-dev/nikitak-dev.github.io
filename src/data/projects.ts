@@ -1,7 +1,7 @@
-export type ProjectStatus = 'live' | 'private' | 'wip';
-export type ProjectCategory = 'ai' | 'automation';
+type ProjectStatus = 'live' | 'private' | 'wip';
+type ProjectCategory = 'ai' | 'automation';
 
-export interface Project {
+interface Project {
   id: string;
   title: string;
   status: ProjectStatus;
