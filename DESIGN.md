@@ -124,7 +124,7 @@ In error mode (`body[data-error="true"]`) the green-scale variables are remapped
 --content-max: 1000px;             /* hub grid + legend width cap */
 --transition: 0.2s;                /* standard interaction transition */
 --beam-height: 1px;                /* beam separator height */
---beam-duration: 3s;               /* beam sweep loop */
+--beam-duration: 4.5s;             /* beam sweep loop */
 --beam-blur: 3px;                  /* beam drop-shadow blur */
 --shadow-inset-deep: inset 0 0 28px rgba(0, 0, 0, 0.75);  /* panel depth */
 --scanline-line: rgba(0, 0, 0, 0.12);           /* single scanline stripe color */
@@ -258,7 +258,7 @@ Drop a `<div class="beam-line">` anywhere to render an animated beam separator l
 <div class="beam-line"></div>
 ```
 
-Renders a 1px horizontal line with base color `var(--border)` and an animated bright beam moving right-to-left (RTL, 3s loop). Header and footer use their own `::before` pseudo-elements with the same animation.
+Renders a 1px horizontal line with base color `var(--border)` and an animated bright beam moving right-to-left (RTL, 4.5s loop). Header and footer use their own `::before` pseudo-elements with the same animation.
 
 ### Chat bubble: `.bubble`
 
