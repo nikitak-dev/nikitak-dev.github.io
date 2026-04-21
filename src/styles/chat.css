@@ -420,23 +420,6 @@
   text-transform: uppercase;
 }
 
-/* Boot query suggestions */
-.boot-query {
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  color: var(--green-dim);
-  cursor: pointer;
-  transition: color var(--transition), text-shadow var(--transition);
-  padding: 1px 0;
-  display: block;
-  padding-left: 2ch;
-  text-indent: -2ch;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .boot-query:hover { color: var(--green); text-shadow: 0 0 8px var(--green-ghost); }
-}
-
 /* Input bar */
 #input-bar {
   position: relative;

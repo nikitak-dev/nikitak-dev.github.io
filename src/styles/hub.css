@@ -117,11 +117,6 @@ header.cascade-ready { animation: fadeSlideDown var(--anim-shell) ease-out forwa
 
 .sys-status--end { margin-left: auto; }
 
-.status-cursor {
-  animation: blink 1s step-end infinite;
-  color: var(--green-dim);
-}
-
 .status-block-live {
   color: var(--green);
   animation: connPulse 3s ease-in-out infinite;
@@ -393,14 +388,6 @@ header.cascade-ready { animation: fadeSlideDown var(--anim-shell) ease-out forwa
 }
 
 .hub-footer.ready { animation: fadeSlideUp var(--anim-shell) ease-out var(--footer-delay, calc(var(--cascade-step) * 3)) forwards; }
-
-.footer-links { display: flex; gap: 12px; align-items: center; }
-.footer-sep { color: var(--border-hover); }
-.hub-footer a { color: var(--green-dim); text-decoration: none; transition: color var(--transition); }
-@media (hover: hover) and (pointer: fine) {
-  .hub-footer a:hover { color: var(--green); }
-}
-.hub-footer a:focus-visible { color: var(--green); }
 
 /* Empty-footer: keep layout/height + beam animation, hide only the content */
 .hub-footer--empty > * { visibility: hidden; }
