@@ -5,6 +5,13 @@
  * (no innerHTML interpolation) so escaping is handled by the DOM itself.
  */
 
+import type { ChatResponse, ConnState, HistoryItem, TranscriptItem } from './chat/types';
+import {
+  buildAssistantMessage,
+  makePrefix,
+  tokenMs,
+} from './chat/helpers';
+
 const chatPage = document.getElementById('chat-page') as HTMLElement | null;
 if (!chatPage) throw new Error('chat-page element not found');
 
@@ -18,20 +25,9 @@ const btn = document.getElementById('send') as HTMLButtonElement;
 const clearBtn = document.getElementById('clear') as HTMLButtonElement;
 const emptyState = document.getElementById('empty-state');
 
-/* Read an animation token (seconds) from :root and return ms. Single source
-   of truth for timings is tokens.css. */
-const rootStyle = getComputedStyle(document.documentElement);
-function tokenMs(name: string, fallback: number): number {
-  const raw = rootStyle.getPropertyValue(name).trim();
-  if (!raw) return fallback;
-  const n = parseFloat(raw);
-  return Number.isFinite(n) ? n * 1000 : fallback;
-}
 const ANIM_CONTENT_MS = tokenMs('--anim-content', 500);
 const ANIM_REVEAL_MS = tokenMs('--anim-reveal', 500);
 const ANIM_MESSAGE_MS = tokenMs('--anim-message', 300);
-
-type ConnState = 'established' | 'lost' | 'missing';
 
 function setConnStatus(state: ConnState | string) {
   if (!connStatus) return;
@@ -45,16 +41,6 @@ if (!WEBHOOK_URL) {
   btn.disabled = true;
 }
 
-const isSafeUrl = (u: unknown): u is string => typeof u === 'string' && /^https:\/\//i.test(u);
-const isSafeDriveId = (id: unknown): id is string => typeof id === 'string' && /^[A-Za-z0-9_-]+$/.test(id);
-
-type Source = { filename?: string; score?: number };
-type MediaItem = { type: string; filename?: string; url?: string; driveFileId?: string };
-type ChatResponse = { answer?: unknown; media?: MediaItem[]; sources?: Source[] };
-
-type HistoryItem = { role: 'user' | 'assistant'; content: string };
-type TranscriptItem = { q: string; data: ChatResponse };
-
 const HISTORY_KEY = 'rag_chat_transcript';
 const HISTORY_MAX_TURNS = 10;
 let chatHistory: HistoryItem[] = [];
@@ -64,204 +50,6 @@ function persistHistory() {
   try {
     sessionStorage.setItem(HISTORY_KEY, JSON.stringify({ h: chatHistory, t: transcript }));
   } catch { /* quota exceeded or storage disabled — silently skip */ }
-}
-
-function appendMultilineText(parent: HTMLElement, text: string) {
-  const lines = text.split('\n');
-  lines.forEach((line, i) => {
-    if (i > 0) parent.appendChild(document.createElement('br'));
-    parent.appendChild(document.createTextNode(line));
-  });
-}
-
-function buildFileCard(type: 'pdf' | 'video', viewUrl: string, filename: string): HTMLElement {
-  const link = document.createElement('a');
-  link.className = 'media-body media-body--file';
-  link.href = viewUrl;
-  link.target = '_blank';
-  link.rel = 'noopener noreferrer';
-
-  const icon = document.createElement('div');
-  icon.className = 'file-icon';
-  icon.textContent = type === 'pdf' ? '[PDF]' : '[VID]';
-  link.appendChild(icon);
-
-  if (filename) {
-    const name = document.createElement('div');
-    name.className = 'file-name';
-    name.textContent = filename;
-    link.appendChild(name);
-  }
-
-  const open = document.createElement('div');
-  open.className = 'file-open';
-  open.textContent = '[ OPEN ]';
-  link.appendChild(open);
-
-  return link;
-}
-
-function buildImageBody(src: string, alt: string, viewUrl: string): HTMLElement {
-  const link = document.createElement('a');
-  link.className = 'media-body media-body--image';
-  link.href = viewUrl;
-  link.target = '_blank';
-  link.rel = 'noopener noreferrer';
-
-  const img = document.createElement('img');
-  img.className = 'loading';
-  img.referrerPolicy = 'no-referrer';
-  img.src = src;
-  img.alt = alt;
-  img.loading = 'lazy';
-  img.addEventListener('load', () => img.classList.remove('loading'), { once: true });
-
-  link.appendChild(img);
-  return link;
-}
-
-function buildMediaList(media: MediaItem[]): HTMLElement | null {
-  const mediaEl = document.createElement('div');
-  mediaEl.className = 'msg-media';
-
-  for (const m of media) {
-    if (!isSafeUrl(m.url)) continue;
-    if (!isSafeDriveId(m.driveFileId)) continue;
-
-    const filename = typeof m.filename === 'string' ? m.filename : '';
-    const viewUrl = `https://drive.google.com/file/d/${m.driveFileId}/view`;
-
-    const item = document.createElement('div');
-    item.className = 'msg-media-item';
-    if (m.type === 'image') item.classList.add('msg-media-item--image');
-
-    if (m.type === 'image') {
-      item.appendChild(buildImageBody(m.url, filename, viewUrl));
-    } else if (m.type === 'video' || m.type === 'pdf') {
-      item.appendChild(buildFileCard(m.type, viewUrl, filename));
-    } else {
-      continue;
-    }
-
-    mediaEl.appendChild(item);
-  }
-
-  return mediaEl.childElementCount > 0 ? mediaEl : null;
-}
-
-let sourcesUid = 0;
-
-function buildSourcesList(sources: Source[]): HTMLElement {
-  const srcEl = document.createElement('div');
-  srcEl.className = 'sources';
-
-  const tagsId = `sources-tags-${++sourcesUid}`;
-
-  const toggle = document.createElement('button');
-  toggle.type = 'button';
-  toggle.className = 'sources-toggle btn-terminal';
-  toggle.setAttribute('aria-expanded', 'false');
-  toggle.setAttribute('aria-controls', tagsId);
-  toggle.textContent = 'SHOW SOURCES';
-
-  const tags = document.createElement('div');
-  tags.className = 'sources-tags';
-  tags.id = tagsId;
-
-  const inner = document.createElement('div');
-  inner.className = 'sources-tags-inner';
-  tags.appendChild(inner);
-
-  const header = document.createElement('div');
-  header.className = 'sources-header';
-  const hName = document.createElement('span');
-  hName.className = 'sources-header-name';
-  hName.textContent = 'SOURCE';
-  const hMetric = document.createElement('span');
-  hMetric.className = 'sources-header-metric';
-  hMetric.textContent = 'RELEVANCE';
-  header.appendChild(hName);
-  header.appendChild(hMetric);
-  inner.appendChild(header);
-
-  for (const s of sources) {
-    const scoreNum = Number(s.score) || 0;
-    const pct = (scoreNum * 100).toFixed(0);
-
-    const tag = document.createElement('div');
-    tag.className = 'source-tag';
-
-    const name = document.createElement('span');
-    name.className = 'source-name';
-    name.textContent = typeof s.filename === 'string' ? s.filename : '';
-    tag.appendChild(name);
-
-    const bar = document.createElement('div');
-    bar.className = 'score-bar';
-    const fill = document.createElement('div');
-    fill.className = 'score-fill';
-    fill.style.width = `${pct}%`;
-    bar.appendChild(fill);
-    tag.appendChild(bar);
-
-    const pctEl = document.createElement('span');
-    pctEl.className = 'source-pct';
-    pctEl.textContent = `${pct}%`;
-    tag.appendChild(pctEl);
-
-    inner.appendChild(tag);
-  }
-
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  toggle.addEventListener('click', () => {
-    const expanded = toggle.getAttribute('aria-expanded') === 'true';
-    toggle.setAttribute('aria-expanded', String(!expanded));
-    toggle.textContent = expanded ? 'SHOW SOURCES' : 'HIDE SOURCES';
-    tags.classList.toggle('expanded');
-
-    // When opening, smooth-scroll to reveal the expanded block after the
-    // grid-template-rows transition finishes (height has settled by then).
-    if (!expanded) {
-      const delay = reduced ? 0 : ANIM_REVEAL_MS;
-      setTimeout(() => {
-        chat.scrollTo({ top: chat.scrollHeight, behavior: reduced ? 'auto' : 'smooth' });
-      }, delay);
-    }
-  });
-
-  srcEl.appendChild(toggle);
-  srcEl.appendChild(tags);
-  return srcEl;
-}
-
-function makePrefix(text: string): HTMLSpanElement {
-  const prefix = document.createElement('span');
-  prefix.className = 'bubble-prefix';
-  prefix.textContent = text;
-  return prefix;
-}
-
-function buildAssistantMessage(data: ChatResponse): HTMLElement {
-  const wrapper = document.createElement('div');
-  wrapper.className = 'msg assistant';
-
-  const answerEl = document.createElement('div');
-  answerEl.className = 'answer bubble bubble--left';
-  answerEl.appendChild(makePrefix('< SYS'));
-  appendMultilineText(answerEl, String(data.answer ?? ''));
-  wrapper.appendChild(answerEl);
-
-  if (Array.isArray(data.media) && data.media.length > 0) {
-    const mediaEl = buildMediaList(data.media);
-    if (mediaEl) wrapper.appendChild(mediaEl);
-  }
-
-  if (Array.isArray(data.sources) && data.sources.length > 0) {
-    wrapper.appendChild(buildSourcesList(data.sources));
-  }
-
-  return wrapper;
 }
 
 function hideEmptyState() {
@@ -290,7 +78,7 @@ function addUserMsg(text: string) {
 
 function addAssistantMsg(data: ChatResponse) {
   hideEmptyState();
-  appendAndScroll(buildAssistantMessage(data));
+  appendAndScroll(buildAssistantMessage(data, ANIM_REVEAL_MS, chat));
 }
 
 function addErrorMsg(text: string) {
