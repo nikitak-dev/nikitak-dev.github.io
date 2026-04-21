@@ -8,7 +8,9 @@
 const chatPage = document.getElementById('chat-page') as HTMLElement | null;
 if (!chatPage) throw new Error('chat-page element not found');
 
-const WEBHOOK_URL = chatPage.dataset.webhook;
+// Dev mode uses the Vite proxy (/webhook/rag-chat) to bypass CORS locally.
+// Production uses the real URL injected via PUBLIC_RAG_WEBHOOK env var.
+const WEBHOOK_URL = import.meta.env.DEV ? '/webhook/rag-chat' : chatPage.dataset.webhook;
 const connStatus = document.getElementById('conn-status');
 const chat = document.getElementById('chat') as HTMLElement;
 const input = document.getElementById('question') as HTMLInputElement;
@@ -37,6 +39,20 @@ const isSafeDriveId = (id: unknown): id is string => typeof id === 'string' && /
 type Source = { filename?: string; score?: number };
 type MediaItem = { type: string; filename?: string; url?: string; driveFileId?: string };
 type ChatResponse = { answer?: unknown; media?: MediaItem[]; sources?: Source[] };
+
+type HistoryItem = { role: 'user' | 'assistant'; content: string };
+type TranscriptItem = { q: string; data: ChatResponse };
+
+const HISTORY_KEY = 'rag_chat_transcript';
+const HISTORY_MAX_TURNS = 10;
+let chatHistory: HistoryItem[] = [];
+let transcript: TranscriptItem[] = [];
+
+function persistHistory() {
+  try {
+    sessionStorage.setItem(HISTORY_KEY, JSON.stringify({ h: chatHistory, t: transcript }));
+  } catch { /* quota exceeded or storage disabled — silently skip */ }
+}
 
 function appendMultilineText(parent: HTMLElement, text: string) {
   const lines = text.split('\n');
@@ -276,6 +292,9 @@ function addErrorMsg(text: string) {
 
 clearBtn.addEventListener('click', () => {
   inflight?.abort();
+  chatHistory = [];
+  transcript = [];
+  sessionStorage.removeItem(HISTORY_KEY);
   const msgs = [...chat.querySelectorAll<HTMLElement>('.msg, .typing')];
   if (!msgs.length) { input.focus(); return; }
   msgs.forEach(el => el.classList.add('msg--exit'));
@@ -399,13 +418,39 @@ document.addEventListener('error', (e) => {
 let isLoading = false;
 let inflight: AbortController | null = null;
 
-const REQUEST_TIMEOUT_MS = 15000;
+// 30s accommodates the full retrieval + rewrite + LLM chain. Claude Sonnet 4
+// under load + Gemini Flash rewrite routinely pushes past 15s on cold paths.
+const REQUEST_TIMEOUT_MS = 30000;
+
+// Hydrate session transcript on page load (survives refresh, clears on tab close)
+try {
+  const saved = sessionStorage.getItem(HISTORY_KEY);
+  if (saved) {
+    const parsed = JSON.parse(saved) as { h?: HistoryItem[]; t?: TranscriptItem[] };
+    if (Array.isArray(parsed.h) && Array.isArray(parsed.t) && parsed.t.length) {
+      chatHistory = parsed.h;
+      transcript = parsed.t;
+      parsed.t.forEach((item) => {
+        addUserMsg(item.q);
+        addAssistantMsg(item.data);
+      });
+      // Cascade rehydrated messages by opacity so they do not all
+      // fadeSlideUp at once on page refresh.
+      chat.querySelectorAll<HTMLElement>('.msg').forEach((el, i) => {
+        el.classList.add('msg--rehydrated');
+        el.style.setProperty('--cascade-delay', (i * 0.08) + 's');
+      });
+    }
+  }
+} catch { /* corrupt storage, ignore */ }
 
 async function sendQuestion(q: string, url: string, signal: AbortSignal): Promise<ChatResponse> {
+  const body: { question: string; history?: HistoryItem[] } = { question: q };
+  if (chatHistory.length) body.history = chatHistory;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question: q }),
+    body: JSON.stringify(body),
     signal,
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -447,6 +492,12 @@ async function ask() {
     typing.remove();
     addAssistantMsg(data);
     setConnStatus('established');
+    chatHistory.push({ role: 'user', content: q });
+    chatHistory.push({ role: 'assistant', content: String(data.answer ?? '').slice(0, 500) });
+    transcript.push({ q, data });
+    if (chatHistory.length > HISTORY_MAX_TURNS * 2) chatHistory = chatHistory.slice(-HISTORY_MAX_TURNS * 2);
+    if (transcript.length > HISTORY_MAX_TURNS) transcript = transcript.slice(-HISTORY_MAX_TURNS);
+    persistHistory();
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') {
       // User cancelled via CLR — CLR handles DOM cleanup.

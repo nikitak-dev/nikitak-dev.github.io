@@ -167,6 +167,12 @@
 
 .msg--exit, .typing.msg--exit { animation: fadeSlideOut 0.3s ease-in forwards; }
 
+/* Rehydrated on page refresh: staggered opacity-only fade (no slide) so the
+   restored transcript cascades in instead of all bubbles fadeSlideUp-ing
+   simultaneously. Mirrors the [data-cascade-item] pattern in utilities.css.
+   Delay is assigned per-element from chat.ts. */
+.msg--rehydrated { opacity: 0; animation: fadeIn 0.4s ease-out var(--cascade-delay, 0s) forwards; }
+
 .msg.assistant .sources {
   margin-top: 12px;
   display: flex;
