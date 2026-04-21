@@ -184,7 +184,10 @@ const structuredData = {
        the page's own endBoot() invokes window._runCascade() after the boot
        sequence completes. */
     (function () {
-      const STEP = 0.2;
+      /* Read --cascade-step from :root so the step is centralized in tokens.css.
+         Fallback 0.4 matches the token default. */
+      const rootStyle = getComputedStyle(document.documentElement);
+      const STEP = parseFloat(rootStyle.getPropertyValue('--cascade-step')) || 0.4;
 
       /* Once the entry animation ends, release the fill-mode hold so that
          interactive state styles (e.g. :active { transform: scale(...) }) can
