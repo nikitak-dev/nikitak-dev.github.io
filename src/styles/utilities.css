@@ -2,12 +2,25 @@
    variants, and the shared webkit scrollbar rules. These are consumed across hub,
    modal, chat and error pages. */
 
-/* === BUTTON BASE === */
+/* === BUTTON BASE ===
+   Active-look palette is driven by local custom properties so the hover/focus/
+   active/kbd-press states only swap the palette instead of redeclaring all
+   visual properties. CSS has no way to share a single declaration block
+   between a @media-gated selector (:hover) and non-gated ones without a
+   preprocessor, so palette swaps are duplicated — property swap is cheaper to
+   keep in sync than the full declaration. */
 .btn-terminal {
-  border: 1px solid var(--border);
-  color: var(--green);
-  background: var(--bg-input);
-  text-shadow: 0 0 6px var(--green-glow-strong);
+  --btn-bg: var(--bg-input);
+  --btn-border: var(--border);
+  --btn-color: var(--green);
+  --btn-box-shadow: none;
+  --btn-text-shadow: 0 0 6px var(--green-glow-strong);
+
+  border: 1px solid var(--btn-border);
+  color: var(--btn-color);
+  background: var(--btn-bg);
+  box-shadow: var(--btn-box-shadow);
+  text-shadow: var(--btn-text-shadow);
   font-family: var(--font);
   font-size: 12px;
   font-weight: 400;
@@ -21,23 +34,26 @@
   justify-content: center;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .btn-terminal:hover:not(:disabled) {
-    background: var(--user-border);
-    border-color: var(--green);
-    color: var(--text-bright);
-    box-shadow: 0 0 20px var(--green-glow-strong), inset 0 0 10px var(--green-glow);
-    text-shadow: 0 0 8px var(--green-glow-strong);
-  }
-}
+/* Active-look palette — see note on .btn-terminal. Duplicated below in the
+   hover block; keep in sync. */
 .btn-terminal:focus-visible:not(:disabled),
 .btn-terminal:active:not(:disabled),
 .btn-terminal.kbd-press:not(:disabled) {
-  background: var(--user-border);
-  border-color: var(--green);
-  color: var(--text-bright);
-  box-shadow: 0 0 20px var(--green-glow-strong), inset 0 0 10px var(--green-glow);
-  text-shadow: 0 0 8px var(--green-glow-strong);
+  --btn-bg: var(--user-border);
+  --btn-border: var(--green);
+  --btn-color: var(--text-bright);
+  --btn-box-shadow: 0 0 20px var(--green-glow-strong), inset 0 0 10px var(--green-glow);
+  --btn-text-shadow: 0 0 8px var(--green-glow-strong);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-terminal:hover:not(:disabled) {
+    --btn-bg: var(--user-border);
+    --btn-border: var(--green);
+    --btn-color: var(--text-bright);
+    --btn-box-shadow: 0 0 20px var(--green-glow-strong), inset 0 0 10px var(--green-glow);
+    --btn-text-shadow: 0 0 8px var(--green-glow-strong);
+  }
 }
 
 .btn-terminal:active:not(:disabled),
