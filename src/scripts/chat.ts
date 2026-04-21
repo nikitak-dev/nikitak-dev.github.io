@@ -19,6 +19,18 @@ const clearBtn = document.getElementById('clear') as HTMLButtonElement;
 const emptyState = document.getElementById('empty-state');
 const docsTrigger = document.getElementById('docs-trigger');
 
+/* Read an animation token (seconds) from :root and return ms. Single source
+   of truth for timings is tokens.css. */
+const rootStyle = getComputedStyle(document.documentElement);
+function tokenMs(name: string, fallback: number): number {
+  const raw = rootStyle.getPropertyValue(name).trim();
+  if (!raw) return fallback;
+  const n = parseFloat(raw);
+  return Number.isFinite(n) ? n * 1000 : fallback;
+}
+const ANIM_CONTENT_MS = tokenMs('--anim-content', 500);
+const ANIM_REVEAL_MS = tokenMs('--anim-reveal', 500);
+
 type ConnState = 'established' | 'lost' | 'missing';
 
 function setConnStatus(state: ConnState | string) {
@@ -211,7 +223,7 @@ function buildSourcesList(sources: Source[]): HTMLElement {
     // When opening, smooth-scroll to reveal the expanded block after the
     // grid-template-rows transition finishes (height has settled by then).
     if (!expanded) {
-      const delay = reduced ? 0 : 600;
+      const delay = reduced ? 0 : ANIM_REVEAL_MS;
       setTimeout(() => {
         chat.scrollTo({ top: chat.scrollHeight, behavior: reduced ? 'auto' : 'smooth' });
       }, delay);
@@ -298,8 +310,8 @@ clearBtn.addEventListener('click', () => {
   const msgs = [...chat.querySelectorAll<HTMLElement>('.msg, .typing')];
   if (!msgs.length) { input.focus(); return; }
   msgs.forEach(el => {
-    // Drop rehydrated class so .msg--exit (fadeSlideOut) wins the animation
-    // resolution — otherwise rehydrated's fadeIn rule keeps masking exit.
+    // Drop rehydrated class so .msg--exit wins animation resolution —
+    // otherwise rehydrated's fadeIn rule keeps masking exit.
     el.classList.remove('msg--rehydrated');
     el.classList.add('msg--exit');
   });
@@ -312,11 +324,11 @@ clearBtn.addEventListener('click', () => {
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       emptyState.animate(
         [{ opacity: 0 }, { opacity: 1 }],
-        { duration: reducedMotion ? 0 : 400, easing: 'ease-out' },
+        { duration: reducedMotion ? 0 : ANIM_CONTENT_MS, easing: 'ease-out' },
       );
     }
     input.focus();
-  }, 300);
+  }, ANIM_CONTENT_MS);
 });
 
 /* Rotating placeholder typewriter on input */
@@ -440,22 +452,12 @@ try {
         addAssistantMsg(item.data);
       });
       // Rehydrated history = one object in the cascade. Top-to-bottom sequence:
-      // empty-state fadeOut (0s) → history fadeIn (0.4s) → input-bar slide (0.6s).
-      // Single shared delay, no per-item stagger — history is one unit.
+      // empty-state fadeOut (0) → history fadeIn (1 step) → input-bar slide (2 steps).
+      // History shares a single delay; input-bar follows naturally via its DOM index.
       chat.querySelectorAll<HTMLElement>('.msg').forEach((el) => {
         el.classList.add('msg--rehydrated');
-        el.style.setProperty('--cascade-delay', '0.4s');
+        el.style.setProperty('--cascade-delay', 'calc(var(--cascade-step) * 1)');
       });
-      // BaseLayout cascade pins input-bar at 0.4s (its index). Restart the
-      // animation with 0.6s so history precedes input-bar when hydrating.
-      document.addEventListener('DOMContentLoaded', () => {
-        const inputBar = document.getElementById('input-bar');
-        if (!inputBar) return;
-        inputBar.classList.remove('cascade-ready');
-        inputBar.style.setProperty('--cascade-delay', '0.6s');
-        void inputBar.offsetWidth;
-        inputBar.classList.add('cascade-ready');
-      }, { once: true });
     }
   }
 } catch { /* corrupt storage, ignore */ }
