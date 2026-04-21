@@ -31,13 +31,3 @@ import DocsModal from '../components/DocsModal.astro';
 <style>
   #db-merge-page { flex: 1; }
 </style>
-
-<script is:inline>
-  document.getElementById('docs-trigger')?.addEventListener('click', (e) => {
-    const modal = document.getElementById('docs-modal');
-    if (!modal) return;
-    modal.showModal();
-    document.body.classList.add('modal-open');
-    e.currentTarget.setAttribute('aria-expanded', 'true');
-  });
-</script>

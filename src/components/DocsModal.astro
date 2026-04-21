@@ -40,9 +40,20 @@ const titleId = `${id}-title`;
     const closeBtn = modal.querySelector('.modal-close');
     closeBtn && closeBtn.addEventListener('click', () => modal.close());
 
-    /* body.modal-open cleanup on close — parent sets it on open. Native <dialog>
-       restores focus to the opener on close; we leave it so keyboard users keep
-       their place in the tab order. */
+    /* Auto-wire any element with aria-controls=<id> to open this modal, so
+       page markup stays declarative — callers just add the a11y attribute. */
+    document.querySelectorAll(`[aria-controls="${id}"]`).forEach(trigger => {
+      trigger.addEventListener('click', () => {
+        if (modal.open) return;
+        modal.showModal();
+        document.body.classList.add('modal-open');
+        trigger.setAttribute('aria-expanded', 'true');
+      });
+    });
+
+    /* body.modal-open cleanup on close. Native <dialog> restores focus to the
+       opener on close; we leave it so keyboard users keep their place in the
+       tab order. */
     modal.addEventListener('close', () => {
       document.body.classList.remove('modal-open');
       document.querySelectorAll(`[aria-controls="${id}"]`).forEach(t => t.setAttribute('aria-expanded', 'false'));

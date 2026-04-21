@@ -164,15 +164,6 @@ const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Ber
     bootScreen.addEventListener('click', endBoot);
     document.addEventListener('keydown', endBoot, { once: true });
 
-    /* Shortcuts modal */
-    document.getElementById('shortcuts-trigger')?.addEventListener('click', (e) => {
-      const modal = document.getElementById('shortcuts-modal');
-      if (!modal) return;
-      modal.showModal();
-      document.body.classList.add('modal-open');
-      (e.currentTarget).setAttribute('aria-expanded', 'true');
-    });
-
     /* --- Card selection & keyboard navigation --- */
     const cards = document.querySelectorAll('.project-card');
     let selectedCard = null;

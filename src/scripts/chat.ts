@@ -17,7 +17,6 @@ const input = document.getElementById('question') as HTMLInputElement;
 const btn = document.getElementById('send') as HTMLButtonElement;
 const clearBtn = document.getElementById('clear') as HTMLButtonElement;
 const emptyState = document.getElementById('empty-state');
-const docsTrigger = document.getElementById('docs-trigger');
 
 /* Read an animation token (seconds) from :root and return ms. Single source
    of truth for timings is tokens.css. */
@@ -389,15 +388,6 @@ clearBtn.addEventListener('click', () => {
     }
   })();
 })();
-
-/* Docs modal trigger */
-docsTrigger?.addEventListener('click', () => {
-  const modal = document.getElementById('docs-modal') as HTMLDialogElement | null;
-  if (!modal) return;
-  modal.showModal();
-  document.body.classList.add('modal-open');
-  docsTrigger.setAttribute('aria-expanded', 'true');
-});
 
 /* Capture-phase img error fallback for chat media tiles. Mirrors the file-card
    layout (icon + name + status) with the error palette. */
