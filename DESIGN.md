@@ -129,8 +129,8 @@ In error mode (`body[data-error="true"]`) the green-scale variables are remapped
 --shadow-inset-deep: inset 0 0 28px rgba(0, 0, 0, 0.75);  /* panel depth */
 --scanline-line: rgba(0, 0, 0, 0.12);           /* single scanline stripe color */
 --backdrop-bg: rgba(0, 0, 0, 0.85);             /* dialog backdrop */
---backdrop-blur: 4px;                            /* dialog backdrop-filter blur */
---modal-duration: 320ms;                         /* dialog open/close transition */
+--backdrop-blur: 3px;                            /* dialog backdrop-filter blur */
+--modal-duration: 500ms;                         /* dialog open/close transition */
 --scale-press: 0.97;                             /* active-state tactile squish */
 --anim-content: 0.5s;                            /* entry/exit of content elements */
 --anim-shell: 0.5s;                              /* header/footer/bottom-shell slide */

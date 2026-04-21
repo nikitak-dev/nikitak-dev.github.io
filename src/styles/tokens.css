@@ -78,8 +78,8 @@
   --shadow-inset-deep: inset 0 0 28px rgba(0, 0, 0, 0.75);
   --scanline-line: rgba(0, 0, 0, 0.12);
   --backdrop-bg: rgba(0, 0, 0, 0.85);
-  --backdrop-blur: 4px;
-  --modal-duration: 320ms;
+  --backdrop-blur: 3px;
+  --modal-duration: 500ms;
   --scale-press: 0.97;
   /* animation system — see DESIGN.md "Animation System" */
   --anim-content: 0.5s;
