@@ -112,6 +112,9 @@ const structuredData = {
   <meta property="og:site_name" content="nikitak-dev">
   <meta name="theme-color" content="#000000">
   <meta name="color-scheme" content="dark">
+  <!-- Pre-tokens critical CSS: avoids a white-on-white FOUC flash before
+       tokens.css loads. Values mirror --bg-void and --green. Intentionally
+       hardcoded (tokens aren't available yet). -->
   <style>html{background:#000}body{color:#00ff41}</style>
   <link rel="canonical" href={Astro.url} />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -178,6 +181,13 @@ const structuredData = {
   </footer>
   )}
 
+  <!-- Deferred module imports. Shared global surface between these modules
+       (kept as window._*-named properties so inline scripts in components
+       like TypeLogo and the hub boot sequence can interop without imports):
+         window.typeLogo        — defined by TypeLogo.astro (inline)
+         window._runCascade     — set by cascade.ts, called by hub/boot.ts
+         window._logoHoverActive — flag set by logo-back.ts
+         window._logoTimerStop/_logoTimerReset — owned by logo-timer.ts -->
   <script>
     import '../scripts/kbd-press';
     import '../scripts/cascade';
