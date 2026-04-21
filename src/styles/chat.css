@@ -64,7 +64,7 @@
 }
 
 #empty-state.hidden {
-  animation: fadeOut 0.5s ease-in forwards;
+  animation: fadeOut var(--anim-content) ease-in forwards;
 }
 
 .empty-icon {
@@ -99,7 +99,7 @@
 .msg {
   max-width: 700px;
   line-height: 1.7;
-  animation: fadeSlideUp 0.4s ease-out both;
+  animation: fadeIn var(--anim-content) ease-out both;
   font-size: 12px;
   font-weight: 400;
 }
@@ -165,13 +165,11 @@
 
 .msg.assistant { align-self: flex-start; }
 
-.msg--exit, .typing.msg--exit { animation: fadeSlideOut 0.3s ease-in forwards; }
+.msg--exit, .typing.msg--exit { animation: fadeOut var(--anim-content) ease-in forwards; }
 
-/* Rehydrated on page refresh: staggered opacity-only fade (no slide) so the
-   restored transcript cascades in instead of all bubbles fadeSlideUp-ing
-   simultaneously. Mirrors the [data-cascade-item] pattern in utilities.css.
-   Delay is assigned per-element from chat.ts. */
-.msg--rehydrated { opacity: 0; animation: fadeIn 0.4s ease-out var(--cascade-delay, 0s) forwards; }
+/* Rehydrated on page refresh: single-delay opacity fade (history = one object).
+   Delay is assigned from chat.ts via --cascade-delay (= cascade-step × 1). */
+.msg--rehydrated { opacity: 0; animation: fadeIn var(--anim-content) ease-out var(--cascade-delay, 0s) forwards; }
 
 .msg.assistant .sources {
   margin-top: 12px;
@@ -188,7 +186,7 @@
 .sources-tags {
   display: grid;
   grid-template-rows: minmax(0, 0fr);
-  transition: grid-template-rows 0.6s ease-out;
+  transition: grid-template-rows var(--anim-reveal) ease-out;
   position: relative;
   overflow: hidden;
 }
@@ -207,7 +205,7 @@
   box-shadow: var(--shadow-inset-deep);
   transform: translateY(-10px);
   opacity: 0;
-  transition: transform 0.6s ease-out, opacity 0.6s ease-out;
+  transition: transform var(--anim-reveal) ease-out, opacity var(--anim-reveal) ease-out;
 }
 
 .sources-tags.expanded .sources-tags-inner {
@@ -261,7 +259,7 @@
 }
 
 .score-bar { width: 80px; height: 3px; background: var(--border); overflow: hidden; flex-shrink: 0; }
-.score-fill { height: 100%; background: var(--green-dim); transition: width 0.6s ease; box-shadow: 0 0 4px var(--green-ghost); }
+.score-fill { height: 100%; background: var(--green-dim); transition: width var(--anim-reveal) ease; box-shadow: 0 0 4px var(--green-ghost); }
 
 /* Media in chat */
 .msg-media { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
@@ -401,7 +399,7 @@
   display: flex;
   align-items: center;
   padding: 10px 16px;
-  animation: fadeSlideUp var(--transition) ease-out both;
+  animation: fadeIn var(--anim-content) ease-out both;
   font-size: 10px;
   color: var(--green-mid);
 }
