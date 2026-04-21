@@ -132,9 +132,55 @@ In error mode (`body[data-error="true"]`) the green-scale variables are remapped
 --backdrop-blur: 4px;                            /* dialog backdrop-filter blur */
 --modal-duration: 320ms;                         /* dialog open/close transition */
 --scale-press: 0.97;                             /* active-state tactile squish */
+--anim-content: 0.5s;                            /* entry/exit of content elements */
+--anim-shell: 0.5s;                              /* header/footer/bottom-shell slide */
+--anim-reveal: 0.5s;                             /* interactive reveal (sources expand, score bars) */
+--cascade-step: 0.4s;                            /* delay between sequential cascade items */
 ```
 
 Used by beam separators, panels (`.project-card`, `.grid-legend`), scanline overlays, modal animations, button active-state.
+
+---
+
+## Animation System
+
+Entry/exit animations across the site follow a unified rhythm driven by four tokens.
+
+### Tokens
+
+| Token | Value | Applies to |
+|-------|-------|------------|
+| `--anim-content` | `0.5s` | Entry and exit of content: `[data-cascade-item]` fadeIn, `.msg` (new message), `.msg--exit` (CLR), `.msg--rehydrated` (history restore), `.typing` indicator, `#empty-state.hidden` (fadeOut), `#boot-screen.done` (fadeSlideOut) |
+| `--anim-shell` | `0.5s` | Slide of page shell: `<header>` fadeSlideDown, `.hub-footer` fadeSlideUp, `[data-cascade-item="slide"]` (used when a non-footer element plays the role of bottom shell, e.g. `#input-bar` on `/multimodal-rag`) |
+| `--anim-reveal` | `0.5s` | Content reveal on interaction: `.sources-tags` expand/collapse, `.sources-tags-inner` transform/opacity, `.score-fill` width growth. Separate from content/shell — their durations may drift in the future |
+| `--cascade-step` | `0.4s` | Delay between consecutive cascade items. Overlap between items = `duration − step = 100ms` |
+
+### Sequence
+
+`BaseLayout` runtime ([`runCascade`](src/layouts/BaseLayout.astro)) walks `[data-cascade-item]` in document order and assigns each a delay of `(i + 1) × cascade-step`. The `<header>` is applied first (delay `0`), the `.hub-footer` runs last at `(items + 1) × cascade-step`.
+
+Content elements (default) fade via opacity only. Shell elements (`data-cascade-item="slide"`) slide while fading. Both use `forwards` fill-mode and are released to live styles by the runtime's `release()` callback after the entry animation completes.
+
+### Semantic rule
+
+- **Shell** (top/bottom of viewport) → slide
+- **Content** (middle, inside scroll areas) → opacity fade
+- **Interaction reveal** (click to expand) → own token, independent of cascade
+
+### Out of scope for the animation system
+
+Kept with their own intentional timing and not governed by the tokens above:
+- Background/atmosphere: `beamWrap`, `amberSnake`/`amberFlash`, `crtJitter`, `beamFlicker`, scanlines
+- Status indicators: `connPulse`, `connLost`, `blink` (cursors)
+- Reactive feedback: `kbPulseRing` (card select), `imgLoad` (image shimmer), `:active` button squish
+- Hover/focus: `--transition` (`0.2s`)
+- Breathe animations: `docs-modal-breathe`/`-amber` (locked to beam cycle)
+- Content effects: 404 `rgbSplit`/`glitchTop`/`glitchBottom`, scramble frames
+- Typewriters: logo, boot, chat placeholder
+
+### Reduced motion
+
+`responsive.css` clamps all animation/transition durations to `0.01ms` under `prefers-reduced-motion: reduce`. Tokens are bypassed automatically — no per-token override needed.
 
 ---
 

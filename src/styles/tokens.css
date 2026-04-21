@@ -81,6 +81,11 @@
   --backdrop-blur: 4px;
   --modal-duration: 320ms;
   --scale-press: 0.97;
+  /* animation system — see DESIGN.md "Animation System" */
+  --anim-content: 0.5s;
+  --anim-shell: 0.5s;
+  --anim-reveal: 0.5s;
+  --cascade-step: 0.4s;
   --gradient-edge-top: linear-gradient(to top, var(--green-ghost) 0%, transparent 100%);
   --gradient-edge-bottom: linear-gradient(to bottom, var(--green-ghost) 0%, transparent 100%);
 }
