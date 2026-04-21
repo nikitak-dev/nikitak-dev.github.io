@@ -297,7 +297,12 @@ clearBtn.addEventListener('click', () => {
   sessionStorage.removeItem(HISTORY_KEY);
   const msgs = [...chat.querySelectorAll<HTMLElement>('.msg, .typing')];
   if (!msgs.length) { input.focus(); return; }
-  msgs.forEach(el => el.classList.add('msg--exit'));
+  msgs.forEach(el => {
+    // Drop rehydrated class so .msg--exit (fadeSlideOut) wins the animation
+    // resolution — otherwise rehydrated's fadeIn rule keeps masking exit.
+    el.classList.remove('msg--rehydrated');
+    el.classList.add('msg--exit');
+  });
   setTimeout(() => {
     msgs.forEach(el => el.remove());
     if (emptyState) {
@@ -434,12 +439,23 @@ try {
         addUserMsg(item.q);
         addAssistantMsg(item.data);
       });
-      // Cascade rehydrated messages by opacity so they do not all
-      // fadeSlideUp at once on page refresh.
-      chat.querySelectorAll<HTMLElement>('.msg').forEach((el, i) => {
+      // Rehydrated history = one object in the cascade. Top-to-bottom sequence:
+      // empty-state fadeOut (0s) → history fadeIn (0.4s) → input-bar slide (0.6s).
+      // Single shared delay, no per-item stagger — history is one unit.
+      chat.querySelectorAll<HTMLElement>('.msg').forEach((el) => {
         el.classList.add('msg--rehydrated');
-        el.style.setProperty('--cascade-delay', (i * 0.08) + 's');
+        el.style.setProperty('--cascade-delay', '0.4s');
       });
+      // BaseLayout cascade pins input-bar at 0.4s (its index). Restart the
+      // animation with 0.6s so history precedes input-bar when hydrating.
+      document.addEventListener('DOMContentLoaded', () => {
+        const inputBar = document.getElementById('input-bar');
+        if (!inputBar) return;
+        inputBar.classList.remove('cascade-ready');
+        inputBar.style.setProperty('--cascade-delay', '0.6s');
+        void inputBar.offsetWidth;
+        inputBar.classList.add('cascade-ready');
+      }, { once: true });
     }
   }
 } catch { /* corrupt storage, ignore */ }
