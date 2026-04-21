@@ -219,12 +219,12 @@ body.no-global-scanlines::after { display: none; }
 [data-cascade-item] { opacity: 0; }
 
 [data-cascade-item].cascade-ready {
-  animation: fadeIn 0.4s ease-out var(--cascade-delay, 0s) forwards;
+  animation: fadeIn var(--anim-content) ease-out var(--cascade-delay, 0s) forwards;
 }
 
 /* Slide variant — use for shell-like items that live outside a scroll container
    and should rise into place (e.g. input bar acting as a bottom shell on pages
-   without a footer). */
+   without a footer). Uses --anim-shell since semantically it plays a footer role. */
 [data-cascade-item="slide"].cascade-ready {
-  animation: fadeSlideUp 0.4s ease-out var(--cascade-delay, 0s) forwards;
+  animation: fadeSlideUp var(--anim-shell) ease-out var(--cascade-delay, 0s) forwards;
 }
