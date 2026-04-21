@@ -17,7 +17,7 @@ header {
   opacity: 0;
 }
 
-header.cascade-ready { animation: fadeSlideDown 0.6s ease-out forwards; }
+header.cascade-ready { animation: fadeSlideDown var(--anim-shell) ease-out forwards; }
 
 .header-left h1 {
   font-size: 20px;
@@ -392,7 +392,7 @@ header.cascade-ready { animation: fadeSlideDown 0.6s ease-out forwards; }
   opacity: 0;
 }
 
-.hub-footer.ready { animation: fadeSlideUp 0.5s ease-out var(--footer-delay, 0.6s) forwards; }
+.hub-footer.ready { animation: fadeSlideUp var(--anim-shell) ease-out var(--footer-delay, calc(var(--cascade-step) * 3)) forwards; }
 
 .footer-links { display: flex; gap: 12px; align-items: center; }
 .footer-sep { color: var(--border-hover); }
