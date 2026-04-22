@@ -105,7 +105,7 @@ if (hadRehydrate) {
 
 async function sendQuestion(q: string, url: string, signal: AbortSignal): Promise<ChatResponse> {
   const history = getHistory();
-  const body: { question: string; history?: HistoryItem[] } = { question: q };
+  const body: { question: string; history?: readonly HistoryItem[] } = { question: q };
   if (history.length) body.history = history;
   const res = await fetch(url, {
     method: 'POST',
@@ -114,7 +114,11 @@ async function sendQuestion(q: string, url: string, signal: AbortSignal): Promis
     signal,
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json() as Promise<ChatResponse>;
+  /* Webhook responds with arbitrary JSON — explicit unknown marks the trust
+     boundary. ChatResponse is intentionally lenient (all fields optional,
+     `answer?: unknown`); shape validation lives in helpers.ts builders. */
+  const payload: unknown = await res.json();
+  return payload as ChatResponse;
 }
 
 async function ask(): Promise<void> {
