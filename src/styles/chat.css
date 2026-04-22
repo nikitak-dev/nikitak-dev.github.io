@@ -302,49 +302,10 @@
   50% { opacity: 0.7; }
 }
 
-.media-body--file {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 28px 16px;
-  min-height: 140px;
-  color: var(--green-dim);
-  transition: color var(--transition);
-}
-
-.file-icon {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--green-mid);
-  text-shadow: 0 0 6px var(--green-glow);
-}
-
-.file-name {
-  max-width: 100%;
-  font-size: 11px;
-  font-weight: 300;
-  letter-spacing: 0.04em;
-  color: var(--green-mid);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-align: center;
-}
-
-.file-open {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--green-mid);
-  text-transform: uppercase;
-  transition: text-shadow var(--transition), color var(--transition);
-}
-
-/* Mirrors .media-body--file layout with the error palette. */
+/* File card and error card share layout + typography; only palette and the
+   hover transition on .file-open differ. Variant-specific colors follow each
+   shared block. */
+.media-body--file,
 .media-error {
   flex: 1 1 auto;
   display: flex;
@@ -354,36 +315,45 @@
   gap: 10px;
   padding: 28px 16px;
   min-height: 140px;
-  color: var(--error-dim);
 }
+.media-body--file { color: var(--green-dim); transition: color var(--transition); }
+.media-error      { color: var(--error-dim); }
 
+.file-icon,
 .error-icon {
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: var(--error);
-  text-shadow: 0 0 6px var(--error-glow);
 }
+.file-icon  { color: var(--green-mid); text-shadow: 0 0 6px var(--green-glow); }
+.error-icon { color: var(--error);     text-shadow: 0 0 6px var(--error-glow); }
 
+.file-name,
 .error-name {
   max-width: 100%;
   font-size: 11px;
   font-weight: 300;
   letter-spacing: 0.04em;
-  color: var(--error-mid);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: center;
 }
+.file-name  { color: var(--green-mid); }
+.error-name { color: var(--error-mid); }
 
+.file-open,
 .error-status {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: var(--error);
   text-transform: uppercase;
 }
+.file-open {
+  color: var(--green-mid);
+  transition: text-shadow var(--transition), color var(--transition);
+}
+.error-status { color: var(--error); }
 
 @media (hover: hover) and (pointer: fine) {
   .msg-media-item:not(:has(.media-error)):hover { border-color: var(--green-dim); box-shadow: var(--shadow-inset-deep), 0 0 20px var(--green-ghost); }
