@@ -114,41 +114,57 @@
   margin: 0 auto;
 }
 
-/* In-document reference (jumps to another section of the same modal).
-   Visually like <strong> but with underline + hover glow to signal "clickable". */
-.rag-docs .docs-ref {
+/* Unified link style inside the docs modal. Used by:
+     .docs-ref  -- in-document anchor (smooth-scrolls to another section)
+     .docs-link -- external GitHub blob link (opens in a new tab)
+   Rendered as a bracket-tag "[ text ]": brackets muted by default, text in
+   full --green at weight 700. Hover/focus lifts brackets to --green and
+   applies a strong 12px glow to the whole tag -- outline suppressed. */
+.rag-docs .docs-ref,
+.rag-docs .docs-link {
   color: var(--green);
   font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 2px;
   cursor: pointer;
+  text-decoration: none;
+  /* Keep the bracket-tag on one line -- otherwise the closing "]"
+     pseudo-element can wrap to the next row when the cell is narrow. */
+  white-space: nowrap;
   transition: color 0.2s, text-shadow 0.2s;
 }
-.rag-docs .docs-ref:hover {
-  text-shadow: 0 0 8px var(--green-glow-mid);
+.rag-docs .docs-ref::before,
+.rag-docs .docs-ref::after,
+.rag-docs .docs-link::before,
+.rag-docs .docs-link::after {
+  color: var(--green-dim);
+  font-weight: 700;
+  transition: color 0.2s, text-shadow 0.2s;
 }
-.rag-docs .docs-ref:focus-visible {
-  outline: 1px solid var(--green);
-  outline-offset: 2px;
+.rag-docs .docs-ref::before,
+.rag-docs .docs-link::before { content: '[ '; }
+.rag-docs .docs-ref::after,
+.rag-docs .docs-link::after  { content: ' ]'; }
+
+.rag-docs .docs-ref:hover,
+.rag-docs .docs-ref:focus-visible,
+.rag-docs .docs-link:hover,
+.rag-docs .docs-link:focus-visible {
+  outline: none;
+  text-shadow: 0 0 12px var(--green-glow-strong);
+}
+.rag-docs .docs-ref:hover::before,
+.rag-docs .docs-ref:hover::after,
+.rag-docs .docs-ref:focus-visible::before,
+.rag-docs .docs-ref:focus-visible::after,
+.rag-docs .docs-link:hover::before,
+.rag-docs .docs-link:hover::after,
+.rag-docs .docs-link:focus-visible::before,
+.rag-docs .docs-link:focus-visible::after {
+  color: var(--green);
+  text-shadow: 0 0 12px var(--green-glow-strong);
 }
 /* Scroll-anchor padding so the target section lands slightly below the
    modal-frame top edge instead of flush against it. */
 .rag-docs .docs-block { scroll-margin-top: 16px; }
-
-.rag-docs .docs-link {
-  color: var(--green-mid);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  transition: color 0.2s, text-shadow 0.2s;
-}
-.rag-docs .docs-link:hover {
-  color: var(--green);
-  text-shadow: 0 0 8px var(--green-glow-soft);
-}
-.rag-docs .docs-link:focus-visible {
-  outline: 1px solid var(--green);
-  outline-offset: 2px;
-}
 
 /* Divider between User Guide (TL;DR .. WHAT'S IN SCOPE) and the Technical
    Reference block. Renders as two horizontal rules with a centered label --
