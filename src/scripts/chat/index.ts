@@ -29,6 +29,7 @@ import {
   addErrorMsg,
   addTypingIndicator,
   addUserMsg,
+  initMediaErrorFallback,
   initMessages,
   showEmptyState,
 } from './messages';
@@ -57,6 +58,7 @@ const REQUEST_TIMEOUT_MS = 30000;
 
 initConn(document.getElementById('conn-status'));
 initMessages(chat, emptyState, ANIM_CONTENT_MS, ANIM_REVEAL_MS);
+initMediaErrorFallback();
 
 if (!WEBHOOK_URL) {
   setConnStatus('missing');
@@ -85,40 +87,6 @@ clearBtn.addEventListener('click', () => {
 });
 
 startPlaceholderCycle(input);
-
-/* Capture-phase img error fallback for chat media tiles. Mirrors the file-card
-   layout (icon + name + status) with the error palette. */
-document.addEventListener('error', (e) => {
-  const target = e.target as HTMLElement | null;
-  if (!target || target.tagName !== 'IMG') return;
-  const item = target.closest('.msg-media-item') as HTMLElement | null;
-  if (!item) return;
-  item.classList.remove('msg-media-item--image');
-  const body = item.querySelector('.media-body');
-  const filename = (target as HTMLImageElement).alt || '';
-
-  const errorDiv = document.createElement('div');
-  errorDiv.className = 'media-body media-error';
-
-  const icon = document.createElement('div');
-  icon.className = 'error-icon';
-  icon.textContent = '[!]';
-  errorDiv.appendChild(icon);
-
-  if (filename) {
-    const name = document.createElement('div');
-    name.className = 'error-name';
-    name.textContent = filename;
-    errorDiv.appendChild(name);
-  }
-
-  const status = document.createElement('div');
-  status.className = 'error-status';
-  status.textContent = '[ LOAD_FAILED ]';
-  errorDiv.appendChild(status);
-
-  if (body) body.replaceWith(errorDiv); else item.appendChild(errorDiv);
-}, true);
 
 // Hydrate session transcript on page load (survives refresh, clears on tab close)
 const hadRehydrate = rehydrate((item) => {
