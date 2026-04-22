@@ -1,6 +1,5 @@
 ---
 import '../../styles/rag-docs.css';
-const GH = 'https://github.com/nikitak-dev/nikitak-dev.github.io/blob/main/src/scripts/chat';
 ---
 <div class="rag-docs">
 
@@ -135,74 +134,6 @@ const GH = 'https://github.com/nikitak-dev/nikitak-dev.github.io/blob/main/src/s
   </section>
 
   <section class="docs-block">
-    <h3 class="docs-heading">// REQUEST / RESPONSE CONTRACT</h3>
-    <p class="docs-note">Frontend &lt;-&gt; n8n webhook. Response is treated as <code>unknown</code> and narrowed at DOM-builder boundaries (no strict schema validation).</p>
-    <pre class="docs-code" is:raw>
-POST /webhook/rag-chat
-Content-Type: application/json
-
-{
-  "question": "What is AES-256?",
-  "history":  [              // optional
-    { "role": "user",      "content": "..." },
-    { "role": "assistant", "content": "..." }
-  ]
-}
-    </pre>
-    <pre class="docs-code" is:raw>
-200 OK
-{
-  "answer":  "AES-256 is a symmetric block cipher ...",
-  "media":   [ { "type": "pdf", "driveFileId": "1AbC...", "title": "..." } ],
-  "sources": [ { "filename": "encryption_basics.txt", "score": 0.87 } ]
-}
-    </pre>
-  </section>
-
-  <section class="docs-block">
-    <h3 class="docs-heading">// FRONTEND MODULE MAP</h3>
-    <table class="docs-table">
-      <thead><tr><th>Module</th><th>Owns</th></tr></thead>
-      <tbody>
-        <tr><td><a class="docs-link" href={`${GH}/index.ts`}       target="_blank" rel="noopener noreferrer">index.ts</a></td>       <td>orchestration, fetch, abort, animation timing, webhook URL</td></tr>
-        <tr><td><a class="docs-link" href={`${GH}/messages.ts`}    target="_blank" rel="noopener noreferrer">messages.ts</a></td>    <td>#chat DOM -- addUserMsg / addAssistantMsg / addErrorMsg / addTypingIndicator</td></tr>
-        <tr><td><a class="docs-link" href={`${GH}/helpers.ts`}     target="_blank" rel="noopener noreferrer">helpers.ts</a></td>     <td>pure DOM factories, media tile builders, sources list</td></tr>
-        <tr><td><a class="docs-link" href={`${GH}/history.ts`}     target="_blank" rel="noopener noreferrer">history.ts</a></td>     <td>chat history + transcript + sessionStorage persistence</td></tr>
-        <tr><td><a class="docs-link" href={`${GH}/conn.ts`}        target="_blank" rel="noopener noreferrer">conn.ts</a></td>        <td>#conn-status indicator + error taxonomy (classifyError)</td></tr>
-        <tr><td><a class="docs-link" href={`${GH}/placeholder.ts`} target="_blank" rel="noopener noreferrer">placeholder.ts</a></td> <td>rotating input placeholder typewriter</td></tr>
-        <tr><td><a class="docs-link" href={`${GH}/types.ts`}       target="_blank" rel="noopener noreferrer">types.ts</a></td>       <td>ChatResponse / HistoryItem / connection states</td></tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section class="docs-block">
-    <h3 class="docs-heading">// CHAT UI DETAILS</h3>
-    <ul class="docs-list">
-      <li>JetBrains Mono font, green-on-black CRT aesthetic with scanline + chromatic aberration overlay.</li>
-      <li>Matrix rain canvas background, vignette, subtle beam animation on page edges.</li>
-      <li>Source tags with relevance score bars; collapsible sources list under each assistant answer.</li>
-      <li>Media preview tiles via Google Drive thumbnails (images) and preview URLs (video / PDF / audio).</li>
-      <li>Per-tab session history via <code>sessionStorage</code>; 30s fetch timeout with per-request abort on CLR.</li>
-      <li>CORS: chat webhook allows only origin <code>https://nikitak-dev.github.io</code>.</li>
-    </ul>
-  </section>
-
-  <section class="docs-block">
-    <h3 class="docs-heading">// ERROR TAXONOMY</h3>
-    <table class="docs-table">
-      <thead><tr><th>Cause</th><th>CONN state</th><th>User sees</th></tr></thead>
-      <tbody>
-        <tr><td>User pressed CLR mid-request</td><td>-- (silent)</td><td>Messages wipe; no error rendered</td></tr>
-        <tr><td>30s timeout exceeded</td><td>LOST</td><td><code>// Connection lost</code></td></tr>
-        <tr><td>Network error / HTTP 5xx</td><td>LOST</td><td><code>// Connection lost</code></td></tr>
-        <tr><td>HTTP 4xx (config-side)</td><td>ESTABLISHED</td><td><code>// Request rejected</code></td></tr>
-        <tr><td>Webhook URL absent at build</td><td>MISSING</td><td><code>// Webhook missing</code> (EXEC disabled)</td></tr>
-      </tbody>
-    </table>
-    <p class="docs-note">Server-side failures are handled by the <a class="docs-ref" href="#error-handler">error_handler</a> workflow (see above).</p>
-  </section>
-
-  <section class="docs-block">
     <h3 class="docs-heading">// LIMITS &amp; TIMEOUTS</h3>
     <table class="docs-table">
       <tbody>
@@ -211,8 +142,8 @@ Content-Type: application/json
         <tr><td>Image / PDF batch</td><td>6 items per embedding request</td></tr>
         <tr><td>Audio length</td><td>80s maximum</td></tr>
         <tr><td>Video length</td><td>120s maximum</td></tr>
-        <tr><td>Frontend history cap</td><td>10 turns; answer truncated to 500 chars before storage</td></tr>
-        <tr><td>LLM history window</td><td>last 20 messages sent to Claude</td></tr>
+        <tr><td>Chat history window</td><td>last 10 turns (20 messages) passed to the LLM</td></tr>
+        <tr><td>Stored answer length</td><td>500 chars per assistant reply in history</td></tr>
         <tr><td>Vector retrieval</td><td>top-K = 20 candidates</td></tr>
         <tr><td>Rerank</td><td>top-N = 5 kept, score floor 0.001, modality boost cap 6</td></tr>
         <tr><td>Embedding dimensions</td><td>1536</td></tr>
