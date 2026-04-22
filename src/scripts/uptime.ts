@@ -2,6 +2,8 @@
    (set by BaseLayout) and updates the #uptime-val span every minute. No-op in
    error mode. */
 
+const UPDATE_INTERVAL_MS = 60_000;
+
 const uptimeEl = document.getElementById('uptime-val');
 const buildTime = document.body.dataset.buildTime;
 
@@ -17,7 +19,7 @@ if (uptimeEl && buildTime && document.body.dataset.error !== 'true') {
   }
 
   updateUptime();
-  const interval = setInterval(updateUptime, 60000);
+  const interval = setInterval(updateUptime, UPDATE_INTERVAL_MS);
   window.addEventListener('beforeunload', () => clearInterval(interval));
 }
 

@@ -3,6 +3,11 @@
    keydown skips to the end. Reads live/total/buildDate from #boot-screen
    dataset (set by index.astro). */
 
+/* NOTE: artistic timing — tuned for the terminal-boot rhythm, not functional. */
+const CHAR_TYPE_MS = 25;
+const LINE_PAUSE_MS = 200;
+const BOOT_END_DELAY_MS = 1500;
+
 const bootScreen = document.getElementById('boot-screen');
 const bootLinesEl = document.getElementById('boot-lines');
 
@@ -57,7 +62,7 @@ if (!bootScreen || !bootLinesEl) {
     let i = 0;
     function addLine(): void {
       if (bootDone) return;
-      if (i >= bootSequence.length) { setTimeout(endBoot, 1500); return; }
+      if (i >= bootSequence.length) { setTimeout(endBoot, BOOT_END_DELAY_MS); return; }
       const el = document.createElement('div');
       el.className = 'boot-line' + (bootSequence[i]!.bright ? ' bright' : '');
       bootLinesEl!.appendChild(el);
@@ -77,13 +82,13 @@ if (!bootScreen || !bootLinesEl) {
           clearInterval(type);
           if (i >= bootSequence.length) {
             cursorSpan.classList.add('blinking');
-            setTimeout(addLine, 200);
+            setTimeout(addLine, LINE_PAUSE_MS);
           } else {
             cursorSpan.remove();
-            setTimeout(addLine, 200);
+            setTimeout(addLine, LINE_PAUSE_MS);
           }
         }
-      }, 25);
+      }, CHAR_TYPE_MS);
     }
     addLine();
   }

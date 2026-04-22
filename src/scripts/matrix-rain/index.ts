@@ -56,6 +56,7 @@ if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
 
     let lastTime = 0;
     const INTERVAL_MS = 80; // ~12.5 fps
+    const RESIZE_DEBOUNCE_MS = 100;
     let rafId: number | null = null;
 
     function drawMatrix(timestamp: number): void {
@@ -80,7 +81,7 @@ if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     let resizeTimer: ReturnType<typeof setTimeout> | null = null;
     const scheduleInit = () => {
       if (resizeTimer) clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(initMatrix, 100);
+      resizeTimer = setTimeout(initMatrix, RESIZE_DEBOUNCE_MS);
     };
 
     /* Defer the first init until DOM is parsed (header/footer are siblings

@@ -3,6 +3,11 @@
    empty input copies the current suggestion in. Reduced-motion short-circuits
    to a static placeholder. */
 
+const TYPE_CHAR_MS = 40;    // per-char type speed
+const ERASE_CHAR_MS = 25;   // per-char erase speed (faster than type — feels snappy)
+const BUSY_POLL_MS = 100;   // how often to re-check `busy()` while user types
+const HOLD_TICKS = 25;      // full-query hold duration = HOLD_TICKS * BUSY_POLL_MS = 2.5s
+
 const QUERIES = [
   'What is symmetric encryption?',
   'Explain the Agile sprint cycle',
@@ -33,24 +38,24 @@ export function startPlaceholderCycle(input: HTMLInputElement): void {
 
   (async function cycle() {
     while (true) {
-      while (busy()) await sleep(100);
+      while (busy()) await sleep(BUSY_POLL_MS);
       currentQuery = QUERIES[qIdx]!;
       let broken = false;
       for (let i = 1; i <= currentQuery.length; i++) {
         if (busy()) { broken = true; break; }
         input.placeholder = currentQuery.slice(0, i);
-        await sleep(40);
+        await sleep(TYPE_CHAR_MS);
       }
       if (broken) continue;
-      for (let t = 0; t < 25; t++) {
+      for (let t = 0; t < HOLD_TICKS; t++) {
         if (busy()) { broken = true; break; }
-        await sleep(100);
+        await sleep(BUSY_POLL_MS);
       }
       if (broken) continue;
       for (let i = currentQuery.length; i > 0; i--) {
         if (busy()) { broken = true; break; }
         input.placeholder = currentQuery.slice(0, i);
-        await sleep(25);
+        await sleep(ERASE_CHAR_MS);
       }
       if (broken) continue;
       qIdx = (qIdx + 1) % QUERIES.length;
