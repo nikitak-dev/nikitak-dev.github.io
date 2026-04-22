@@ -4,27 +4,28 @@ type ProjectStatus = 'live' | 'private' | 'wip';
 /** Drives card palette: `ai` keeps the green theme, `automation` remaps via `.theme-amber`. */
 type ProjectCategory = 'ai' | 'automation';
 
-/** Single project entry rendered as a card on the hub page. Array order in PROJECTS = card order. */
+/** Single project entry rendered as a card on the hub page. Array order in PROJECTS = card order.
+    All fields are readonly — projects are static data, consumed by the hub renderer and never mutated. */
 interface Project {
   /** 3-digit identifier shown as `[ 001 ]` in the card header. */
-  id: string;
+  readonly id: string;
   /** UPPER_SNAKE_CASE name shown as card title. */
-  title: string;
-  status: ProjectStatus;
-  category: ProjectCategory;
+  readonly title: string;
+  readonly status: ProjectStatus;
+  readonly category: ProjectCategory;
   /** Route to the project's dedicated page. Omit until that page exists — the card then renders without a hyperlink. */
-  url?: string;
+  readonly url?: string;
   /** 1–2 sentence problem-framed description. */
-  desc: string;
+  readonly desc: string;
   /** `'A | B | C'` stack pipeline, appears under `//` comment. Empty string hides the stack line. */
-  stack: string;
+  readonly stack: string;
   /** Short phrase shown bottom-left of card. */
-  meta: string;
-  button: { label: string; disabled: boolean; ariaLabel?: string };
+  readonly meta: string;
+  readonly button: { readonly label: string; readonly disabled: boolean; readonly ariaLabel?: string };
 }
 
 /** Ordered source of truth for hub project cards. Add/remove/reorder here; hub renders directly from this. */
-export const PROJECTS: Project[] = [
+export const PROJECTS: readonly Project[] = [
   {
     id: '001',
     title: 'VOICE_AGENT',

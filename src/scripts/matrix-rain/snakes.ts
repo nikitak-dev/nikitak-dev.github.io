@@ -33,7 +33,7 @@ const FLASH_ALPHA = [0.35, 0.65, 0.90, 0.55];
 const FLASH_PASSES = [1, 2, 3, 1];
 
 /* Directions: 0=up, 1=right, 2=down, 3=left. dx/dy per direction. */
-const DIRS: Array<[number, number]> = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+const DIRS: ReadonlyArray<readonly [number, number]> = [[0, -1], [1, 0], [0, 1], [-1, 0]];
 
 type Snake = {
   id: number;
