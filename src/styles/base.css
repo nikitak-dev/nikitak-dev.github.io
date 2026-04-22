@@ -7,7 +7,7 @@
 html { background: var(--bg-void); overflow: hidden; }
 
 ::selection {
-  background: var(--green-glow);
+  background: var(--green-glow-soft);
   color: var(--text-bright);
 }
 
@@ -110,14 +110,21 @@ body[data-error="true"] #input-bar::before {
   opacity: 0.25;
 }
 
-/* CRT scanline overlay — shared by global body, .scanlines-section containers
-   and .bubble chat messages. Full horizontal scanlines + RGB chromatic aberration. */
+/* CRT scanline overlay -- shared by global body, .scanlines-section containers,
+   .bubble chat messages, and the <dialog> docs modal. Full horizontal scanlines
+   + RGB chromatic aberration.
+
+   Note for .docs-modal: the overlay lives on the <dialog> (position: fixed, not
+   scrolling) rather than on .modal-frame (which has overflow-y: auto). If it
+   were on the scrolling frame, ::after would be clipped to client-height and
+   scroll with the content -- leaving the rest of the scrollable area uncovered. */
 body::after,
 .scanlines-section::after,
 .bubble::after,
 .msg-media-item::after,
 .sources-toggle::after,
-.sources-tags::after {
+.sources-tags::after,
+dialog.docs-modal[open]::after {
   content: '';
   inset: 0;
   background:
@@ -143,7 +150,8 @@ body::after { position: fixed; }
 .bubble::after,
 .msg-media-item::after,
 .sources-toggle::after,
-.sources-tags::after { position: absolute; display: block; }
+.sources-tags::after,
+dialog.docs-modal[open]::after { position: absolute; display: block; }
 
 .overlay-vignette {
   position: fixed;

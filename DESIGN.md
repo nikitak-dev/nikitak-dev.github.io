@@ -27,7 +27,7 @@ Key structural elements follow a **4px grid**. Content elements follow a **2px g
 - **Subtitle** (header tagline): `12px`, `font-weight: 400`, `color: var(--text-muted)`, `letter-spacing: 0.02em`
 - **Card title**: `16px`, `font-weight: 700`, `color: var(--green)`, `text-shadow: 0 0 8px var(--green-ghost)`
 - **Stack label** (`// n8n | ...`): `12px`, `font-weight: 400`, `color: var(--green)`, `letter-spacing: 0.06em`, no glow — calm technical caption, readable but recessive vs `.card-title`
-- **Section labels** (`// KNOWLEDGE BASE`): `12px`, `font-weight: 700`, `letter-spacing: 0.10em`, `color: var(--green-mid)`, `text-shadow: 0 0 10px var(--green-glow-label)`, `text-transform: uppercase`
+- **Section labels** (`// KNOWLEDGE BASE`): `12px`, `font-weight: 700`, `letter-spacing: 0.10em`, `color: var(--green-mid)`, `text-shadow: 0 0 10px var(--green-glow-strong)`, `text-transform: uppercase`
 - **Body text / descriptions**: `12px`, `font-weight: 400`, `color: var(--text-muted)`
 - **Buttons**: `12px`, `font-weight: 400`, `letter-spacing: 0.06em`, `text-transform: uppercase`
 - **Secondary content** (card IDs, meta): `10px`, `color: var(--text-muted)`
@@ -58,10 +58,11 @@ Key structural elements follow a **4px grid**. Content elements follow a **2px g
 --green-dim: #009922;
 --green-muted: #00751d;
 --green-ghost: rgba(0, 255, 65, 0.08);
---green-glow-weak: rgba(0, 255, 65, 0.05);    /* input focus-within, soft hover */
---green-glow: rgba(0, 255, 65, 0.1);
---green-glow-strong: rgba(0, 255, 65, 0.25);
---green-glow-label: rgba(0, 255, 65, 0.35);  /* section-label text-shadow */
+/* Glow ladder: weak 0.05 -> soft 0.15 -> mid 0.25 -> strong 0.35 (step 0.10) */
+--green-glow-weak:   rgba(0, 255, 65, 0.05);    /* input focus-within, soft hover */
+--green-glow-soft:   rgba(0, 255, 65, 0.15);
+--green-glow-mid:    rgba(0, 255, 65, 0.25);
+--green-glow-strong: rgba(0, 255, 65, 0.35);    /* section-label / modal title text-shadow */
 --green-mid-glow: rgba(0, 204, 51, 0.4);      /* chat message text-shadow */
 --text-primary: #00ff41;
 --text-secondary: #00cc33;
@@ -79,8 +80,10 @@ Key structural elements follow a **4px grid**. Content elements follow a **2px g
 --amber-muted: #8a5700;
 --amber-deep: #3d2605;
 --amber-ghost: rgba(255, 170, 0, 0.08);
---amber-glow: rgba(255, 170, 0, 0.15);
---amber-glow-strong: rgba(255, 170, 0, 0.3);
+--amber-glow-weak:   rgba(255, 170, 0, 0.05);
+--amber-glow-soft:   rgba(255, 170, 0, 0.15);
+--amber-glow-mid:    rgba(255, 170, 0, 0.3);
+--amber-glow-strong: rgba(255, 170, 0, 0.35);
 ```
 
 ### Error scale (404, error mode)
@@ -93,10 +96,10 @@ Key structural elements follow a **4px grid**. Content elements follow a **2px g
 --error-muted: #661000;
 --error-deep: #3a0d0d;
 --error-ghost: rgba(255, 51, 51, 0.08);
---error-glow-weak: rgba(255, 51, 51, 0.05);
---error-glow: rgba(255, 51, 51, 0.15);
---error-glow-strong: rgba(255, 51, 51, 0.3);
---error-glow-label: rgba(255, 51, 51, 0.35);
+--error-glow-weak:   rgba(255, 51, 51, 0.05);
+--error-glow-soft:   rgba(255, 51, 51, 0.15);
+--error-glow-mid:    rgba(255, 51, 51, 0.3);
+--error-glow-strong: rgba(255, 51, 51, 0.35);
 --error-mid-glow: rgba(204, 34, 0, 0.4);
 --matrix-trail-error: rgba(255, 51, 51, 0.4); /* matrix rain trail in error mode */
 --bg-input-error: #0e0606;
@@ -270,7 +273,7 @@ Shared visual shell for chat messages in the multimodal-rag page. Apply `.bubble
 <div class="bubble bubble--left bubble--error">error message</div>
 ```
 
-Renders: `--bg-void` background with a top-fading ghost tint, a 1px border on all four sides, and a vertical beam via `.bubble::before` on the active side — a `transparent 35% → bright 50% → transparent 65%` gradient with `drop-shadow` glow, matching the header/footer beam aesthetic. The transparent beam ends reveal the underlying border as the base color. Padding 10/16px, 12px body text at weight 300 with soft text-shadow. CRT scanlines + RGB chromatic aberration via `.bubble::after` (same pattern as `body::after`).
+Renders: `--bg-void` background with a top-fading ghost tint, a 1px border on all four sides, and a vertical beam via `.bubble::before` on the active side -- a `transparent 35% -> bright 50% -> transparent 65%` gradient with `drop-shadow` glow, matching the header/footer beam aesthetic. The transparent beam ends reveal the underlying border as the base color. Padding 10/16px, 12px body text at weight 400. CRT scanlines + RGB chromatic aberration via `.bubble::after` (same pattern as `body::after`).
 
 Prefix label lives in a real `<span class="bubble-prefix">` child (not `::before`), since the pseudo is reserved for the beam.
 
@@ -281,13 +284,12 @@ Palette is driven by custom properties:
 | `--bubble-beam` | `var(--green)` | Bright midpoint of the beam strip |
 | `--bubble-glow` | `var(--green-dim)` | `drop-shadow` halo around the beam |
 | `--bubble-border` | `var(--user-border)` | Static border + beam endpoints |
-| `--bubble-ghost` | `var(--green-ghost)` | Top fade of the background tint |
+| `--bubble-bg` | `var(--bg-elevated)` | Bubble background surface |
 | `--bubble-text` | `var(--green-mid)` | Body text color |
-| `--bubble-shadow` | `var(--green-mid-glow)` | Text glow |
 
 Beam side is picked by `.bubble--left` / `.bubble--right` modifiers (positioning the `::before` at the corresponding edge).
 
-`.bubble--error` remaps all six palette properties to the error scale (`--error`, `--error-dim`, `--error-glow`, `--error-ghost`, `--error`, `--error-mid-glow`).
+`.bubble--error` remaps all five palette properties to the error scale (`--error`, `--error-dim`, `--error-glow-soft`, `--bg-elevated-error`, `--error`).
 
 ### Section labels
 
@@ -296,7 +298,7 @@ Section labels (`// LABEL:`) use bold + brighter color + glow to stand out from 
 ```css
 font-weight: 700;
 color: var(--green-mid);
-text-shadow: 0 0 10px var(--green-glow-label);
+text-shadow: 0 0 10px var(--green-glow-strong);
 ```
 
 Content under labels: `12px`, `color: var(--text-muted)`.

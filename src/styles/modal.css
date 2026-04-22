@@ -68,9 +68,11 @@ body.modal-open::after { display: none; }
   scrollbar-width: thin;
   scrollbar-color: var(--green-muted) transparent;
   animation: docs-modal-breathe var(--beam-duration) linear infinite;
-  /* Promote to own compositor layer so the 1px border rasterizes
-     consistently across fractional browser zoom steps. */
-  will-change: transform;
+  /* No will-change here: it would create a stacking context that traps
+     descendants (e.g. .docs-figure with z-index 10000) and prevents them from
+     sitting above dialog.docs-modal[open]::after (the CRT scanline overlay,
+     z-index 9999). Keeping .modal-frame in the dialog's own stacking context
+     lets content-level z-index work against the overlay. */
 }
 /* 6.67% / 93.33% correspond to the moments the gradient's bright edge first
    enters / last leaves the beam line (bg-position = ∓0.65*tile on a
@@ -79,19 +81,19 @@ body.modal-open::after { display: none; }
 @keyframes docs-modal-breathe {
   0%, 100% {
     border-color: var(--green-muted);
-    box-shadow: 0 0  8px var(--green-glow),        inset 0 0  4px var(--green-glow);
+    box-shadow: 0 0  8px var(--green-glow-soft),        inset 0 0  4px var(--green-glow-soft);
   }
   6.67% {
     border-color: var(--green-muted);
-    box-shadow: 0 0  8px var(--green-glow),        inset 0 0  4px var(--green-glow);
+    box-shadow: 0 0  8px var(--green-glow-soft),        inset 0 0  4px var(--green-glow-soft);
   }
   50% {
     border-color: var(--green);
-    box-shadow: 0 0 24px var(--green-glow-strong), inset 0 0 14px var(--green-glow-strong);
+    box-shadow: 0 0 24px var(--green-glow-mid), inset 0 0 14px var(--green-glow-mid);
   }
   93.33% {
     border-color: var(--green-muted);
-    box-shadow: 0 0  8px var(--green-glow),        inset 0 0  4px var(--green-glow);
+    box-shadow: 0 0  8px var(--green-glow-soft),        inset 0 0  4px var(--green-glow-soft);
   }
 }
 
@@ -106,31 +108,31 @@ body[data-theme="amber"] .docs-modal .modal-frame {
 @keyframes docs-modal-breathe-amber {
   0%, 100% {
     border-color: var(--amber-muted);
-    box-shadow: 0 0  8px var(--amber-glow),        inset 0 0  4px var(--amber-glow);
+    box-shadow: 0 0  8px var(--amber-glow-soft),        inset 0 0  4px var(--amber-glow-soft);
   }
   60% {
     border-color: var(--amber-muted);
-    box-shadow: 0 0 10px var(--amber-glow),        inset 0 0  5px var(--amber-glow);
+    box-shadow: 0 0 10px var(--amber-glow-soft),        inset 0 0  5px var(--amber-glow-soft);
   }
   86% {
     border-color: var(--amber-mid);
-    box-shadow: 0 0 18px var(--amber-glow-strong), inset 0 0 10px var(--amber-glow-strong);
+    box-shadow: 0 0 18px var(--amber-glow-mid), inset 0 0 10px var(--amber-glow-mid);
   }
   87% {
     border-color: var(--amber);
-    box-shadow: 0 0 32px var(--amber-glow-strong), inset 0 0 18px var(--amber-glow-strong);
+    box-shadow: 0 0 32px var(--amber-glow-mid), inset 0 0 18px var(--amber-glow-mid);
   }
   89% {
     border-color: var(--amber);
-    box-shadow: 0 0 32px var(--amber-glow-strong), inset 0 0 18px var(--amber-glow-strong);
+    box-shadow: 0 0 32px var(--amber-glow-mid), inset 0 0 18px var(--amber-glow-mid);
   }
   92% {
     border-color: var(--amber-mid);
-    box-shadow: 0 0 18px var(--amber-glow-strong), inset 0 0 10px var(--amber-glow-strong);
+    box-shadow: 0 0 18px var(--amber-glow-mid), inset 0 0 10px var(--amber-glow-mid);
   }
   95% {
     border-color: var(--amber-dim);
-    box-shadow: 0 0 12px var(--amber-glow),        inset 0 0  6px var(--amber-glow);
+    box-shadow: 0 0 12px var(--amber-glow-soft),        inset 0 0  6px var(--amber-glow-soft);
   }
 }
 /* .modal-frame webkit scrollbar: defined in utilities.css shared scrollbar block */
@@ -144,18 +146,17 @@ body[data-theme="amber"] .docs-modal .modal-frame {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 20px;
   padding: 16px var(--modal-header-pad-x);
   container-type: inline-size;
   --modal-beam-tile: calc(100cqw + 2 * var(--modal-header-pad-x));
 }
 .docs-modal .modal-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.10em;
   color: var(--green);
   text-transform: uppercase;
-  text-shadow: 0 0 8px var(--green-glow-strong);
+  text-shadow: 0 0 10px var(--green-glow-strong);
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -174,7 +175,20 @@ body[data-theme="amber"] .docs-modal .modal-frame {
 .docs-modal .modal-section { margin-bottom: 24px; }
 .docs-modal .modal-section:last-child { margin-bottom: 0; }
 
-.docs-modal .section-label { margin-bottom: 10px; }
+/* Hierarchy inside .docs-modal:
+     L1  .modal-title    --green + glow-strong 10px  (brightest: widest radius + 0.35 alpha)
+     L2  .section-label  --green + glow-mid     8px  (anchor: tighter radius + 0.25 alpha)
+     L3  .docs-heading   --green-mid (no glow)       (content subsection)
+   Title gets both the wider radius (10px) and the densest alpha (glow-strong,
+   0.35) so it dominates the label; label takes glow-mid (0.25) at 8px --
+   a distinct step below on both axes. */
+.docs-modal .section-label {
+  padding-top: 20px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green-glow-mid);
+}
 
 .docs-modal .slot-empty {
   padding: 32px 16px;

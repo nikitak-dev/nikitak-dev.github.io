@@ -24,7 +24,7 @@ header.cascade-ready { animation: fadeSlideDown var(--anim-shell) ease-out forwa
   font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--green);
-  text-shadow: 0 0 10px var(--green-glow-strong), 0 0 30px var(--green-ghost);
+  text-shadow: 0 0 10px var(--green-glow-mid), 0 0 30px var(--green-ghost);
   height: 32px;
   display: flex;
   align-items: center;
@@ -51,11 +51,11 @@ header.cascade-ready { animation: fadeSlideDown var(--anim-shell) ease-out forwa
 
 .header-left h1 .logo-back:focus-visible {
   outline: none;
-  text-shadow: 0 0 14px var(--green-glow-strong), 0 0 40px var(--green-glow);
+  text-shadow: 0 0 14px var(--green-glow-mid), 0 0 40px var(--green-glow-soft);
 }
 @media (hover: hover) and (pointer: fine) {
   .header-left h1 .logo-back:hover {
-    text-shadow: 0 0 14px var(--green-glow-strong), 0 0 40px var(--green-glow);
+    text-shadow: 0 0 14px var(--green-glow-mid), 0 0 40px var(--green-glow-soft);
   }
 }
 
@@ -180,7 +180,7 @@ header.cascade-ready { animation: fadeSlideDown var(--anim-shell) ease-out forwa
 .project-card.selected,
 .project-card.kbd-press {
   border-color: var(--green);
-  box-shadow: var(--shadow-inset-deep), 0 0 30px var(--green-glow);
+  box-shadow: var(--shadow-inset-deep), 0 0 30px var(--green-glow-soft);
 }
 .project-card.kbd-press {
   transform: scale(0.99);
@@ -208,7 +208,7 @@ header.cascade-ready { animation: fadeSlideDown var(--anim-shell) ease-out forwa
   from {
     opacity: 1;
     border-color: var(--green-bright);
-    box-shadow: 0 0 30px var(--green-glow-strong), 0 0 10px var(--green);
+    box-shadow: 0 0 30px var(--green-glow-mid), 0 0 10px var(--green);
   }
   to {
     opacity: 0;
@@ -229,8 +229,8 @@ header.cascade-ready { animation: fadeSlideDown var(--anim-shell) ease-out forwa
   --green-dim: var(--amber-dim);
   --green-muted: var(--amber-muted);
   --green-ghost: var(--amber-ghost);
-  --green-glow: var(--amber-glow);
-  --green-glow-strong: var(--amber-glow-strong);
+  --green-glow: var(--amber-glow-soft);
+  --green-glow-strong: var(--amber-glow-mid);
   --text-muted: var(--amber-muted);
   --text-bright: var(--text-bright-amber);
   --bg-elevated: var(--bg-elevated-amber);

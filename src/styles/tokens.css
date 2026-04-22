@@ -18,10 +18,11 @@
   --green-dim: #009922;
   --green-muted: #00751d;
   --green-ghost: rgba(0, 255, 65, 0.08);
+  /* Glow ladder: weak 0.05 -> soft 0.15 -> mid 0.25 -> strong 0.35 (step 0.10). */
   --green-glow-weak: rgba(0, 255, 65, 0.05);
-  --green-glow: rgba(0, 255, 65, 0.1);
-  --green-glow-strong: rgba(0, 255, 65, 0.25);
-  --green-glow-label: rgba(0, 255, 65, 0.35);
+  --green-glow-soft: rgba(0, 255, 65, 0.15);
+  --green-glow-mid: rgba(0, 255, 65, 0.25);
+  --green-glow-strong: rgba(0, 255, 65, 0.35);
   --green-mid-glow: rgba(0, 204, 51, 0.4);
   --matrix-trail: rgba(0, 255, 65, 0.4);
   --text-primary: #00ff41;
@@ -39,10 +40,10 @@
   --error-muted: #661000;
   --error-deep: #3a0d0d;
   --error-ghost: rgba(255, 51, 51, 0.08);
-  --error-glow: rgba(255, 51, 51, 0.15);
   --error-glow-weak: rgba(255, 51, 51, 0.05);
-  --error-glow-strong: rgba(255, 51, 51, 0.3);
-  --error-glow-label: rgba(255, 51, 51, 0.35);
+  --error-glow-soft: rgba(255, 51, 51, 0.15);
+  --error-glow-mid: rgba(255, 51, 51, 0.3);
+  --error-glow-strong: rgba(255, 51, 51, 0.35);
   --error-mid-glow: rgba(204, 34, 0, 0.4);
   --matrix-trail-error: rgba(255, 51, 51, 0.4);
   --bg-input-error: #0e0606;
@@ -59,9 +60,9 @@
   --amber-deep: #3d2605;
   --amber-ghost: rgba(255, 170, 0, 0.08);
   --amber-glow-weak: rgba(255, 170, 0, 0.05);
-  --amber-glow: rgba(255, 170, 0, 0.15);
-  --amber-glow-strong: rgba(255, 170, 0, 0.3);
-  --amber-glow-label: rgba(255, 170, 0, 0.35);
+  --amber-glow-soft: rgba(255, 170, 0, 0.15);
+  --amber-glow-mid: rgba(255, 170, 0, 0.3);
+  --amber-glow-strong: rgba(255, 170, 0, 0.35);
   --amber-mid-glow: rgba(229, 148, 0, 0.4);
   --matrix-trail-amber: rgba(255, 170, 0, 0.4);
   --bg-input-amber: #0e0906;
@@ -99,9 +100,9 @@ body[data-error="true"] {
   --green-muted: var(--error-muted);
   --green-ghost: var(--error-ghost);
   --green-glow-weak: var(--error-glow-weak);
-  --green-glow: var(--error-glow);
+  --green-glow-soft: var(--error-glow-soft);
+  --green-glow-mid: var(--error-glow-mid);
   --green-glow-strong: var(--error-glow-strong);
-  --green-glow-label: var(--error-glow-label);
   --green-mid-glow: var(--error-mid-glow);
   --matrix-trail: var(--matrix-trail-error);
   --text-primary: var(--error);
@@ -126,9 +127,9 @@ body[data-theme="amber"] {
   --green-muted: var(--amber-muted);
   --green-ghost: var(--amber-ghost);
   --green-glow-weak: var(--amber-glow-weak);
-  --green-glow: var(--amber-glow);
+  --green-glow-soft: var(--amber-glow-soft);
+  --green-glow-mid: var(--amber-glow-mid);
   --green-glow-strong: var(--amber-glow-strong);
-  --green-glow-label: var(--amber-glow-label);
   --green-mid-glow: var(--amber-mid-glow);
   --matrix-trail: var(--matrix-trail-amber);
   --text-primary: var(--amber);

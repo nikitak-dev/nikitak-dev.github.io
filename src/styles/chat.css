@@ -72,7 +72,7 @@
   font-size: 36px;
   font-weight: 700;
   color: var(--green);
-  text-shadow: 0 0 20px var(--green-glow-strong);
+  text-shadow: 0 0 20px var(--green-glow-mid);
 }
 
 #empty-state h2 {
@@ -91,7 +91,7 @@
   background: var(--green);
   margin-left: 3px;
   vertical-align: middle;
-  box-shadow: 0 0 6px var(--green-glow-strong);
+  box-shadow: 0 0 6px var(--green-glow-mid);
   animation: blink 1s step-end infinite;
 }
 
@@ -116,13 +116,11 @@
   --bubble-border: var(--user-border);
   --bubble-bg: var(--bg-elevated);
   --bubble-text: var(--green-mid);
-  --bubble-shadow: var(--green-mid-glow);
 
   position: relative;
   padding: 10px 16px;
   color: var(--bubble-text);
-  font-weight: 300;
-  text-shadow: 0 0 2px var(--bubble-shadow);
+  font-weight: 400;
   background: var(--bubble-bg);
   border: 1px solid var(--bubble-border);
   box-shadow: var(--shadow-inset-deep);
@@ -146,10 +144,9 @@
 .bubble--error {
   --bubble-beam: var(--error);
   --bubble-glow: var(--error-dim);
-  --bubble-border: var(--error-glow);
+  --bubble-border: var(--error-glow-soft);
   --bubble-bg: var(--bg-elevated-error);
   --bubble-text: var(--error);
-  --bubble-shadow: var(--error-mid-glow);
 }
 
 /* Bubble prefix — real span element (frees ::before for the beam). */
@@ -325,8 +322,8 @@
   font-weight: 700;
   letter-spacing: 0.08em;
 }
-.file-icon  { color: var(--green-mid); text-shadow: 0 0 6px var(--green-glow); }
-.error-icon { color: var(--error);     text-shadow: 0 0 6px var(--error-glow); }
+.file-icon  { color: var(--green-mid); text-shadow: 0 0 6px var(--green-glow-soft); }
+.error-icon { color: var(--error);     text-shadow: 0 0 6px var(--error-glow-soft); }
 
 .file-name,
 .error-name {
@@ -357,12 +354,12 @@
 
 @media (hover: hover) and (pointer: fine) {
   .msg-media-item:not(:has(.media-error)):hover { border-color: var(--green-dim); box-shadow: var(--shadow-inset-deep), 0 0 20px var(--green-ghost); }
-  .media-body--file:hover .file-open { color: var(--green); text-shadow: 0 0 8px var(--green-glow); }
+  .media-body--file:hover .file-open { color: var(--green); text-shadow: 0 0 8px var(--green-glow-soft); }
 }
 
 .media-body:focus { outline: none; }
 .msg-media-item:focus-within { border-color: var(--green-dim); box-shadow: var(--shadow-inset-deep), 0 0 20px var(--green-ghost); }
-.media-body--file:focus-visible .file-open { color: var(--green); text-shadow: 0 0 8px var(--green-glow); }
+.media-body--file:focus-visible .file-open { color: var(--green); text-shadow: 0 0 8px var(--green-glow-soft); }
 
 /* Typing indicator — minimal inline status row, no bubble chrome. Delay so it
    starts after the user's bubble finishes with a 100ms tail overlap. */
@@ -439,19 +436,20 @@
   transition: color var(--transition);
 }
 
+/* Brighten the prompt marker on focus, matching the input text colour. */
+.input-wrap:focus-within::before { color: var(--green-mid); }
+
 .input-wrap:focus-within {
   border-color: var(--green-mid);
-  box-shadow: 0 0 20px var(--green-glow), 0 0 40px var(--green-glow-weak), inset 0 0 20px var(--green-glow-weak);
+  box-shadow: 0 0 20px var(--green-glow-soft), 0 0 40px var(--green-glow-weak), inset 0 0 20px var(--green-glow-weak);
 }
-
-.input-wrap:focus-within::before { color: var(--green); text-shadow: 0 0 8px var(--green-glow); }
 
 #question {
   flex: 1;
   padding: 10px 0;
   background: transparent;
   border: none;
-  color: var(--green);
+  color: var(--green-mid);
   font-family: var(--font);
   font-size: 12px;
   font-weight: 400;

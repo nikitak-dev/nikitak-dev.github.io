@@ -14,7 +14,7 @@
   --btn-border: var(--border);
   --btn-color: var(--green);
   --btn-box-shadow: none;
-  --btn-text-shadow: 0 0 6px var(--green-glow-strong);
+  --btn-text-shadow: 0 0 6px var(--green-glow-mid);
 
   border: 1px solid var(--btn-border);
   color: var(--btn-color);
@@ -42,8 +42,8 @@
   --btn-bg: var(--user-border);
   --btn-border: var(--green);
   --btn-color: var(--text-bright);
-  --btn-box-shadow: 0 0 20px var(--green-glow-strong), inset 0 0 10px var(--green-glow);
-  --btn-text-shadow: 0 0 8px var(--green-glow-strong);
+  --btn-box-shadow: 0 0 20px var(--green-glow-mid), inset 0 0 10px var(--green-glow-soft);
+  --btn-text-shadow: 0 0 8px var(--green-glow-mid);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -51,8 +51,8 @@
     --btn-bg: var(--user-border);
     --btn-border: var(--green);
     --btn-color: var(--text-bright);
-    --btn-box-shadow: 0 0 20px var(--green-glow-strong), inset 0 0 10px var(--green-glow);
-    --btn-text-shadow: 0 0 8px var(--green-glow-strong);
+    --btn-box-shadow: 0 0 20px var(--green-glow-mid), inset 0 0 10px var(--green-glow-soft);
+    --btn-text-shadow: 0 0 8px var(--green-glow-mid);
   }
 }
 
@@ -183,7 +183,7 @@ body[data-theme="amber"] .docs-modal .modal-header::before {
   letter-spacing: 0.10em;
   color: var(--green-mid);
   text-transform: uppercase;
-  text-shadow: 0 0 10px var(--green-glow-label);
+  text-shadow: 0 0 10px var(--green-glow-strong);
 }
 
 /* === SCANLINE VARIANTS === */
