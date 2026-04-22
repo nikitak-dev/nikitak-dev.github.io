@@ -10,7 +10,7 @@ Repo: `nikitak-dev/nikitak-dev.github.io`
 - **TypeScript** — tsconfig included, types via Astro's built-in
 - `@astrojs/sitemap` — auto-generates sitemap on build
 - No CSS framework — raw CSS with CSS variables
-- No JS framework — vanilla `<script is:inline>` blocks
+- No JS framework — feature logic lives in `src/scripts/` and is bundled via plain `<script>import '../scripts/<feature>';</script>`. `is:inline` is reserved for pre-hydration work (TypeLogo, JSON-LD, FOUC guards).
 
 ## File Layout
 
@@ -19,7 +19,7 @@ src/
   pages/          # Each file = a route (index, 404, project pages)
   layouts/        # BaseLayout.astro — wraps all pages (head, fonts, CSS barrel)
   components/     # DocsModal.astro, MatrixRain.astro, TypeLogo.astro
-  scripts/        # Feature scripts (chat.ts)
+  scripts/        # Feature folders (chat/, hub/, matrix-rain/) and standalone scripts (cascade.ts, kbd-press.ts, ...)
   styles/         # Modular CSS — see "Styles" below
   data/           # Typed static data (projects.ts)
   env.d.ts        # ImportMetaEnv typings for PUBLIC_* env vars
@@ -34,7 +34,7 @@ DESIGN.md         # Design system reference — read before touching CSS
 | Module | Purpose |
 |---|---|
 | `tokens.css` | `:root` design tokens + `body[data-error]` remaps |
-| `base.css` | Reset, body, `#matrix-bg` positioning, scanline overlay, vignette, shared keyframes |
+| `base.css` | Reset, body, scanline overlay, vignette, shared keyframes (`#matrix-bg` positioning lives in `components/MatrixRain.astro` as scoped global) |
 | `utilities.css` | `.btn-terminal`, `.beam-line`, `.section-label`, scanline variants, shared scrollbar |
 | `hub.css` | Header, boot, sys-status, `#hub`, project cards (+amber theme), legend, footer |
 | `modal.css` | `dialog.docs-modal` transitions and internals |
@@ -60,10 +60,7 @@ Each project card has: `data-index`, optional `data-url`, `.card-id`, `.card-sta
 
 Status classes: `live` (green), `private` (muted), `wip` (red theme via `theme-red` on card).
 
-Current projects:
-- `[001]` VOICE_AGENT — private, disabled button
-- `[002]` MULTIMODAL_RAG — live, links to `/multimodal-rag/`
-- `[003][004]` — placeholder slots
+Current project list lives in [src/data/projects.ts](src/data/projects.ts) — that file is the source of truth for IDs, statuses, URLs, and button labels. Don't duplicate it here.
 
 ## Dev Workflow
 
@@ -79,8 +76,7 @@ Push to `main` → GitHub Actions (`.github/workflows/deploy.yml`) builds and de
 
 ## Commit Style
 
-Format: `type: description` (English). Types: `feat`, `fix`, `style`, `chore`, `docs`.
-No Co-Authored-By footer.
+Full rules (types, scopes, breaking-change marker, bundling hygiene, follow-up strategy) live in [.claude/rules/portfolio-style.md](.claude/rules/portfolio-style.md). Base format: `type(scope?): description` (English, Conventional Commits 1.0). No Co-Authored-By footer.
 
 ## Adding a new project
 
@@ -115,7 +111,7 @@ Update `src/data/projects.ts` — append an entry to the `PROJECTS` array with a
 - One feature = `src/scripts/<feature>.ts` while the file stays under ~300 lines
 - If the feature grows — ≥3 concerns or >300 lines — promote to a folder: `src/scripts/<feature>/index.ts` + siblings (`messages.ts`, `conn.ts`, …)
 - Import from the page via `<script>import '../scripts/<feature>';</script>` (plain `<script>`, **not** `is:inline`). Vite bundles it.
-- Pattern reference: `src/pages/multimodal-rag.astro` importing `src/scripts/chat.ts`
+- Pattern reference: `src/pages/multimodal-rag.astro` importing `src/scripts/chat/` (folder-with-index.ts form, since chat has ≥3 concerns)
 
 ## Maintenance & Refactoring
 
