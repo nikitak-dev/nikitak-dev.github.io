@@ -4,12 +4,6 @@
    DOMContentLoaded, except on pages with a boot-screen (hub): there, the
    page's own endBoot() invokes window._runCascade() after the boot sequence. */
 
-declare global {
-  interface Window {
-    _runCascade?: () => void;
-  }
-}
-
 const rootStyle = getComputedStyle(document.documentElement);
 const STEP = parseFloat(rootStyle.getPropertyValue('--cascade-step')) || 0.4;
 
