@@ -67,23 +67,37 @@
 
 ## Коммиты
 
-Формат: `type(scope?): description` (English, imperative, без точки в конце).
+Формат: `type(scope?): description` (English, imperative, без точки в конце). Основа — [Conventional Commits 1.0](https://www.conventionalcommits.org/en/v1.0.0/).
 
-Типы: `feat`, `fix`, `style`, `chore`, `docs`, `refactor`.
+Типы: `feat`, `fix`, `refactor`, `perf`, `docs`, `style`, `test`, `build`, `ci`, `chore`, `revert`.
+
+Breaking change: `type(scope)!: description` или footer `BREAKING CHANGE: <описание>`. На этом проекте редко актуально (static site, нет внешнего API), но если меняется публичный URL / data-схема projects.ts / поведение BaseLayout-пропсов — помечаем.
 
 Правила:
 - Один коммит = одно атомарное изменение, описуемое одной строкой ≤ 72 символа
-- НЕ объединять рефакторинг + фичу / стиль + логику
+- «Атомарный» = **описуемо одной фразой**, а не «минимум N строк». 1-строчный коммит нормален, если он завершённая единица.
+- НЕ объединять рефакторинг + фичу / стиль + логику — это про ревертируемость, а не про размер
 - НЕ использовать "misc", "various", "updates" — конкретизировать
 - НЕ добавлять Co-Authored-By footer
 - Тело коммита — только если описание не помещается в одну строку
+
+**Bundling hygiene-правок в текущий коммит:** если опечатка / whitespace / комментарий естественно относится к файлу, который уже меняешь этим коммитом — включать сразу, не дробить на два. Правило «атомарный» не требует механически выделять каждую строчку в отдельный commit.
+
+**Follow-up на собственный коммит:**
+- **Unpushed** + тривиальная правка (typo, whitespace, забытый импорт, доп. комментарий) → `git commit --amend` (или `git commit --fixup=<sha>` + `git rebase --autosquash` перед push). Не плодить «fix typo» коммиты, если историю ещё можно переписать.
+- **Pushed** → отдельный коммит. Прошлое не переписываем.
 
 Примеры:
 - `feat(card): add WIP status with red theme`
 - `fix(matrix): read colors from CSS variables on theme switch`
 - `refactor(css): extract section-label pattern into utility class`
+- `perf(hub): lazy-load matrix canvas on boot-complete`
 - `style(index): align card grid to 4px baseline`
 - `docs(design): document amber palette for warning states`
+- `build(deps): bump astro to 6.2.0`
+- `ci(deploy): pin setup-node to v5`
+- `revert: revert "feat(card): add WIP status"`
+- `refactor(data)!: rename Project.url → Project.href`
 
 ## Перед коммитом (обязательный чеклист)
 
