@@ -175,39 +175,10 @@ if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
 }
 
 /* DEV-only visual QA harness for media tiles. Opt in with ?mock=1 in the URL
-   (e.g. http://localhost:4321/multimodal-rag/?mock=1). Renders a sample
-   assistant message with three media tiles: working image, broken image
-   (→ [ LOAD_FAILED ] fallback), PDF card. Stripped from prod builds by
-   Vite dead-code elimination when import.meta.env.DEV is false. */
+   (e.g. http://localhost:4321/multimodal-rag/?mock=1). Dynamic import lets
+   Vite DCE the mock module out of prod builds — mock.ts never ships. */
 if (import.meta.env.DEV && new URLSearchParams(location.search).has('mock')) {
-  addAssistantMsg({
-    answer: '**Mock response** for visual QA of media tiles. Image tile should render pristine (no scanline overlay). The broken tile should fall back to the error-card fallback with scanlines. The PDF tile should keep scanlines.',
-    sources: [
-      { filename: 'encryption_basics.txt', score: 0.56 },
-      { filename: 'symmetric-encryption.png', score: 0.14 },
-      { filename: 'doc.pdf', score: 0.10 },
-    ],
-    media: [
-      {
-        filename: 'symmetric-encryption.png',
-        type: 'image',
-        driveFileId: '1KkNVWVwyptgloZvwLqeP0gz4A9P8akah',
-        url: 'https://drive.google.com/thumbnail?id=1KkNVWVwyptgloZvwLqeP0gz4A9P8akah&sz=w800',
-      },
-      {
-        filename: 'broken.png',
-        type: 'image',
-        driveFileId: 'mockbrokenid',
-        url: 'https://drive.google.com/thumbnail?id=mockbrokenid&sz=w800',
-      },
-      {
-        filename: 'doc.pdf',
-        type: 'pdf',
-        driveFileId: 'mockpdfid',
-        url: 'https://drive.google.com/file/d/mockpdfid/preview',
-      },
-    ],
-  });
+  import('./mock').then(m => m.renderMock(addAssistantMsg));
 }
 
 export {};
