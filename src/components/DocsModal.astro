@@ -59,18 +59,13 @@ const titleId = `${id}-title`;
       document.querySelectorAll(`[aria-controls="${id}"]`).forEach(t => t.setAttribute('aria-expanded', 'false'));
     });
 
-    /* Drag-close fix: only close on backdrop click if mousedown+mouseup both on dialog itself */
+    /* Drag-close fix: only close on backdrop click if mousedown+mouseup both on dialog itself.
+       Escape closes via the native <dialog> cancel event on every supported browser; closedby="any"
+       (Chrome 134+/Safari 18+) also fires close() on outside-click — the drag-fix still applies. */
     let downTarget = null;
     modal.addEventListener('mousedown', e => { downTarget = e.target; });
     modal.addEventListener('mouseup', e => {
       if (e.target === modal && downTarget === modal) modal.close();
     });
-
-    /* Fallback for closedby="any" (Chrome 134+/Safari 18+). Older browsers: bind Escape + backdrop manually.
-       If native closedby works, it fires close() — our drag-fix above still guards against accidental drag-close. */
-    const supportsClosedBy = 'closedBy' in modal;
-    if (!supportsClosedBy) {
-      modal.addEventListener('cancel', () => { /* Escape already closes via native cancel event */ });
-    }
   })();
 </script>
