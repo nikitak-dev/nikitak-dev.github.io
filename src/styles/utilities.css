@@ -1,6 +1,6 @@
-/* Reusable utility classes: .btn-terminal, .beam-line, .section-label, scanline
-   variants, and the shared webkit scrollbar rules. These are consumed across hub,
-   modal, chat and error pages. */
+/* Reusable utility classes: .btn-terminal, .section-label, scanline variants,
+   and the shared webkit scrollbar rules. These are consumed across hub, modal,
+   chat and error pages. */
 
 /* === BUTTON BASE ===
    Active-look palette is driven by local custom properties so the hover/focus/
@@ -68,14 +68,7 @@
 }
 
 /* === BEAM — shared luminous separator used by header, footer, modal, input-bar === */
-.beam-line {
-  position: relative;
-  height: var(--beam-height);
-  background: var(--border);
-}
-
 header::before,
-.beam-line::after,
 .hub-footer::before,
 .docs-modal .modal-header::before,
 #input-bar::before {
@@ -101,7 +94,6 @@ header::before,
 header::before,
 .docs-modal .modal-header::before { bottom: 0; }
 
-.beam-line::after,
 .hub-footer::before,
 #input-bar::before { top: 0; }
 
@@ -126,7 +118,6 @@ header::before,
 }
 
 body[data-theme="amber"] header::before,
-body[data-theme="amber"] .beam-line::after,
 body[data-theme="amber"] .hub-footer::before,
 body[data-theme="amber"] .docs-modal .modal-header::before,
 body[data-theme="amber"] #input-bar::before {
@@ -203,24 +194,6 @@ body.no-global-scanlines::after { display: none; }
    global body::after is disabled. The ::after overlay is defined in base.css. */
 .scanlines-section {
   position: relative;
-}
-
-/* Lite variant: horizontal scanlines only, no RGB chromatic aberration.
-   Intended for individual content boxes where the strong global overlay
-   would be visually harsh. Container must be positioned. */
-.scanlines-lite { position: relative; }
-.scanlines-lite::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 1px,
-    var(--scanline-line) 1px,
-    var(--scanline-line) 2px
-  );
-  pointer-events: none;
 }
 
 /* === CASCADE SYSTEM ===

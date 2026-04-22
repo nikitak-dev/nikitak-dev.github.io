@@ -32,7 +32,6 @@ body[data-error="true"] {
    loops seamlessly (the shared green rule is no-repeat, which would leave
    gaps incompatible with the glitch aesthetic). */
 body[data-error="true"] header::before,
-body[data-error="true"] .beam-line::after,
 body[data-error="true"] .hub-footer::before,
 body[data-error="true"] .docs-modal .modal-header::before,
 body[data-error="true"] #input-bar::before {
@@ -46,12 +45,6 @@ body[data-error="true"] header::before {
     beamWrapError 1.4s steps(10, end) infinite,
     beamFlicker   3.7s linear        infinite;
   animation-delay: -0.3s, -0.5s;
-}
-body[data-error="true"] .beam-line::after {
-  animation:
-    beamWrapError 1.7s steps(10, end) infinite,
-    beamFlicker   2.9s linear        infinite;
-  animation-delay: -0.9s, -1.1s;
 }
 body[data-error="true"] .hub-footer::before {
   animation:
