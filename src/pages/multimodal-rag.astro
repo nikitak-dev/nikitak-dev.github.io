@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import DocsModal from '../components/DocsModal.astro';
+import MultimodalRagDocs from '../components/docs/MultimodalRagDocs.astro';
 import '../styles/chat.css';
 ---
 <BaseLayout
@@ -55,7 +56,9 @@ import '../styles/chat.css';
       <div class="input-hint"><span class="hint-key">[ ENTER ]</span> transmit &nbsp;&nbsp;|&nbsp;&nbsp; <span class="hint-key">[ ESC ]</span> clear &nbsp;&nbsp;|&nbsp;&nbsp; <span class="hint-key">[ CLICK ]</span> use prompt</div>
     </div>
   </main>
-  <DocsModal id="docs-modal" title="PROJECT :: MULTIMODAL_RAG" />
+  <DocsModal id="docs-modal" title="PROJECT :: MULTIMODAL_RAG" sections={['overview']}>
+    <MultimodalRagDocs slot="overview" />
+  </DocsModal>
 </BaseLayout>
 
 <script>

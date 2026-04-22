@@ -1,0 +1,272 @@
+---
+import '../../styles/rag-docs.css';
+const GH = 'https://github.com/nikitak-dev/nikitak-dev.github.io/blob/main/src/scripts/chat';
+---
+<div class="rag-docs">
+
+  <div class="docs-divider docs-divider--first" role="separator" aria-label="User guide begins">
+    <span class="docs-divider-label">// USER GUIDE</span>
+  </div>
+
+  <section class="docs-block">
+    <h3 class="docs-heading">// TL;DR</h3>
+    <p>Drop a file into Google Drive. Ask a question in natural language. Get an answer grounded in your own documents -- with clickable source links to the original text file, image, PDF, audio clip, or video.</p>
+    <p class="docs-note"><strong>Visitor access is read-only.</strong> Ingest (dropping new files into Google Drive) is tied to the owner's Drive and happens off-site. Anyone visiting this page can query the existing corpus through the chat -- see <a class="docs-ref" href="#whats-in-scope">What's in scope</a> -- but cannot add their own documents.</p>
+  </section>
+
+  <section class="docs-block">
+    <h3 class="docs-heading">// WHAT IS RAG</h3>
+    <p><strong>Retrieval-Augmented Generation.</strong> The LLM does not answer from its training memory -- it answers from documents retrieved on demand from a vector database. <em>Multimodal</em> means the same system ingests text, images, PDFs, audio, and video into one shared vector space, so a text question can surface a video frame or a PDF page as a source.</p>
+  </section>
+
+  <section class="docs-block">
+    <h3 class="docs-heading">// HOW TO USE</h3>
+    <ul class="docs-list">
+      <li>Click the input field below -- a suggested query autofills. Press <strong>EXEC</strong> (or Enter) to send.</li>
+      <li>Watch the typing indicator. The response renders as a block once complete -- there is no token streaming.</li>
+      <li>Sources appear under each answer. Media tiles open the original file in Google Drive in a new tab.</li>
+      <li><strong>CLR</strong> wipes the local conversation. History is per-tab (<code>sessionStorage</code>) -- closing the tab resets state.</li>
+    </ul>
+  </section>
+
+  <section class="docs-block" id="whats-in-scope">
+    <h3 class="docs-heading">// WHAT'S IN SCOPE</h3>
+    <p class="docs-note">The knowledge base is a fixed 13-file corpus. Questions outside this scope are declined, not hallucinated.</p>
+    <table class="docs-table">
+      <thead><tr><th>Modality</th><th>Files</th><th>Topics</th></tr></thead>
+      <tbody>
+        <tr><td>Text (.txt)</td><td>7</td><td>cybersecurity, Agile, API design, cloud architecture, Linux CLI, networking, cryptography</td></tr>
+        <tr><td>Image (.png)</td><td>2</td><td>cryptography diagrams</td></tr>
+        <tr><td>Audio (.mp3)</td><td>1</td><td>DevOps practices (~75s)</td></tr>
+        <tr><td>Video (.mp4)</td><td>2</td><td>keyboard typing, UI animation</td></tr>
+        <tr><td>PDF</td><td>1</td><td>SQL Joins guide -- 6 join types (INNER, LEFT, RIGHT, FULL, CROSS, SELF)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="docs-divider" role="separator" aria-label="Technical reference begins">
+    <span class="docs-divider-label">// TECHNICAL REFERENCE</span>
+  </div>
+
+  <section class="docs-block">
+    <h3 class="docs-heading">// INGESTION PIPELINE</h3>
+    <p class="docs-note">n8n workflow, 21 nodes. Runs whenever a new file lands in the watched Google Drive folder. Engineering details -- captioning, embedding fusion, chunking -- live in <a class="docs-ref" href="#key-patterns">Key Patterns</a> below.</p>
+    <figure class="docs-figure">
+      <img
+        class="docs-image"
+        src="/docs/multimodal-rag/ingestion.png"
+        alt="Ingestion pipeline: Google Drive trigger feeds a switch that fans out into five modality branches -- text, image, PDF, audio, video -- each producing an embedding that is merged and upserted into Pinecone."
+        loading="lazy"
+        decoding="async"
+      />
+    </figure>
+  </section>
+
+  <section class="docs-block">
+    <h3 class="docs-heading">// CHAT PIPELINE</h3>
+    <p class="docs-note">n8n workflow, 9 nodes. Invoked per user question. Per-node engineering (models, thresholds, policies) -- see <a class="docs-ref" href="#key-patterns">Key Patterns</a>.</p>
+    <figure class="docs-figure">
+      <img
+        class="docs-image"
+        src="/docs/multimodal-rag/chat.png"
+        alt="Chat pipeline: chat_webhook receives the question, rewrite_question classifies and rewrites it with Gemini, embed_question produces a vector, query retrieves top-20 candidates from Pinecone, rerank keeps the best 5 via bge-reranker-v2-m3, build_context applies a modality boost, llm_answer generates a grounded answer with Claude Sonnet 4, format_response shapes the payload, and respond_webhook returns it to the client."
+        loading="lazy"
+        decoding="async"
+      />
+    </figure>
+    <ul class="docs-list">
+      <li><strong>chat_webhook</strong> -- entrypoint. Accepts POST with the question and optional history.</li>
+      <li><strong>rewrite_question</strong> -- LLM classifier. Decides intent, modality, and produces a standalone retrieval query.</li>
+      <li><strong>embed_question</strong> -- turns the rewritten query into a vector.</li>
+      <li><strong>query</strong> -- pulls candidates from Pinecone.</li>
+      <li><strong>rerank</strong> -- reorders candidates with a cross-encoder.</li>
+      <li><strong>build_context</strong> -- filters by score, applies modality boost, assembles context.</li>
+      <li><strong>llm_answer</strong> -- generates the grounded answer.</li>
+      <li><strong>format_response</strong> -- shapes payload for the frontend (answer, media, sources).</li>
+      <li><strong>respond_webhook</strong> -- returns the payload.</li>
+    </ul>
+  </section>
+
+  <section class="docs-block" id="error-handler">
+    <h3 class="docs-heading">// ERROR HANDLER</h3>
+    <p class="docs-note">n8n workflow, 2 nodes. Catches unhandled errors from the ingestion workflow and posts a Discord alert -- nothing fails silently server-side.</p>
+    <figure class="docs-figure">
+      <img
+        class="docs-image docs-image--narrow"
+        src="/docs/multimodal-rag/error-handler.png"
+        alt="Error handler workflow: error_trigger receives failed execution payloads from the ingestion workflow and sends a Discord alert through send_alert."
+        loading="lazy"
+        decoding="async"
+      />
+    </figure>
+  </section>
+
+  <section class="docs-block">
+    <h3 class="docs-heading">// SUPPORTED MODALITIES</h3>
+    <p class="docs-note">Per-format ingest limits and embedding approach.</p>
+    <table class="docs-table">
+      <thead><tr><th>Modality</th><th>Formats</th><th>Limits</th><th>Embedding approach</th></tr></thead>
+      <tbody>
+        <tr><td>Text</td><td>.txt</td><td>8192 tokens</td><td>Sentence-aware chunking (400 tokens, 50 overlap) -&gt; embed each chunk</td></tr>
+        <tr><td>Image</td><td>PNG, JPEG</td><td>6 images/request</td><td>Enriched embedding (binary + JSON caption fused in one Gemini call)</td></tr>
+        <tr><td>Audio</td><td>MP3, WAV</td><td>80 seconds</td><td>Enriched embedding (binary + JSON caption with transcript)</td></tr>
+        <tr><td>Video</td><td>MP4, MOV</td><td>120 seconds</td><td>Enriched embedding (binary + JSON caption with visual + narration)</td></tr>
+        <tr><td>PDF</td><td>.pdf</td><td>6 pages</td><td>Enriched embedding (binary + JSON caption with terminology + content)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="docs-block" id="key-patterns">
+    <h3 class="docs-heading">// KEY PATTERNS</h3>
+    <ul class="docs-list">
+      <li><strong>Enriched multipart embeddings for all media.</strong> Every media file is captioned by Gemini 2.0 Flash into structured JSON (type, title, key_topics, terminology[], content, questions[]) tailored per modality. Caption text and native binary are then sent together as two <code>parts</code> in a single Gemini Embedding 2 call -- the model fuses both into one contextualized vector. Captions are also stored in metadata for LLM context.</li>
+      <li><strong>Two-stage retrieval: vector query + cross-encoder rerank.</strong> Stage 1 is a dense vector query against Pinecone with <code>topK=20</code>, returning 20 cosine-similarity candidates. Stage 2 passes them to Pinecone's <code>bge-reranker-v2-m3</code> cross-encoder, which reads (question, candidate) together -- much more precise than cosine alone. <code>build_context</code> keeps reranked items above <code>score &gt;= 0.001</code> (top-n=5).</li>
+      <li><strong>Fallback thresholds when rerank is unavailable.</strong> If rerank fails, <code>build_context</code> falls back to raw vector scores with per-type thresholds: text <code>max(topScore * 0.80, 0.55)</code>, audio <code>max(topScore * 0.60, 0.55)</code>, image/video/pdf <code>max(topScore * 0.60, 0.50)</code>. Top-1 is still included if nothing qualifies.</li>
+      <li><strong>LLM-driven intent + modality classification.</strong> <code>rewrite_question</code> (Gemini 2.0 Flash, temperature 0) does three things in one call: classify intent (<code>greeting | pure_meta | content</code>), detect modality, and produce a standalone retrieval query. Replaces earlier regex heuristics so EN / RU / UA are handled uniformly. Greetings short-circuit retrieval entirely.</li>
+      <li><strong>Modality boost.</strong> When the classifier identifies a modality, <code>build_context</code> ensures items of that <code>fileType</code> survive filtering even when rerank scored them low -- short media captions are penalised by rerankers that prefer longer text. Capped at 6 items.</li>
+      <li><strong>Three-tier answering policy.</strong> The Claude system prompt prescribes three explicit tiers: Tier 1 (direct) -- answer fully from context; Tier 2 (partial) -- answer from what's retrieved and note the scope; Tier 3 (empty) -- <code>That information is not available in the knowledge base.</code>. Coupled with an inviolable grounding rule (no parametric knowledge).</li>
+      <li><strong>Multi-turn coherence.</strong> The frontend sends up to 10 recent turns as <code>history</code>. <code>rewrite_question</code> uses it to resolve pronouns; <code>llm_answer</code> embeds history as a <code>&lt;history&gt;</code> block before <code>&lt;documents&gt;</code> with explicit instruction to stay consistent with prior answers. History content is treated as untrusted.</li>
+      <li><strong>Filename-anchored embeddings.</strong> Embedding API calls include the <code>title</code> parameter set to the original filename -- biases the embedding toward the semantic content suggested by the filename, improving retrieval precision for well-named files.</li>
+      <li><strong>Unified vector space with task-type optimization.</strong> Ingestion uses <code>taskType: RETRIEVAL_DOCUMENT</code>, queries use <code>taskType: RETRIEVAL_QUERY</code>. Same model, same dimensions -- but Gemini optimizes embeddings for their intended role in asymmetric search.</li>
+      <li><strong>Sentence-aware chunking with overlap.</strong> Text files are split at sentence boundaries (~400 tokens per chunk, 50-token overlap). No mid-sentence cuts. Overlap ensures context continuity across chunk boundaries.</li>
+      <li><strong>Graceful error handling.</strong> Chat pipeline: HTTP nodes use <code>onError: continueRegularOutput</code> -- if any API fails, user gets a friendly error instead of a hanging request. Ingestion pipeline: failures trigger a Discord alert via <code>error_handler</code>. All HTTP nodes retry 3 attempts with 3s backoff.</li>
+      <li><strong>Source-grounded, language-aware answers.</strong> System prompt constrains the LLM to retrieved documents with source citation. Language instruction ensures responses match the user's question language (Russian question -&gt; Russian answer), regardless of source language.</li>
+    </ul>
+  </section>
+
+  <section class="docs-block">
+    <h3 class="docs-heading">// REQUEST / RESPONSE CONTRACT</h3>
+    <p class="docs-note">Frontend &lt;-&gt; n8n webhook. Response is treated as <code>unknown</code> and narrowed at DOM-builder boundaries (no strict schema validation).</p>
+    <pre class="docs-code" is:raw>
+POST /webhook/rag-chat
+Content-Type: application/json
+
+{
+  "question": "What is AES-256?",
+  "history":  [              // optional
+    { "role": "user",      "content": "..." },
+    { "role": "assistant", "content": "..." }
+  ]
+}
+    </pre>
+    <pre class="docs-code" is:raw>
+200 OK
+{
+  "answer":  "AES-256 is a symmetric block cipher ...",
+  "media":   [ { "type": "pdf", "driveFileId": "1AbC...", "title": "..." } ],
+  "sources": [ { "filename": "encryption_basics.txt", "score": 0.87 } ]
+}
+    </pre>
+  </section>
+
+  <section class="docs-block">
+    <h3 class="docs-heading">// FRONTEND MODULE MAP</h3>
+    <table class="docs-table">
+      <thead><tr><th>Module</th><th>Owns</th></tr></thead>
+      <tbody>
+        <tr><td><a class="docs-link" href={`${GH}/index.ts`}       target="_blank" rel="noopener noreferrer">index.ts</a></td>       <td>orchestration, fetch, abort, animation timing, webhook URL</td></tr>
+        <tr><td><a class="docs-link" href={`${GH}/messages.ts`}    target="_blank" rel="noopener noreferrer">messages.ts</a></td>    <td>#chat DOM -- addUserMsg / addAssistantMsg / addErrorMsg / addTypingIndicator</td></tr>
+        <tr><td><a class="docs-link" href={`${GH}/helpers.ts`}     target="_blank" rel="noopener noreferrer">helpers.ts</a></td>     <td>pure DOM factories, media tile builders, sources list</td></tr>
+        <tr><td><a class="docs-link" href={`${GH}/history.ts`}     target="_blank" rel="noopener noreferrer">history.ts</a></td>     <td>chat history + transcript + sessionStorage persistence</td></tr>
+        <tr><td><a class="docs-link" href={`${GH}/conn.ts`}        target="_blank" rel="noopener noreferrer">conn.ts</a></td>        <td>#conn-status indicator + error taxonomy (classifyError)</td></tr>
+        <tr><td><a class="docs-link" href={`${GH}/placeholder.ts`} target="_blank" rel="noopener noreferrer">placeholder.ts</a></td> <td>rotating input placeholder typewriter</td></tr>
+        <tr><td><a class="docs-link" href={`${GH}/types.ts`}       target="_blank" rel="noopener noreferrer">types.ts</a></td>       <td>ChatResponse / HistoryItem / connection states</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="docs-block">
+    <h3 class="docs-heading">// CHAT UI DETAILS</h3>
+    <ul class="docs-list">
+      <li>JetBrains Mono font, green-on-black CRT aesthetic with scanline + chromatic aberration overlay.</li>
+      <li>Matrix rain canvas background, vignette, subtle beam animation on page edges.</li>
+      <li>Source tags with relevance score bars; collapsible sources list under each assistant answer.</li>
+      <li>Media preview tiles via Google Drive thumbnails (images) and preview URLs (video / PDF / audio).</li>
+      <li>Per-tab session history via <code>sessionStorage</code>; 30s fetch timeout with per-request abort on CLR.</li>
+      <li>CORS: chat webhook allows only origin <code>https://nikitak-dev.github.io</code>.</li>
+    </ul>
+  </section>
+
+  <section class="docs-block">
+    <h3 class="docs-heading">// ERROR TAXONOMY</h3>
+    <table class="docs-table">
+      <thead><tr><th>Cause</th><th>CONN state</th><th>User sees</th></tr></thead>
+      <tbody>
+        <tr><td>User pressed CLR mid-request</td><td>-- (silent)</td><td>Messages wipe; no error rendered</td></tr>
+        <tr><td>30s timeout exceeded</td><td>LOST</td><td><code>// Connection lost</code></td></tr>
+        <tr><td>Network error / HTTP 5xx</td><td>LOST</td><td><code>// Connection lost</code></td></tr>
+        <tr><td>HTTP 4xx (config-side)</td><td>ESTABLISHED</td><td><code>// Request rejected</code></td></tr>
+        <tr><td>Webhook URL absent at build</td><td>MISSING</td><td><code>// Webhook missing</code> (EXEC disabled)</td></tr>
+      </tbody>
+    </table>
+    <p class="docs-note">Server-side failures are handled by the <a class="docs-ref" href="#error-handler">error_handler</a> workflow (see above).</p>
+  </section>
+
+  <section class="docs-block">
+    <h3 class="docs-heading">// LIMITS &amp; TIMEOUTS</h3>
+    <table class="docs-table">
+      <tbody>
+        <tr><td>Fetch timeout</td><td>30s -- accommodates cold Gemini + Claude paths</td></tr>
+        <tr><td>Text chunking</td><td>~400 tokens per chunk, 50-token overlap, sentence-aware</td></tr>
+        <tr><td>Image / PDF batch</td><td>6 items per embedding request</td></tr>
+        <tr><td>Audio length</td><td>80s maximum</td></tr>
+        <tr><td>Video length</td><td>120s maximum</td></tr>
+        <tr><td>Frontend history cap</td><td>10 turns; answer truncated to 500 chars before storage</td></tr>
+        <tr><td>LLM history window</td><td>last 20 messages sent to Claude</td></tr>
+        <tr><td>Vector retrieval</td><td>top-K = 20 candidates</td></tr>
+        <tr><td>Rerank</td><td>top-N = 5 kept, score floor 0.001, modality boost cap 6</td></tr>
+        <tr><td>Embedding dimensions</td><td>1536</td></tr>
+        <tr><td>Ingestion retry policy</td><td>3 attempts per HTTP node, 3s backoff</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="docs-block">
+    <h3 class="docs-heading">// STACK</h3>
+    <table class="docs-table">
+      <thead><tr><th>Layer</th><th>Technology</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td>Trigger</td><td>Google Drive Trigger</td><td>Watches folder for new files</td></tr>
+        <tr><td>File storage</td><td>Google Drive</td><td>Source of truth for documents</td></tr>
+        <tr><td>Captioning</td><td>Gemini 2.0 Flash</td><td>Structured JSON captions for media</td></tr>
+        <tr><td>Embedding</td><td>Gemini Embedding 2 Preview</td><td>Natively multimodal embeddings (1536-dim)</td></tr>
+        <tr><td>Vector DB</td><td>Pinecone</td><td>Store + query embeddings</td></tr>
+        <tr><td>Reranker</td><td>Pinecone <code>bge-reranker-v2-m3</code></td><td>Cross-encoder second-pass ordering</td></tr>
+        <tr><td>Query classifier</td><td><code>google/gemini-2.0-flash-001</code> (OpenRouter)</td><td>Intent + modality + standalone query</td></tr>
+        <tr><td>Chat LLM</td><td><code>anthropic/claude-sonnet-4</code> (OpenRouter)</td><td>Generate grounded answers</td></tr>
+        <tr><td>Orchestration</td><td>n8n (self-hosted)</td><td>3 workflows -- ingestion, chat, error handler</td></tr>
+        <tr><td>Frontend</td><td>Astro 6 + vanilla TypeScript</td><td>Static page, per-tab chat state</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="docs-block">
+    <h3 class="docs-heading">// TEST CORPUS &amp; EVAL</h3>
+    <p>The fixed 13-file corpus spans all five modalities. A <strong>36-case</strong> evaluation suite guards against the <em>Seven Failure Points of RAG</em> (Barnett et al. 2024) across seven axes: faithfulness, completeness, refusal on out-of-scope questions, cross-modal retrieval, language matching (EN / RU), disambiguation between similar sources, and multi-turn recall. Manual UI tests mirror the same axes through real chat input before each deploy.</p>
+  </section>
+
+  <div class="docs-footer">
+    <div>// Synced with backend workflow as of 2026-04-22.</div>
+    <div>// Queries are logged to n8n and sent to Gemini / Anthropic. Do not submit sensitive data.</div>
+  </div>
+</div>
+
+<script is:inline>
+  /* In-document references inside the RAG docs modal: smooth-scroll to the
+     target section without pushing a #hash into the URL (keeps browser history
+     clean while the dialog is open). Event-delegated so any future .docs-ref
+     links work without extra wiring. */
+  document.addEventListener('click', (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const link = target.closest('.rag-docs .docs-ref');
+    if (!link) return;
+    const href = link.getAttribute('href') || '';
+    if (!href.startsWith('#')) return;
+    const dest = document.getElementById(href.slice(1));
+    if (!dest) return;
+    event.preventDefault();
+    dest.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+</script>
+

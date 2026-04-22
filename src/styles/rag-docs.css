@@ -1,0 +1,199 @@
+/* MultimodalRagDocs -- styles for the overview slot of <DocsModal> on multimodal-rag.
+   Scoped via .rag-docs descendant-selectors so these generic class names don't
+   collide with other globals. Imported by src/components/docs/MultimodalRagDocs.astro. */
+
+.rag-docs {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--green-mid);
+  /* Disable JetBrains Mono ligatures (-> fusing into an arrow glyph, != into
+     not-equal, etc.). Copies as ASCII but renders as a stylised symbol, which
+     breaks the "terminal" look. Plain ASCII only. */
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+.rag-docs p { margin: 0 0 10px; }
+.rag-docs p:last-child { margin-bottom: 0; }
+.rag-docs strong {
+  color: var(--green);
+  font-weight: 700;
+}
+.rag-docs em {
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: inherit;
+}
+.rag-docs code {
+  font-family: inherit;
+  color: var(--green-mid);
+  background: var(--bg-input);
+  padding: 1px 5px;
+  border: 1px solid var(--border-hover);
+}
+
+.rag-docs .docs-block { margin-bottom: 24px; }
+.rag-docs .docs-block:last-of-type { margin-bottom: 0; }
+
+.rag-docs .docs-heading {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--green-mid);
+  margin: 0 0 10px;
+}
+
+.rag-docs .docs-list { margin: 0 0 10px; padding-left: 18px; }
+.rag-docs .docs-list li { margin-bottom: 6px; }
+.rag-docs .docs-list li::marker { color: var(--green-mid); content: '> '; }
+
+.rag-docs .docs-diagram,
+.rag-docs .docs-code {
+  font-family: inherit;
+  font-size: 11px;
+  line-height: 1.4;
+  background: var(--bg-input);
+  border: 1px solid var(--border-hover);
+  padding: 12px;
+  margin: 10px 0;
+  overflow-x: auto;
+  tab-size: 2;
+  white-space: pre;
+}
+.rag-docs .docs-diagram { color: var(--green-mid); }
+.rag-docs .docs-code { color: var(--text); }
+
+.rag-docs .docs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  margin: 10px 0;
+}
+.rag-docs .docs-table th,
+.rag-docs .docs-table td {
+  border: 1px solid var(--border-hover);
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+.rag-docs .docs-table th {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--green-mid);
+  background: var(--bg-input);
+  font-weight: 700;
+}
+
+.rag-docs .docs-note { color: var(--text-muted); font-size: 12px; letter-spacing: 0.06em; }
+
+.rag-docs .docs-figure {
+  position: relative;
+  /* Lift above the docs-modal's CRT scanline overlay (z-index 9999 on
+     dialog.docs-modal[open]::after). Keeps workflow screenshots readable
+     without scanlines painted across the nodes. */
+  z-index: 10000;
+  margin: 12px 0;
+  padding: 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-hover);
+  overflow-x: auto;
+}
+.rag-docs .docs-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+/* Narrow variant for small diagrams (e.g. 2-node error handler). Keep them
+   from stretching edge-to-edge which would dwarf the tiny graph. */
+.rag-docs .docs-image--narrow {
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+/* In-document reference (jumps to another section of the same modal).
+   Visually like <strong> but with underline + hover glow to signal "clickable". */
+.rag-docs .docs-ref {
+  color: var(--green);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+.rag-docs .docs-ref:hover {
+  text-shadow: 0 0 8px var(--green-glow-mid);
+}
+.rag-docs .docs-ref:focus-visible {
+  outline: 1px solid var(--green);
+  outline-offset: 2px;
+}
+/* Scroll-anchor padding so the target section lands slightly below the
+   modal-frame top edge instead of flush against it. */
+.rag-docs .docs-block { scroll-margin-top: 16px; }
+
+.rag-docs .docs-link {
+  color: var(--green-mid);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+.rag-docs .docs-link:hover {
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green-glow-soft);
+}
+.rag-docs .docs-link:focus-visible {
+  outline: 1px solid var(--green);
+  outline-offset: 2px;
+}
+
+/* Divider between User Guide (TL;DR .. WHAT'S IN SCOPE) and the Technical
+   Reference block. Renders as two horizontal rules with a centered label --
+   a clear "here the deep docs start" marker without adding another heading
+   level to the type hierarchy. */
+.rag-docs .docs-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 32px 0 24px;
+}
+/* First divider opens the document -- no top margin, flush with the
+   scrollable area so the label anchors the user's eye immediately. */
+.rag-docs .docs-divider--first { margin-top: 0; }
+.rag-docs .docs-divider::before,
+.rag-docs .docs-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-hover);
+}
+.rag-docs .docs-divider-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green-glow-mid);
+  white-space: nowrap;
+}
+
+.rag-docs .docs-footer {
+  border-top: 1px dashed var(--border-hover);
+  margin-top: 32px;
+  padding-top: 12px;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.rag-docs .docs-footer div + div { margin-top: 4px; }
+
+@media (max-width: 640px) {
+  .rag-docs { font-size: 11px; }
+  .rag-docs .docs-diagram,
+  .rag-docs .docs-code,
+  .rag-docs .docs-table { font-size: 10px; }
+  .rag-docs .docs-block { margin-bottom: 20px; }
+}
