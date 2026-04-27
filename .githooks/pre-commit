@@ -1,0 +1,18 @@
+#!/bin/sh
+# Pre-commit gate. Mirrors what .github/workflows/pr-check.yml enforces:
+# astro check + astro build + knip --production (dead-export scan).
+# Documented in .claude/rules/portfolio-style.md.
+#
+# Activated via: git config core.hooksPath .githooks
+# (run once per clone; not auto-set so a fresh clone fails loudly until configured).
+
+set -e
+
+echo "[pre-commit] astro check..."
+npm run check
+
+echo "[pre-commit] astro build..."
+npm run build
+
+echo "[pre-commit] knip --production..."
+npm run knip

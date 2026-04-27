@@ -21,3 +21,4 @@ jobs:
       - run: npm run build
         env:
           PUBLIC_RAG_WEBHOOK: ${{ secrets.PUBLIC_RAG_WEBHOOK }}
+      - run: npm run knip
