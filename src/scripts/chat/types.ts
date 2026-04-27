@@ -14,6 +14,8 @@ export type ChatResponse = {
   readonly answer?: unknown;
   readonly media?: readonly MediaItem[];
   readonly sources?: readonly Source[];
+  readonly model?: string;
+  readonly error?: boolean;
 };
 export type HistoryItem = {
   readonly role: 'user' | 'assistant';

@@ -21,12 +21,12 @@ import '../../styles/rag-docs.css';
   <section class="docs-block">
     <h3 class="docs-heading">// HOW TO USE</h3>
     <ul class="docs-list">
-      <li>Click the input field -- a suggested query autofills. Press <strong>EXEC</strong> (or Enter) to send.</li>
+      <li>Click the empty input field -- a suggested query autofills. Press <strong>EXEC</strong> (or Enter) to send it, or erase it and type your own question.</li>
       <li>Watch the typing indicator -- the response arrives as a full block once ready.</li>
       <li>Sources appear under each answer. Media tiles open the original file in Google Drive in a new tab.</li>
-      <li><strong>CLR</strong> wipes the current conversation.</li>
+      <li><strong>CLR</strong> wipes the current conversation -- messages from the screen, sessionStorage, and the current in-flight request (if any).</li>
     </ul>
-    <p class="docs-note"><strong>About chat history.</strong> Your conversation is kept only inside this browser tab. Refreshing the page preserves it. Closing the tab clears it. Separate tabs do not share history -- each starts empty.</p>
+    <p class="docs-note"><strong>About chat history.</strong> Your conversation is kept only inside this browser tab. Refresh preserves it. What clears it: CLR, or closing the tab. Separate tabs do not share history -- each new one starts empty.</p>
   </section>
 
   <section class="docs-block" id="whats-in-scope">
@@ -42,7 +42,7 @@ import '../../styles/rag-docs.css';
         <tr><td>PDF (.pdf)</td><td>1</td><td>SQL Joins guide -- 6 join types (INNER, LEFT, RIGHT, FULL, CROSS, SELF)</td></tr>
       </tbody>
     </table>
-    <p class="docs-note">Ingest also accepts JPEG (image), WAV (audio), and MOV (video). Size and duration caps live in <a class="docs-ref" href="#limits-timeouts">Limits &amp; Timeouts</a>.</p>
+    <p class="docs-note">Ingest accepts every format supported by Gemini Embedding 2: <strong>image</strong> -- PNG, JPEG; <strong>audio</strong> -- MP3, WAV; <strong>video</strong> -- MP4, MOV (H264, H265, AV1, VP9 codecs). Size and duration caps live in <a class="docs-ref" href="#limits-timeouts">Limits &amp; Timeouts</a>.</p>
   </section>
 
   <div class="docs-divider" role="separator" aria-label="Technical reference begins">
@@ -57,9 +57,9 @@ import '../../styles/rag-docs.css';
         <tr><td>Trigger</td><td>Google Drive Trigger</td><td>Watches folder for new files</td></tr>
         <tr><td>File storage</td><td>Google Drive</td><td>Source of documents</td></tr>
         <tr><td>Captioning</td><td>Gemini 2.0 Flash</td><td>Structured captions for all media types (image, audio, video, PDF)</td></tr>
-        <tr><td>Embedding</td><td>Gemini Embedding 2 Preview</td><td>Natively multimodal embeddings</td></tr>
+        <tr><td>Embedding</td><td>Gemini Embedding 2</td><td>Natively multimodal embeddings</td></tr>
         <tr><td>Vector DB</td><td>Pinecone</td><td>Store and query embeddings</td></tr>
-        <tr><td>Reranker</td><td>Pinecone <code>bge-reranker-v2-m3</code></td><td>Cross-encoder second-pass ordering</td></tr>
+        <tr><td>Reranker</td><td>Pinecone <code>bge-reranker-v2-m3</code></td><td>cross-encoder (joint-scoring model that reads question+candidate together — markedly more accurate than cosine) second-pass ordering</td></tr>
         <tr><td>Query classifier</td><td><code>google/gemini-2.0-flash-001</code> via OpenRouter</td><td>Intent + modality + standalone query</td></tr>
         <tr><td>Chat LLM</td><td><code>anthropic/claude-sonnet-4</code> via OpenRouter</td><td>Generate grounded answers from retrieved context</td></tr>
         <tr><td>Orchestration</td><td>n8n (self-hosted)</td><td>3 workflows -- ingestion, chat, error handler</td></tr>
@@ -70,7 +70,7 @@ import '../../styles/rag-docs.css';
 
   <section class="docs-block">
     <h3 class="docs-heading">// ARCHITECTURE</h3>
-    <p>Three n8n workflows cooperate. <code>ingestion</code> (21 nodes) watches Google Drive and feeds Pinecone. <code>chat</code> (9 nodes) answers user questions. <code>error_handler</code> (2 nodes) catches unhandled failures in either of the other two.</p>
+    <p>Three n8n workflows cooperate. <code>ingestion</code> (24 nodes) watches Google Drive and feeds Pinecone. <code>chat</code> (9 nodes) answers user questions. <code>error_handler</code> (2 nodes) catches unhandled failures in either of the other two.</p>
 
     <p class="docs-note"><strong>// INGESTION</strong> -- runs on every new file in the watched Drive folder.</p>
     <figure class="docs-figure">
@@ -87,11 +87,13 @@ import '../../styles/rag-docs.css';
       <li><code>download_file</code> -- downloads the binary into the workflow</li>
       <li><code>detect_file_type</code> -- reads MIME and extension, labels the file with a <code>fileCategory</code></li>
       <li><code>route_by_type</code> -- switch, fans out to one of five modality branches</li>
-      <li><code>extract_text</code> / <code>prepare_image</code> / <code>prepare_pdf</code> / <code>prepare_audio</code> / <code>prepare_video</code> -- per-modality prep (sentence-aware chunking for text; base64 encoding for the rest)</li>
+      <li><code>extract_text</code> / <code>prepare_image</code> / <code>prepare_pdf</code> / <code>prepare_audio</code> / <code>prepare_video</code> -- per-modality prep (text -- sentence-aware chunking; image/pdf -- base64 encoding; audio/video -- base64 + duration probe with cap enforcement)</li>
+      <li><code>filter_audio_size</code> / <code>filter_video_size</code> -- IF nodes that split each branch: oversized items route to <code>notify_skipped</code>, valid items continue to caption</li>
+      <li><code>notify_skipped</code> -- Discord alert when a file is rejected by a cap (audio &gt; 180s, video &gt; 120s); independent of <code>error_handler</code> -- this is a graceful skip, not an unhandled error</li>
       <li><code>caption_image</code> / <code>caption_pdf</code> / <code>caption_audio</code> / <code>caption_video</code> -- Gemini 2.0 Flash produces a structured JSON caption (text branch skips this)</li>
       <li><code>embed_text</code> / <code>embed_image</code> / <code>embed_pdf</code> / <code>embed_audio</code> / <code>embed_video</code> -- Gemini Embedding 2 (text-only for the text branch; multipart binary+caption fusion for media)</li>
       <li><code>merge_embeddings</code> -- 5-way merge of per-branch outputs</li>
-      <li><code>prepare_upsert</code> -- assembles the Pinecone vectors payload with metadata</li>
+      <li><code>prepare_upsert</code> -- assembles the Pinecone vectors payload with metadata; filters out items flagged <code>_oversized</code> by the size routers so skipped files never reach the vector store</li>
       <li><code>upsert</code> -- writes vectors to Pinecone</li>
     </ul>
 
@@ -129,24 +131,26 @@ import '../../styles/rag-docs.css';
     </figure>
     <ul class="docs-list">
       <li><code>error_trigger</code> -- fires when <code>ingestion</code> or <code>chat</code> raises an unhandled error (both are linked via n8n's <code>errorWorkflow</code> setting)</li>
-      <li><code>send_alert</code> -- posts a Discord message with workflow name, error type, message, and a link to the execution log</li>
+      <li><code>send_alert</code> -- posts a Discord message: workflow name, error type (<code>NodeApiError</code>, <code>NodeOperationError</code>, etc.), error message, UTC timestamp, and a link to the specific execution</li>
     </ul>
   </section>
 
   <section class="docs-block" id="key-patterns">
     <h3 class="docs-heading">// KEY PATTERNS</h3>
+    <p>Architecture above describes <em>what each node does</em>. This section is about <em>why it was built this way</em> -- design decisions that are not obvious from the node list.</p>
     <ul class="docs-list">
       <li><strong>Enriched multipart embeddings for all media.</strong> A raw PNG, WAV, or MP4 binary does not carry its topic in a form a text query can match -- <code>diagram of public-key crypto</code> cannot retrieve a picture that has no text metadata. So every media file is captioned by Gemini 2.0 Flash into structured JSON (<code>type</code>, <code>title</code>, <code>key_topics</code>, <code>terminology[]</code>, <code>content</code>, <code>questions[]</code>) tailored per modality, and the caption text is sent together with the raw binary as two <code>parts</code> in a single Gemini Embedding 2 call. The model fuses both into one vector -- so a text query matches against both the raw media and its description at once. Captions are also stored in metadata and fed to the LLM as context.</li>
-      <li><strong>Two-stage retrieval: vector query + cross-encoder rerank.</strong> Pure cosine similarity is fast but imprecise -- it reliably returns candidates in the right topic area but often ranks them wrong within it. So stage 1 casts a wider net from Pinecone, and stage 2 passes those candidates through the <code>bge-reranker-v2-m3</code> cross-encoder, which reads each (question, candidate) pair together and scores them jointly -- much more accurate than cosine alone. If every reranked item falls below the floor, the top-1 is still kept as a fallback, so the answering policy below can still return a grounded partial answer, or an honest empty one, instead of going silent.</li>
+      <li><strong>Two-stage retrieval: vector query + cross-encoder rerank.</strong> Pure cosine similarity is fast but imprecise -- it reliably returns candidates in the right topic area but often ranks them wrong within it. So stage 1 casts a wider net from Pinecone, and stage 2 passes those candidates through the <code>bge-reranker-v2-m3</code> cross-encoder, which reads each (question, candidate) pair together and scores them jointly -- much more accurate than cosine alone. If every reranked item falls below the floor, top-1 is still passed to the LLM -- not so the model answers from it at any cost, but so the Three-tier policy below can act: if top-1 actually covers part of the question → Tier 2 (partial answer + scope note); if not → Tier 3 (honest refusal). The alternative -- empty context -- closes off Tier 2 and forces the LLM to either refuse blindly or fall back on parametric knowledge.</li>
       <li><strong>Fallback thresholds when rerank is unavailable.</strong> If the rerank API is down, we would have no second-pass quality filter and the LLM would see either noise or nothing. So <code>build_context</code> falls back to raw vector scores with per-modality thresholds (text stricter, short media more lenient -- short captions score lower in cosine terms by nature). Top-1 is kept even if nothing clears the threshold, so the user still gets a grounded answer while rerank is recovering.</li>
-      <li><strong>LLM-driven intent + modality classification.</strong> Not every user input is a substantive question. <code>hi</code>, <code>?</code>, and "how many videos do you have?" each need different handling, and "what about the second one?" means nothing without context. Regex heuristics also do not scale across EN / RU / UA. So <code>rewrite_question</code> (Gemini 2.0 Flash, temperature 0) does three things in one call: classify the input as <code>greeting | pure_meta | content</code>, detect whether a specific modality is asked about, and rewrite pronouns against recent history into a self-contained retrieval query. Greetings short-circuit retrieval entirely; <code>pure_meta</code> queries route through the pre-retrieval filter below; <code>content</code> queries keep cross-modal matches.</li>
-      <li><strong>Pre-retrieval metadata filter for <code>pure_meta</code> queries.</strong> Meta-questions about the corpus itself ("do you have any videos", "what PDFs are there", "how many audios") are structural -- they ask what <em>exists</em>, not what is content-relevant. Vector similarity and cross-encoder rerank are built to score content, not enumerate files; asked "how many videos", the reranker scores short video captions against an abstract count question and reliably demotes them below unrelated long text passages. So when the classifier tags the input as <code>pure_meta</code> with a specific <code>modality</code>, the Pinecone query attaches a metadata filter (<code>fileType = modality</code>) pre-retrieval. Top-K arrives already narrowed to the requested type, rerank sorts inside that clean pool, and the answer is correct regardless of how the cross-encoder feels about caption length. This is the self-query retrieval pattern: the LLM classifier extracts the filter predicate, the vector DB applies it structurally.</li>
-      <li><strong>Modality boost for <code>content</code> queries.</strong> Outside <code>pure_meta</code>, the pre-retrieval filter does not fire, and a reranker trained on text-heavy corpora tends to score short captions (for an image, a short audio clip, a one-page PDF) lower than long text passages -- even when the short one is what the user actually wants. So for <code>content</code> queries that mention a modality alongside a topic ("show me the image of AES"), <code>build_context</code> ensures items of that <code>fileType</code> survive filtering even at low rerank scores. <code>pure_meta</code> queries skip this step because top-K is already modality-pure.</li>
+      <li><strong>LLM-driven intent + modality classification.</strong> Not every user input is a substantive question. <code>hi</code>, <code>?</code>, and "how many videos do you have?" each need different handling, and "what about the second one?" means nothing without context. Regex heuristics also do not scale across EN / RU / UA. So <code>rewrite_question</code> (Gemini 2.0 Flash, temperature 0) does three things in one call: classify the input as <code>greeting | pure_meta | content</code>, detect whether a specific modality is asked about, and rewrite pronouns against recent history into a self-contained retrieval query. Greetings still pass through embed / query / rerank, but <code>build_context</code> discards the results and returns empty <code>sources</code> so the UI shows no source tiles for "hi"; <code>pure_meta</code> queries route through the pre-retrieval filter below; <code>content</code> queries keep cross-modal matches.</li>
+      <li><strong>Pre-retrieval metadata filter for <code>pure_meta</code> queries.</strong> Meta-questions about the corpus itself ("do you have any videos", "what PDFs are there", "how many audios") are structural -- they ask what <em>exists</em>, not what is content-relevant. Vector similarity and cross-encoder rerank are built to score content, not enumerate files; asked "how many videos", the reranker scores short video captions against an abstract count question and reliably demotes them below unrelated long text passages. So when the classifier tags the input as <code>pure_meta</code> with a specific <code>modality</code>, the Pinecone query attaches a metadata filter (<code>fileType = modality</code>) pre-retrieval. Top-K arrives already narrowed to the requested type, rerank sorts inside that clean pool, and the answer is correct regardless of how the cross-encoder feels about caption length. This is the self-query retrieval pattern: the LLM classifier derives a filter predicate (a filter condition like <code>fileType = video</code>), and the vector DB applies it structurally -- before the vector search.</li>
+      <li><strong>Modality boost — survival mechanism for short captions.</strong> A reranker trained on text-heavy corpora tends to score short captions (an image, a short audio clip, a one-page PDF) lower than long text passages -- even when the short one is what the user actually wants. The boost loop in <code>build_context</code> rescues items of the requested modality back into the result set, regardless of how the cross-encoder ranked them. It serves both intents but for different reasons. For <code>content</code> queries that mention a modality alongside a topic ("show me the image of AES"), the boost ensures cross-modal matches survive low rerank scores. For <code>pure_meta</code> queries, the boost is even more critical: pre-retrieval already narrows top-K to one modality, but the reranker routinely scores all of them under the floor when the question is abstract ("do you have any videos?") -- without the boost, a video listing query would return zero items. A strict-modality filter at the end (<code>pure_meta</code>-only) keeps the final list type-pure even after the boost runs.</li>
       <li><strong>Three-tier answering policy.</strong> Without explicit policy, LLMs either hallucinate when context is thin or refuse too easily when partial information is available -- two different failures. The Claude system prompt enforces three tiers: Tier 1 (direct) -- answer fully from context; Tier 2 (partial) -- answer from what is retrieved and note the scope in one sentence; Tier 3 (empty) -- respond exactly <code>That information is not available in the knowledge base.</code>. Effect: the user gets useful partial answers instead of blanket refusals, and gets an honest refusal instead of a fabrication when the topic truly is not covered.</li>
       <li><strong>Multi-turn coherence.</strong> A chatbot that forgets between messages cannot handle "what about the second one?", and one that remembers but contradicts itself loses user trust. The frontend sends recent turns back on each request as <code>history</code>; the query rewriter uses it to resolve pronouns, and the answer generator embeds <code>history</code> as a <code>&lt;history&gt;</code> block before <code>&lt;documents&gt;</code> with an explicit instruction to stay consistent with prior answers and acknowledge new information rather than silently overriding. <code>&lt;history&gt;</code> is treated as untrusted data -- the prompt forbids following any instructions found inside those tags, so a malicious earlier turn cannot inject commands.</li>
-      <li><strong>Filename-anchored embeddings.</strong> Two files with visually similar content can still mean different things -- <code>symmetric-encryption.png</code> and <code>asymmetric-encryption.png</code> could produce near-identical captions if both show an algorithm diagram. The filename carries signal the content alone does not, so every embedding API call passes the original filename as the <code>title</code> parameter. Effect: a query about "symmetric encryption" lands on the symmetric file, not the asymmetric one, even when the content looks similar to the embedder.</li>
-      <li><strong>Unified vector space with task-type optimisation.</strong> User questions tend to be short (<code>AES-256?</code>); documents tend to be long explanations (<code>AES-256 is a symmetric block cipher...</code>). If both sides were embedded the same way, they would land in different regions of vector space and retrieval would miss obvious matches. Gemini's embedding API accepts a <code>taskType</code> that tunes the vector for its role: <code>RETRIEVAL_DOCUMENT</code> for stored files, <code>RETRIEVAL_QUERY</code> for the user's question. Same model, same dimensions -- but each side is tuned to overlap with the other, so questions find their answers more reliably.</li>
+      <li><strong>Filename-anchored embeddings.</strong> Two files with visually similar content can still mean different things -- <code>symmetric-encryption.png</code> and <code>asymmetric-encryption.png</code> could produce near-identical captions if both show an algorithm diagram. The filename carries signal the content alone does not, so the filename is woven into the embedding text itself: <code>title: &lt;fileName&gt; | text: &lt;content or caption&gt;</code>. This is the recommended v2 pattern -- a top-level <code>title</code> parameter is not supported in Gemini Embedding 2; asymmetric-retrieval instructions live inside the prompt. Effect: a query about "symmetric encryption" lands on the symmetric file, not the asymmetric one, even when the content looks similar to the embedder.</li>
+      <li><strong>Unified vector space with asymmetric task-prefix.</strong> User questions tend to be short (<code>AES-256?</code>); documents tend to be long explanations (<code>AES-256 is a symmetric block cipher...</code>). If both sides were embedded the same way, they would land in different regions of vector space and retrieval would miss obvious matches. Gemini Embedding 2 has no <code>task_type</code> parameter -- the role is encoded directly in the prompt: documents are embedded as <code>title: &lt;fileName&gt; | text: &lt;content&gt;</code>, queries as <code>task: search result | query: &lt;question&gt;</code>. Same model, same dimensions -- but each side carries its task instruction inside the text itself, so query and document embeddings land in the same region of space.</li>
       <li><strong>Sentence-aware chunking with overlap.</strong> Naive fixed-size chunking cuts text mid-sentence and splits key terms across chunk boundaries -- a query for <code>AES-256</code> could miss a chunk that only contains <code>...AES-</code> or <code>256 is a...</code>. Text files are instead split at sentence boundaries, with a 50-token overlap between consecutive chunks. Sentences stay whole, and concepts that span two sentences stay findable because both chunks carry the bridging phrase.</li>
+      <li><strong>Pre-send duration probe with skip routing.</strong> Without validation, oversized files fail downstream when Gemini Embedding 2 rejects them for exceeding its 180s audio / 120s video caps -- a generic <code>NodeApiError</code> in <code>error_handler</code>, with no signal the cause was duration. Duration is now probed before send: <code>prepare_audio</code> reads WAV via RIFF chunks and MP3 via ID3v2 skip + frame-header bitrate (CBR-approximation, ~5% off on VBR); <code>prepare_video</code> uses Drive's <code>videoMediaMetadata.durationMillis</code> as primary, with MP4/MOV <code>mvhd</code> &rarr; <code>trak.mdia.mdhd</code> binary parse as fallback for non-Drive sources. Oversized items get <code>_oversized: true</code> and bypass base64-encoding. <code>filter_audio_size</code> / <code>filter_video_size</code> IF nodes split each branch: oversized routes to <code>notify_skipped</code> (Discord alert: workflow name, file, scenario, probed duration vs cap, Drive link); valid continues to caption. Same-batch valid files are unaffected -- skip is per-item, not workflow-killing. <code>prepare_upsert</code> filters <code>_oversized</code> items before zipping, so Pinecone receives only valid embeddings.</li>
       <li><strong>Source-grounded, language-aware answers.</strong> Naive RAG setups answer in the language of the source documents, or mix languages, or drift away from the sources -- three different failure modes. A Ukrainian user asking about an English document still wants a Ukrainian answer that faithfully represents the English content. The system prompt has two explicit rules: ground every statement in retrieved documents (never draw from training-memory knowledge), and answer in the language of the question regardless of the source language.</li>
     </ul>
     <p class="docs-note">Numeric parameters (top-K, rerank floor, timeouts, chunk size, caps) -- see <a class="docs-ref" href="#limits-timeouts">Limits &amp; Timeouts</a>.</p>
@@ -158,15 +162,15 @@ import '../../styles/rag-docs.css';
       <tbody>
         <tr><td>Fetch timeout</td><td>30s -- accommodates cold Gemini + Claude paths</td></tr>
         <tr><td>Text chunking</td><td>~400 tokens per chunk, 50-token overlap, sentence-aware</td></tr>
-        <tr><td>Image / PDF batch</td><td>6 items per embedding request</td></tr>
-        <tr><td>Audio length</td><td>80s maximum</td></tr>
-        <tr><td>Video length</td><td>120s maximum</td></tr>
+        <tr><td>Embedding multipart parts</td><td>up to 6 per call (Gemini API ceiling) -- workflow currently sends 1 binary + 1 caption text per call; see <a class="docs-ref" href="#improvements">Possible Improvements</a></td></tr>
+        <tr><td>Audio length</td><td>180s -- enforced by <code>prepare_audio</code> (WAV via RIFF, MP3 via frame-header bitrate); oversized files routed to <code>notify_skipped</code></td></tr>
+        <tr><td>Video length</td><td>120s -- enforced by <code>prepare_video</code> (Drive <code>videoMediaMetadata</code> primary, MP4/MOV <code>mvhd</code> / <code>mdhd</code> binary parse fallback); oversized files routed to <code>notify_skipped</code></td></tr>
         <tr><td>Conversation history</td><td>last 10 turns (20 messages) per tab; all sent to Claude on each request</td></tr>
         <tr><td>Assistant answer clamp</td><td>500 chars per answer before being written to history</td></tr>
         <tr><td>Vector retrieval</td><td>top-K = 20 candidates</td></tr>
         <tr><td>Rerank</td><td>top-N = 5 kept, score floor 0.001, modality boost cap 6</td></tr>
         <tr><td>Embedding dimensions</td><td>1536</td></tr>
-        <tr><td>Classifier timeout</td><td>20s, 1 attempt -- one slow-but-successful call beats a retry-loop that stacks timeouts</td></tr>
+        <tr><td>Classifier timeout</td><td>20s, 2 attempts with 3s backoff</td></tr>
         <tr><td>HTTP retry (other nodes)</td><td>2-3 attempts per node, 2-3s backoff</td></tr>
       </tbody>
     </table>
@@ -174,18 +178,28 @@ import '../../styles/rag-docs.css';
 
   <section class="docs-block" id="errors">
     <h3 class="docs-heading">// ERRORS</h3>
-    <p><strong>Server-side.</strong> Both <code>chat</code> and <code>ingestion</code> workflows are linked to the <code>error_handler</code> workflow via n8n's <code>errorWorkflow</code> setting -- any unhandled error in either pipeline fires a Discord alert with workflow name, error type, message, and a link to the execution log. On top of that, the <code>chat</code> pipeline sets <code>onError: continueRegularOutput</code> on HTTP nodes, so transient API failures surface to the user as a friendly error message rather than a hung request. All HTTP nodes retry on failure with backoff (count and wait -- see <a class="docs-ref" href="#limits-timeouts">Limits &amp; Timeouts</a>).</p>
+    <p><strong>Server-side.</strong> Both <code>chat</code> and <code>ingestion</code> workflows are linked to the <code>error_handler</code> workflow via n8n's <code>errorWorkflow</code> setting -- any unhandled error in either pipeline fires a Discord alert: workflow name, error type, message, UTC timestamp, and a link to the specific execution. On top of that, the <code>chat</code> pipeline sets <code>onError: continueRegularOutput</code> on HTTP nodes, so transient API failures surface to the user as a friendly error message rather than a hung request. All HTTP nodes retry on failure with backoff (count and wait -- see <a class="docs-ref" href="#limits-timeouts">Limits &amp; Timeouts</a>).</p>
     <p class="docs-note"><strong>Frontend states.</strong></p>
     <table class="docs-table">
       <thead><tr><th>Cause</th><th>CONN state</th><th>User sees</th></tr></thead>
       <tbody>
         <tr><td>User pressed CLR mid-request</td><td>--</td><td>Messages wipe; no error rendered</td></tr>
-        <tr><td>Request timeout exceeded</td><td>LOST</td><td><code>// Connection lost</code></td></tr>
-        <tr><td>Network error / HTTP 5xx</td><td>LOST</td><td><code>// Connection lost</code></td></tr>
-        <tr><td>HTTP 4xx (config-side)</td><td>ESTABLISHED</td><td><code>// Request rejected</code></td></tr>
-        <tr><td>Webhook URL absent at build</td><td>MISSING</td><td><code>// Webhook missing</code> (EXEC disabled)</td></tr>
+        <tr><td>Request timeout exceeded (&gt;30s)</td><td>LOST</td><td><code>Request timed out. The service is slow or unreachable.</code></td></tr>
+        <tr><td>Network error / fetch failure</td><td>LOST</td><td><code>Connection error. Check your network.</code></td></tr>
+        <tr><td>HTTP 5xx</td><td>LOST</td><td><code>Service unavailable. Try again later.</code></td></tr>
+        <tr><td>HTTP 4xx (config-side)</td><td>ESTABLISHED</td><td><code>Request rejected by server. The service may be misconfigured.</code></td></tr>
+        <tr><td>Webhook URL absent at build</td><td>MISSING</td><td>No error bubble -- only <code>[ CONN: MISSING ]</code> in the indicator; EXEC disabled</td></tr>
       </tbody>
     </table>
+  </section>
+
+  <section class="docs-block" id="improvements">
+    <h3 class="docs-heading">// POSSIBLE IMPROVEMENTS</h3>
+    <p>Capabilities within reach but not currently implemented -- documented here so the gap between "what the API supports" and "what this workflow does today" is explicit.</p>
+    <ul class="docs-list">
+      <li><strong>Per-page PDF embedding.</strong> Today the workflow sends an entire PDF as one <code>inlineData</code> blob and stores one vector per file. Splitting by page and batching up to 6 pages per call (the Gemini multipart ceiling) would yield finer-grained retrieval for long documents -- page ranges become individually addressable in the index, and a query about a specific section lands on the right pages instead of the whole document.</li>
+      <li><strong>Folder-convention image batches.</strong> Gemini Embedding 2 can fuse up to 6 images into a single aggregated vector, useful when several images form one logical unit (a multi-step diagram, a screenshot sequence). The current Drive trigger fires per file. A convention like "files in a sub-folder share one vector" would unlock multi-image fusion without changing the trigger model.</li>
+    </ul>
   </section>
 
   <section class="docs-block">
@@ -195,7 +209,7 @@ import '../../styles/rag-docs.css';
   </section>
 
   <div class="docs-footer">
-    <div>// Synced with backend workflow as of 2026-04-23.</div>
+    <div>// Synced with backend workflow as of 2026-04-26.</div>
     <div>// Queries are logged to n8n and sent to Gemini / Anthropic. Do not submit sensitive data.</div>
   </div>
 </div>
