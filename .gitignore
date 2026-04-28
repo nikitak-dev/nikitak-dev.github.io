@@ -20,3 +20,11 @@ desktop.ini
 
 # Superpowers dev-process artifacts (specs, plans) — scratch, not part of the project
 docs/superpowers/
+
+# Per-project bulk artifacts — test corpora stay local-only.
+# README.md, plans/*.md and eval/ (small Python harness) are tracked.
+projects/**/test_data/
+
+# Python build artifacts (eval runners or any future Python may produce these)
+__pycache__/
+*.pyc

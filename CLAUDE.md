@@ -23,7 +23,8 @@ src/
   styles/         # Modular CSS — see "Styles" below
   data/           # Typed static data (projects.ts)
   env.d.ts        # ImportMetaEnv typings for PUBLIC_* env vars
-public/           # Static assets served as-is
+public/           # Static assets served as-is (incl. per-project diagrams under public/docs/<slug>/)
+projects/         # Per-project repo-only artifacts (plans/ADRs, test_data, etc.). Not built or served — only src/ + public/ feed the site. Each <slug>/ has a README.md indexing its contents.
 DESIGN.md         # Design system reference — read before touching CSS
 ```
 
