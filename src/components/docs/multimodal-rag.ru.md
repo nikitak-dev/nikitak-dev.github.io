@@ -165,6 +165,8 @@ Architecture выше описывает «что делает каждая но
 
 Система прогоняется через end-to-end набор из 39 тестовых кейсов, покрывающий **14 способов сломаться** — и не сломаться. Среди них: галлюцинировать за пределами корпуса, отвечать не на том языке, путать похожие источники, следовать враждебным инструкциям, подсунутым внутри вопроса или истории, смешивать вопрос о том, что *есть* в корпусе, с вопросом о том, что *в нём написано*, терять местоимения между репликами и ломаться на опечатках. Failure modes сверяются с Barnett et al. 2024 (*Seven Failure Points of RAG*).
 
+Источник тестов: [projects/multimodal-rag/eval/](https://github.com/nikitak-dev/nikitak-dev.github.io/tree/main/projects/multimodal-rag/eval) — [evaluation.json](https://github.com/nikitak-dev/nikitak-dev.github.io/blob/main/projects/multimodal-rag/eval/evaluation.json) (39 кейсов) + [run_eval.py](https://github.com/nikitak-dev/nikitak-dev.github.io/blob/main/projects/multimodal-rag/eval/run_eval.py) (Python-runner) + [manual-tests.md](https://github.com/nikitak-dev/nikitak-dev.github.io/blob/main/projects/multimodal-rag/eval/manual-tests.md) (UI smoke-список).
+
 Кратко: если ответ, который вы видите здесь, опирается на реальный источник, на вашем языке, и с честным «not covered», когда это уместно — эти свойства активно проверяются, а не случайны.
 
 ---
