@@ -1,8 +1,7 @@
-# RAG chat — session memory + meta-query recall fix
+# ADR-001: RAG chat — session memory + meta-query recall fix
 
-**Status:** ✅ Implemented (chat workflow ≥ v6 in n8n; frontend `src/scripts/chat/*` in nikitak-dev/nikitak-dev.github.io; eval `multi_turn` class). Completed 2026-04-21. Preserved as an ADR — the architectural rationale below remains current reference.
-
----
+- **Date:** 2026-04-21
+- **Status:** ✅ Implemented — chat workflow ≥ v6 in n8n; frontend `src/scripts/chat/*` in nikitak-dev/nikitak-dev.github.io; eval `multi_turn` class
 
 ## Context
 
@@ -13,17 +12,16 @@
 
 Baseline eval: 35/36 (97%). Тратим на сохранение этого.
 
-## Rollback snapshot (Phase 0)
+## Decision
 
-- **rag_chat workflow** version #6, ID **10257**, 2026-04-21 06:55:31
-- **rag_ingestion workflow** — caption_pdf в чистом состоянии (после revert adjacent-topics)
-- **eval baseline**: 35/36 с известной judge-flakiness (generic-01/frag-03/inject-01 occasional)
-
-## Plan — 4 phases + Phase 0
+Five-phase implementation; каждая фаза несёт свою verification + rollback inline для локальности.
 
 ### Phase 0 — Safety net ✅
-- Snapshot versionId захвачен
-- Этот файл плана написан
+
+- **Rollback snapshot:** rag_chat workflow version #6, ID **10257**, 2026-04-21 06:55:31
+- **rag_ingestion** — caption_pdf в чистом состоянии (после revert adjacent-topics)
+- **Eval baseline:** 35/36 с известной judge-flakiness (generic-01/frag-03/inject-01 occasional)
+- Этот ADR-документ написан
 
 ### Phase 1 — Modality-boost в `build_context` (Q2 recall fix)
 
@@ -219,7 +217,9 @@ Runner при `modality=multi_turn` итерирует turns, накаплива
 
 **Rollback**: revert eval files.
 
-## Execution gates
+## Consequences
+
+### Per-phase verification gates
 
 | Gate | Criterion | Если fail |
 |---|---|---|
@@ -228,9 +228,18 @@ Runner при `modality=multi_turn` итерирует turns, накаплива
 | After P3 | Manual Q2-Q3-Q4 sequence: Q3 находит второе видео, Q4 не противоречит | Rollback P3 (P2 остаётся — passthrough работает) |
 | After P4 | mt-* кейсы passing | Только test changes — при fail расследуем, не rollback |
 
-## Non-goals
+### Trade-offs (Non-goals — deliberately not done)
 
-- НЕ добавлять cross-session memory (Mem0/Zep/Letta) — scope только session
-- НЕ переиндексировать данные — caption_pdf trunk уже чистый
-- НЕ менять основную модель (Claude Sonnet 4)
-- НЕ добавлять intent classifier как отдельный LLM-вызов — modality detection через regex
+- **Cross-session memory** (Mem0/Zep/Letta) — scope только session
+- **Reindex данных** — caption_pdf trunk уже чистый
+- **Смена основной модели** — Claude Sonnet 4 остаётся
+- ~~**Intent classifier как отдельный LLM-вызов** — modality detection через regex~~ → **Reversed во время Phase 2:** `rewrite_question` эволюционировал в LLM-driven intent + modality classifier (Gemini 2.0 Flash, temperature 0). Один LLM-вызов заменил regex-эвристики ради cross-lingual EN/RU/UA support и обработки multi-turn pronoun resolution в той же ноде.
+
+## References
+
+- **Source code:**
+  - n8n chat workflow: `build_context.jsCode` (modality boost), `rewrite_question` (LLM classifier), `llm_answer.jsonBody` (history block + system prompt)
+  - Frontend: [src/scripts/chat/index.ts](../../../src/scripts/chat/index.ts), [src/scripts/chat/history.ts](../../../src/scripts/chat/history.ts), [src/scripts/chat/helpers.ts](../../../src/scripts/chat/helpers.ts)
+  - Eval: [eval/run_eval.py](../eval/run_eval.py) + [eval/evaluation.json](../eval/evaluation.json) (multi_turn class)
+- **Failure traces:** prod executions 4265-4268
+- **Format:** Michael Nygard, [Documenting Architecture Decisions (2011)](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)
