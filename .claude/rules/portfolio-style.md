@@ -107,6 +107,23 @@
 - **`package-lock.json` всегда коммитить**
 - **Раз в месяц:** `npm outdated` → решить, что обновлять (не автоматически)
 
+### Cross-platform lockfile (Windows + Linux CI)
+
+CI (Linux) гоняет `npm ci`, который требует full lockfile completeness. Windows npm физически пропускает Linux-only optional native deps (типа `@oxc-parser/binding-linux-*` и их inner `@emnapi/*` зависимостей) при resolve — поэтому Windows-generated lockfile **неполон для Linux**, и CI падает с `npm error EUSAGE: Missing: ... from lock file`.
+
+**Recipe** для генерации Linux-полного lockfile (Docker required):
+
+```bash
+docker run --rm -v "$(pwd -W):/app" -w /app node:22 \
+  npm install --include=optional --package-lock-only
+```
+
+`--package-lock-only` обновит только lockfile, без install в node_modules. После этого `git diff package-lock.json` покажет добавленные Linux-only entries; коммитить как `build(deps): ...`.
+
+**Применять каждый раз**, когда:
+- Добавлена новая dependency через `npm i ...` на Windows
+- CI fails с `Missing: ... from lock file` (особенно для `@emnapi/*`, `@swc/*`, `@napi-rs/*`)
+
 ## Коммиты
 
 Формат: `type(scope?): description` (English, imperative, без точки в конце). Основа — [Conventional Commits 1.0](https://www.conventionalcommits.org/en/v1.0.0/).
