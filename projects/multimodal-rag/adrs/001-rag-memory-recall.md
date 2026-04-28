@@ -1,35 +1,39 @@
-# ADR-001: RAG chat — session memory + meta-query recall fix
+# ADR-001: RAG chat — session memory + recall для meta-вопросов
 
-- **Date:** 2026-04-21
-- **Status:** ✅ Implemented — chat workflow ≥ v6 in n8n; frontend `src/scripts/chat/*` in nikitak-dev/nikitak-dev.github.io; eval `multi_turn` class
+- **Дата:** 2026-04-21
+- **Статус:** ✅ Реализовано — workflow `chat` в n8n (≥ v6), фронтенд `src/scripts/chat/*` в репо `nikitak-dev/nikitak-dev.github.io`, eval-suite класс `multi_turn`
 
-## Context
+> Документ описывает архитектурное решение по системе multimodal-rag (см. [README репо](../README.md) и live-демо в модалке `DOCS & VIDEO`). Если коротко: три n8n-workflow'а — `ingestion` (загрузка файлов из Google Drive в Pinecone), `chat` (ответ на вопрос с retrieval из векторной базы), `error_handler` (Discord-алерт на упавший execution). Этот ADR касается только `chat`-пайплайна и фронтенда чата.
 
-Прод traces `4265-4268` показали реальные multi-turn failure modes в rag_chat:
-- Q2 «Do you have videos?» → 1/2 видео (recall gap)
-- Q3 «Maybe any other videos?» → тот же результат (pronoun без memory)
-- Q4 «How many videos?» → «0 videos» (contradiction с Q2)
+## Контекст
 
-Baseline eval: 35/36 (97%). Тратим на сохранение этого.
+Production-логи n8n из workflow `chat` (executions `4265–4268`, апрель 2026) показали повторяющийся multi-turn failure mode — три последовательных вопроса в одной сессии возвращали несогласованные ответы:
 
-## Decision
+- **Q2** «Do you have videos?» → ассистент находит 1 из 2 имеющихся видео (recall gap — retrieval-стадия не возвращает оба источника).
+- **Q3** «Maybe any other videos?» → ровно тот же ответ, что на Q2 (местоимение «other» не разрешается к контексту: у backend'а нет conversation memory между запросами).
+- **Q4** «How many videos?» → «0 videos» (LLM теряет контекст и противоречит собственному ответу на Q2).
 
-Five-phase implementation; каждая фаза несёт свою verification + rollback inline для локальности.
+Baseline автоматического eval-suite (39 кейсов, см. [evaluation.json](../eval/evaluation.json)) на момент старта: **35/36 (97%)**. Цель правки — устранить три указанных failure mode и при этом не уронить eval ниже baseline.
+
+## Решение
+
+Пять фаз. Phase 0 — safety net до начала правок. Phase 1–4 — само изменение. Каждая фаза несёт inline собственные verification-критерии и rollback-процедуру (для локальности — чтобы открыть фазу и не искать связанное в других секциях).
 
 ### Phase 0 — Safety net ✅
 
-- **Rollback snapshot:** rag_chat workflow version #6, ID **10257**, 2026-04-21 06:55:31
-- **rag_ingestion** — caption_pdf в чистом состоянии (после revert adjacent-topics)
-- **Eval baseline:** 35/36 с известной judge-flakiness (generic-01/frag-03/inject-01 occasional)
-- Этот ADR-документ написан
+- **Rollback-точка зафиксирована:** workflow `chat` на version #6 в n8n (internal `versionId 10257`, 2026-04-21 06:55:31). Любой регресс откатывается через n8n UI «Restore from history» к этой версии.
+- **Workflow `ingestion`:** нода `caption_pdf` (Gemini 2.0 Flash для генерации описаний PDF-файлов) — в чистом baseline-состоянии. Предшествующий эксперимент с adjacent-topics к этому моменту уже откачен.
+- **Поведение baseline:** недостающий «-1» в `35/36` (см. Context) — это judge-flakiness (LLM-as-judge — модель, которая оценивает ответы по rubric'у — даёт разные оценки на повторных прогонах). Падает один из трёх кейсов: `generic-01`, `frag-03`, `inject-01` ([evaluation.json](../eval/evaluation.json)). Это нужно учитывать при чтении verification-результатов любой фазы.
+- Этот ADR написан **до** начала фаз — заранее фиксирует план и критерии успеха, чтобы post-hoc rationalisation была невозможна.
 
-### Phase 1 — Modality-boost в `build_context` (Q2 recall fix)
+### Phase 1 — Modality-boost в `build_context` (фикс recall gap из Q2)
 
-**Цель**: запрос упоминает модальность («videos», «images», «відео») → retrieval возвращает ВСЕ источники этой модальности из rerank output, не только top-1.
+**Цель:** когда вопрос упоминает modality (тип файла — `videos`, `images`, `відео`, `pdf`), retrieval должен вернуть **все** источники этого типа из rerank output, а не только top-1.
 
-**Change footprint**: 1 патч `rag_chat.build_context.parameters.jsCode`.
+**Объём правки:** один файл — `jsCode` ноды `build_context` (Code-нода в workflow `chat`).
 
-**Логика (после существующего top-1 fallback блока)**:
+**Логика** (вставляется после уже существующего блока top-1 fallback — он остаётся без изменений):
+
 ```js
 function detectModality(q) {
   const s = q.toLowerCase();
@@ -48,34 +52,36 @@ if (modalityHint && filtered.length > 0) {
     if (meta.fileType === modalityHint && !existingIds.has(orig.id)) {
       filtered.push({ meta, id: orig.id, score: r.score });
       existingIds.add(orig.id);
-      if (filtered.length >= 6) break; // hard cap
+      if (filtered.length >= 6) break; // hard cap, защита от раздувания контекста
     }
   }
 }
 ```
 
-**Safeguard**: применяется только когда filtered уже непустой (сигнал что retrieval что-то нашёл) — не затаскивает модальность из ниоткуда.
+**Safeguard:** boost-логика срабатывает **только** когда `filtered` уже непустой — то есть retrieval хоть что-то нашёл. Это защита от ситуации, когда вопрос упоминает модальность, но в индексе вообще нет релевантных совпадений: тогда мы не «вытаскиваем» источники нужной модальности из ниоткуда.
 
-**Verification**:
-- `meta-01` (videos), `meta-02` (pdf), `meta-03` (відео) — должны стабильно возвращать всё имеющееся
-- `frag-01` (`video?`) — без регрессии
-- `mod-01/02/03` disambig — не должны быть затронуты
-- Full suite ≥ 35/36
+**Verification:**
+- Кейсы `meta-01` (videos), `meta-02` (pdf), `meta-03` (відео) — должны стабильно возвращать все имеющиеся источники соответствующего типа.
+- Кейс `frag-01` (просто `video?`) — без регрессии (Phase 1 не должен ломать ранее работавшее).
+- Кейсы `mod-01/02/03` (модальная disambiguation — когда два видео на разные темы) — не должны быть затронуты.
+- Полный suite ≥ 35/36.
 
-**Rollback**: обратный patchNodeField.
+**Rollback:** обратное редактирование того же поля `jsCode` через n8n MCP (`n8n_update_partial_workflow` с операцией `updateNode`).
 
-### Phase 2 — Backend rewrite_question + history-aware llm_answer
+### Phase 2 — `rewrite_question` + history-aware `llm_answer` (фикс Q3 + Q4)
 
-**Цель**: сделать backend способным принимать history; query rewriting для follow-up'ов; history в llm_answer context для coherence.
+**Цель:** научить backend принимать поле `history` в payload, переписывать follow-up вопросы в самодостаточные retrieval-запросы, и кормить эту же history в `llm_answer` для coherence — чтобы Q4 знал, что Q2 уже отвечал «yes, 1 video».
 
-**Change footprint**:
-1. Новая нода `rewrite_question` (HTTP Request → Gemini Flash) между `chat_webhook` и `embed_question`
-2. Перевязать connections: `chat_webhook → rewrite_question → embed_question`
-3. Патч `embed_question.parameters.jsonBody`: использовать `$json.standalone_question` (output rewrite node) вместо `$json.body.question`
-4. Патч `llm_answer.parameters.jsonBody`: в user message добавить history block перед `<documents>` (если есть)
-5. Патч system prompt: добавить MULTI-TURN COHERENCE clause
+**Объём правки:**
 
-**Rewrite prompt (для новой ноды)**:
+1. Новая HTTP Request-нода `rewrite_question` (зовёт Gemini Flash) между `chat_webhook` и `embed_question`.
+2. Перевязать connections: `chat_webhook → rewrite_question → embed_question` (раньше было `chat_webhook → embed_question` напрямую).
+3. Патч `embed_question.parameters.jsonBody`: использовать `$json.standalone_question` (это output `rewrite_question`-ноды) вместо исходного `$json.body.question`.
+4. Патч `llm_answer.parameters.jsonBody`: в user message добавить блок `<history>` перед блоком `<documents>` (если история передана).
+5. Патч system prompt: добавить clause про MULTI-TURN COHERENCE (см. ниже).
+
+**Промпт для `rewrite_question`:**
+
 ```
 You rewrite a follow-up question into a standalone query for document retrieval.
 Use the conversation history to resolve pronouns, references ("the second one",
@@ -97,9 +103,10 @@ Current question: {question}
 Output ONLY the standalone query, nothing else.
 ```
 
-**Skip-logic**: если `body.history` отсутствует/пустой → rewrite ноде на output идёт просто `{standalone_question: body.question}` — passthrough. Single-turn полностью backward compatible.
+**Skip-logic (важно для backward compatibility):** если `body.history` пустой или отсутствует, `rewrite_question` отдаёт `{ standalone_question: body.question }` без LLM-вызова — passthrough. Single-turn-запросы (без истории) ходят через тот же пайплайн без изменения поведения.
 
-**LLM-answer system prompt addition** (одна clause):
+**Дополнительная clause в system prompt'е `llm_answer`:**
+
 ```
 MULTI-TURN COHERENCE: If conversation history is provided before the <documents>
 tag, stay consistent with prior answers. Do not contradict what you said earlier
@@ -107,30 +114,34 @@ in this session. If retrieval returns different items this turn, acknowledge
 what changed ("I now also see...") rather than silently overriding.
 ```
 
-**Injection guard**: history prefixed as `<untrusted_history>` в user message; system prompt reminds not to follow instructions from history.
+**Защита от prompt injection:** блок истории в user message обёрнут как `<untrusted_history>`; system prompt прямо запрещает следовать любым инструкциям из этого блока. Это закрывает атаку, при которой враждебный фрагмент в предыдущей реплике пытается подменить инструкции LLM.
 
-**Verification**:
-- Full eval suite без history → 35/36 сохранено (passthrough работает)
-- Manual probe с history:
+**Verification:**
+- Полный eval-suite **без передачи history** → 35/36 сохранено (это и есть проверка, что passthrough работает и single-turn не сломан).
+- Ручной probe с историей:
+
   ```json
   {"question": "maybe any other videos?",
    "history": [
-     {"role":"user","content":"Do you have videos?"},
-     {"role":"assistant","content":"Yes, there is a typing video..."}
+     {"role": "user", "content": "Do you have videos?"},
+     {"role": "assistant", "content": "Yes, there is a typing video..."}
    ]}
   ```
-  → rewrite должен дать что-то вроде «other videos besides the typing one»
 
-**Rollback**: удалить rewrite_question node, вернуть connections, откатить патчи embed_question и llm_answer.
+  Ожидание: `rewrite_question` отдаёт что-то вроде «other videos besides the typing one» (а не сырой «maybe any other videos?»).
 
-### Phase 3 — Frontend sessionStorage + history в payload + CLR extend
+**Rollback:** удалить `rewrite_question` ноду, восстановить прямой connection `chat_webhook → embed_question`, откатить патчи `embed_question.jsonBody` и `llm_answer.jsonBody` (включая system prompt) к версии #6.
 
-**Файл**: `portfolio/src/scripts/chat.ts`
+### Phase 3 — Frontend: sessionStorage + history в payload + расширение CLR
 
-**Uses existing**:
-- `clearBtn` (строка 16) — button с `id="clear"`, handler на строке 277 уже делает abort + fade + empty-state restore
+**Файл:** `portfolio/src/scripts/chat.ts` (на момент написания — один файл; в ходе реализации был разбит на папку `src/scripts/chat/` с модулями `index.ts` / `history.ts` / `helpers.ts` / `conn.ts` / `messages.ts` / `placeholder.ts`).
 
-**Новые элементы**:
+**Уже есть:**
+
+- `clearBtn` — кнопка с `id="clear"` (объявлена около строки 16 исходного файла); существующий handler делает abort inflight-запроса + fade-out сообщений + восстановление empty-state.
+
+**Новые элементы:**
+
 ```ts
 const HISTORY_KEY = 'rag_chat_transcript';
 const HISTORY_MAX_TURNS = 5;
@@ -138,7 +149,10 @@ let history: Array<{ role: 'user' | 'assistant'; content: string }> = [];
 let transcript: Array<{ q: string; data: ChatResponse }> = [];
 ```
 
-**Hydrate on load** (early в chat.ts, после DOM lookups):
+> *Замечание по факту реализации:* финальное значение `HISTORY_MAX_TURNS = 10`, не 5. Бампнули в ходе работы — сетку из 10 turns хватает и не раздувает payload.
+
+**Hydrate при загрузке страницы** (рано в `chat.ts`, после DOM-lookup'ов):
+
 ```ts
 try {
   const saved = sessionStorage.getItem(HISTORY_KEY);
@@ -149,14 +163,15 @@ try {
       emptyState?.classList.add('hidden');
       t.forEach(item => {
         addUserMsg(item.q);
-        addAssistantMsg(item.data);  // reuse existing render
+        addAssistantMsg(item.data);  // переиспользуем существующий рендер
       });
     }
   }
-} catch { /* corrupt, ignore */ }
+} catch { /* corrupted storage — silently ignore */ }
 ```
 
-**Persist after success** (в `ask()` после `addAssistantMsg(data)`):
+**Persist после успешного ответа** (внутри `ask()`, сразу после `addAssistantMsg(data)`):
+
 ```ts
 history.push({ role: 'user', content: q });
 history.push({ role: 'assistant', content: String(data.answer ?? '').slice(0, 500) });
@@ -164,18 +179,20 @@ transcript.push({ q, data });
 if (history.length > HISTORY_MAX_TURNS * 2) history = history.slice(-HISTORY_MAX_TURNS * 2);
 if (transcript.length > HISTORY_MAX_TURNS) transcript = transcript.slice(-HISTORY_MAX_TURNS);
 try { sessionStorage.setItem(HISTORY_KEY, JSON.stringify({ h: history, t: transcript })); }
-catch { /* quota, ignore */ }
+catch { /* quota exceeded — silently ignore, history просто не сохранится */ }
 ```
 
-**Extend CLR handler** (строка 277):
+**Расширение handler'а CLR-кнопки** (в существующий handler добавляется):
+
 ```ts
 history = [];
 transcript = [];
 sessionStorage.removeItem(HISTORY_KEY);
-// ... existing DOM cleanup сохраняется as-is ...
+// ... DOM-cleanup, который уже был, не трогается ...
 ```
 
-**Send history in payload** (`sendQuestion`):
+**Передача history в payload** (внутри `sendQuestion`):
+
 ```ts
 body: JSON.stringify({
   question: q,
@@ -183,63 +200,65 @@ body: JSON.stringify({
 })
 ```
 
-**Verification**:
-- `npm run build` — clean, no type errors
-- Dev server + manual test в браузере:
-  1. Задать 3 вопроса → refresh → транскрипт сохранился, DOM отрисован
-  2. Нажать CLR → всё очистилось, storage пустой
-  3. Закрыть tab → открыть → пусто (sessionStorage scope)
-  4. Последовательность Q2→Q3→Q4 из прод trace → Q3 находит другое видео, Q4 не противоречит Q2
+**Verification:**
+- `npm run build` — clean, нет TypeScript-ошибок.
+- Dev-сервер + ручной прогон в браузере:
+  1. Задать 3 вопроса → Refresh страницы → транскрипт сохранён, DOM перерисован из sessionStorage.
+  2. Нажать CLR → всё очистилось, sessionStorage пустой.
+  3. Закрыть таб → открыть заново → пусто (потому что sessionStorage скоупится по табу).
+  4. Воспроизвести prod-последовательность Q2 → Q3 → Q4 → Q3 находит другое видео, Q4 не противоречит Q2.
 
-**Rollback**: `git revert` chat.ts.
+**Rollback:** `git revert` коммита, который ввёл изменения в `chat.ts`.
 
-### Phase 4 — Eval: multi_turn class
+### Phase 4 — Eval: класс `multi_turn`
 
-**Файлы**: `eval/run_eval.py`, `eval/evaluation.json`
+**Файлы:** [eval/run_eval.py](../eval/run_eval.py) + [eval/evaluation.json](../eval/evaluation.json).
 
-**Runner extension**: поддержка кейсов с массивом turns:
+**Расширение runner'а:** поддержка кейсов с массивом `turns` (а не одним вопросом):
+
 ```json
 { "id": "mt-videos", "modality": "multi_turn", "class": "multi_turn",
   "turns": [
     { "q": "Do you have any videos?", "expect": { "min_sources_of_type": { "video": 2 } } },
-    { "q": "Maybe any other?", "expect": { "answer_not_contains": ["only video"] } },
-    { "q": "How many videos?", "expect": { "answer_contains_number": 2 } }
+    { "q": "Maybe any other?",        "expect": { "answer_not_contains": ["only video"] } },
+    { "q": "How many videos?",        "expect": { "answer_contains_number": 2 } }
   ]
 }
 ```
 
-Runner при `modality=multi_turn` итерирует turns, накапливает history, посылает каждый turn со всеми предыдущими в payload.
+При `modality=multi_turn` runner итерирует turns по порядку, накапливает history после каждого ответа, и посылает каждый последующий turn вместе со всей предыдущей историей в payload (имитирует реального пользователя).
 
-**3 кейса**:
-- `mt-videos`: воспроизведение прод Q2-Q3-Q4
-- `mt-pronoun-ref`: «What is REST» → «what about its HTTP methods» — тест dereferencing
-- `mt-coherence`: same Q asked twice in session → ответ консистентен
+**Три новых кейса:**
 
-**Rollback**: revert eval files.
+- `mt-videos` — воспроизводит исходную prod-последовательность Q2 → Q3 → Q4 (та самая, из-за которой эта работа делается).
+- `mt-pronoun-ref` — «What is REST?» → «what about its HTTP methods?» — проверка разрешения местоимения «its».
+- `mt-coherence` — один и тот же вопрос задаётся дважды в одной сессии — ответ должен остаться консистентным.
 
-## Consequences
+**Rollback:** revert изменений в eval-файлах.
 
-### Per-phase verification gates
+## Последствия
 
-| Gate | Criterion | Если fail |
-|---|---|---|
-| After P1 | full eval ≥ 35/36 + meta-01/02/03 с полным модальным покрытием | Rollback P1 |
-| After P2 | full eval без history ≥ 35/36 + manual probe rewrite работает | Rollback P2 |
-| After P3 | Manual Q2-Q3-Q4 sequence: Q3 находит второе видео, Q4 не противоречит | Rollback P3 (P2 остаётся — passthrough работает) |
-| After P4 | mt-* кейсы passing | Только test changes — при fail расследуем, не rollback |
+### Стратегия rollback (cross-phase нюансы)
 
-### Trade-offs (Non-goals — deliberately not done)
+Критерии каждой фазы — в её **Verification** блоке выше. Здесь только нюансы того, что делать при fail и какие фазы откатывать вместе:
 
-- **Cross-session memory** (Mem0/Zep/Letta) — scope только session
-- **Reindex данных** — caption_pdf trunk уже чистый
-- **Смена основной модели** — Claude Sonnet 4 остаётся
-- ~~**Intent classifier как отдельный LLM-вызов** — modality detection через regex~~ → **Reversed во время Phase 2:** `rewrite_question` эволюционировал в LLM-driven intent + modality classifier (Gemini 2.0 Flash, temperature 0). Один LLM-вызов заменил regex-эвристики ради cross-lingual EN/RU/UA support и обработки multi-turn pronoun resolution в той же ноде.
+- **P1 fail** → rollback P1.
+- **P2 fail** → rollback P2.
+- **P3 fail** → rollback **только P3**. P2 остаётся: skip-logic в `rewrite_question` обеспечивает passthrough, single-turn без истории работает как раньше.
+- **P4 fail** → **не rollback'аем**. Phase 4 — правка только в тестах; падение `mt-*` кейса означает баг в самом тесте или регрессию в P1/P2/P3, разбираемся в каждом кейсе индивидуально.
 
-## References
+### Trade-offs (что осознанно **не** делаем)
 
-- **Source code:**
-  - n8n chat workflow: `build_context.jsCode` (modality boost), `rewrite_question` (LLM classifier), `llm_answer.jsonBody` (history block + system prompt)
-  - Frontend: [src/scripts/chat/index.ts](../../../src/scripts/chat/index.ts), [src/scripts/chat/history.ts](../../../src/scripts/chat/history.ts), [src/scripts/chat/helpers.ts](../../../src/scripts/chat/helpers.ts)
-  - Eval: [eval/run_eval.py](../eval/run_eval.py) + [eval/evaluation.json](../eval/evaluation.json) (multi_turn class)
-- **Failure traces:** prod executions 4265-4268
-- **Format:** Michael Nygard, [Documenting Architecture Decisions (2011)](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)
+- **Cross-session memory** (Mem0, Zep, Letta и подобные внешние memory-системы) — намеренно вне scope. Этот ADR — только session memory (живёт в sessionStorage браузера, чистится с закрытием таба). Cross-session — отдельный продуктовый вопрос, требует UX (логин? анонимные ID?) и не является требованием по trace 4265-4268.
+- **Reindex данных в Pinecone** — не нужен. `caption_pdf` в чистом trunk-состоянии, проблема не в качестве индексации.
+- **Смена основной LLM** — Claude Sonnet 4 остаётся. Проблема не в модели, а в архитектуре пайплайна.
+- ~~**Intent classifier как отдельный LLM-вызов** — modality detection через regex.~~ → **Реверс во время Phase 2:** изначальный план фиксировал regex-эвристики (`detectModality()` в Phase 1). По мере реализации стало понятно, что rewrite_question (LLM-вызов из Phase 2) логично нагрузить ещё двумя задачами — классификацией intent (`greeting | pure_meta | content`) и определением modality. Один Gemini Flash-вызов вместо regex покрывает EN/RU/UA, разрешает местоимения и классифицирует intent — единый источник истины. Реальная реализация ушла от regex к LLM-классификатору; regex остался только safeguard'ом в `build_context` (Phase 1) для случая отказа `rewrite_question`.
+
+## Ссылки
+
+- **Код, на который опирается это решение:**
+  - n8n workflow `chat`: ноды `build_context` (jsCode с modality boost), `rewrite_question` (LLM-классификатор), `llm_answer` (history-блок + system prompt с clause MULTI-TURN COHERENCE).
+  - Frontend: [src/scripts/chat/index.ts](../../../src/scripts/chat/index.ts), [src/scripts/chat/history.ts](../../../src/scripts/chat/history.ts), [src/scripts/chat/helpers.ts](../../../src/scripts/chat/helpers.ts).
+  - Eval: [eval/run_eval.py](../eval/run_eval.py) + [eval/evaluation.json](../eval/evaluation.json) (искать `class: multi_turn`).
+- **Production failure traces:** n8n executions `4265–4268` (апрель 2026).
+- **Формат ADR:** Michael Nygard, [«Documenting Architecture Decisions» (2011)](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions).
