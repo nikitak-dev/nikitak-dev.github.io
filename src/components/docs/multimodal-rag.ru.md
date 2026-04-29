@@ -4,6 +4,8 @@
 
 # MULTIMODAL_RAG — документация
 
+*EN version: [MultimodalRagDocs.astro](https://github.com/nikitak-dev/nikitak-dev.github.io/blob/main/src/components/docs/MultimodalRagDocs.astro)*
+
 ---
 
 ## // USER GUIDE
@@ -172,5 +174,4 @@ Architecture выше описывает «что делает каждая но
 ---
 
 *Синхронизировано с backend workflow от 2026-04-26.*
-*EN version: [MultimodalRagDocs.astro](https://github.com/nikitak-dev/nikitak-dev.github.io/blob/main/src/components/docs/MultimodalRagDocs.astro)*
 *Запросы логируются в n8n и отправляются в Gemini / Anthropic. Не передавайте чувствительные данные.*
