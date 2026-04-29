@@ -133,8 +133,8 @@ Architecture выше описывает «что делает каждая но
 | Video length | 120 с — enforced в `prepare_video` (Drive `videoMediaMetadata` primary, MP4/MOV `mvhd` / `mdhd` binary parse fallback); oversized уходят в `notify_skipped` |
 | Conversation history | последние 10 turns (20 сообщений) на вкладку; все отправляются в Claude на каждом запросе |
 | Assistant answer clamp | 500 символов на сообщение ассистента перед записью в историю — держит payload запроса и токены LLM history-блока компактными (10 turns × 500 символов ≈ 1250 токенов вместо unbounded). Trade-off: follow-up со ссылкой на деталь прошлого длинного ответа после 500-го символа эту деталь не увидит (редкий случай) |
-| Vector retrieval | top-K = 20 кандидатов |
-| Rerank | top-N = 5 оставляем, score floor 0.001, modality boost cap 6 |
+| Vector retrieval | top-K = 20 cosine-ближайших из Pinecone — выборка достаточно широкая, чтобы rerank на втором шаге нашёл нужный ответ, но не настолько большая, чтобы cross-encoder тормозил (latency растёт линейно с K) |
+| Rerank | После cross-encoder rerank'а: **top-N = 5** идёт в prompt LLM (достаточно для main topic + смежных деталей, без раздувания context); **score floor 0.001** отсекает true noise (items ниже этого порога редко дают полезный сигнал); **modality boost cap 6** — modality boost может довести result set до 6 items нужного типа, чтобы запросы вроде «перечисли все видео» получили покрытие без переполнения prompt'а |
 | Embedding dimensions | 1536 |
 | Classifier timeout | 20 с, 2 попытки с backoff 3 с |
 | HTTP retry (остальные ноды) | 2-3 попытки на ноду, backoff 2-3 с |

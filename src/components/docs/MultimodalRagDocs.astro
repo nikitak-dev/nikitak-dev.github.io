@@ -167,8 +167,8 @@ import '../../styles/rag-docs.css';
         <tr><td>Video length</td><td>120s -- enforced by <code>prepare_video</code> (Drive <code>videoMediaMetadata</code> primary, MP4/MOV <code>mvhd</code> / <code>mdhd</code> binary parse fallback); oversized files routed to <code>notify_skipped</code></td></tr>
         <tr><td>Conversation history</td><td>last 10 turns (20 messages) per tab; all sent to Claude on each request</td></tr>
         <tr><td>Assistant answer clamp</td><td>500 chars per assistant message before being written to history -- keeps the per-request payload and the LLM history-block token cost compact (10 turns &times; 500 chars &asymp; 1250 tokens, vs. unbounded). Trade-off: a follow-up that references a detail past char 500 of an earlier long answer won't see it (rare in practice)</td></tr>
-        <tr><td>Vector retrieval</td><td>top-K = 20 candidates</td></tr>
-        <tr><td>Rerank</td><td>top-N = 5 kept, score floor 0.001, modality boost cap 6</td></tr>
+        <tr><td>Vector retrieval</td><td>top-K = 20 cosine-nearest from Pinecone -- wide enough for rerank's second pass to find the right answer, narrow enough to keep cross-encoder latency reasonable (latency grows linearly with K)</td></tr>
+        <tr><td>Rerank</td><td>After the cross-encoder rerank: <strong>top-N = 5</strong> passed to the LLM (enough context for the main topic plus adjacent details without prompt bloat); <strong>score floor 0.001</strong> drops true noise (items below this rarely contribute useful signal); <strong>modality boost cap 6</strong> -- the modality boost can grow the result set up to 6 items of the requested type, so queries like "list all videos" get coverage without overflowing the prompt</td></tr>
         <tr><td>Embedding dimensions</td><td>1536</td></tr>
         <tr><td>Classifier timeout</td><td>20s, 2 attempts with 3s backoff</td></tr>
         <tr><td>HTTP retry (other nodes)</td><td>2-3 attempts per node, 2-3s backoff</td></tr>
