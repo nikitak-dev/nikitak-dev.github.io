@@ -169,8 +169,6 @@ Architecture выше описывает «что делает каждая но
 
 Источник тестов: [evaluation.json](https://github.com/nikitak-dev/nikitak-dev.github.io/blob/main/projects/multimodal-rag/eval/evaluation.json) (39 кейсов), [run_eval.py](https://github.com/nikitak-dev/nikitak-dev.github.io/blob/main/projects/multimodal-rag/eval/run_eval.py) (Python-runner), [manual-tests.md](https://github.com/nikitak-dev/nikitak-dev.github.io/blob/main/projects/multimodal-rag/eval/manual-tests.md) (UI smoke-список).
 
-Кратко: если ответ, который вы видите здесь, опирается на реальный источник, на вашем языке, и с честным «not covered», когда это уместно — эти свойства активно проверяются, а не случайны.
-
 ---
 
 *Синхронизировано с backend workflow от 2026-04-26.*
