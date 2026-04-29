@@ -162,7 +162,7 @@ import '../../styles/rag-docs.css';
       <tbody>
         <tr><td>Fetch timeout</td><td>30s -- accommodates cold Gemini + Claude paths</td></tr>
         <tr><td>Text chunking</td><td>~400 tokens per chunk, 50-token overlap, sentence-aware</td></tr>
-        <tr><td>Embedding multipart parts</td><td>up to 6 entries in the <code>content.parts</code> array per Gemini Embedding 2 call (API ceiling) -- workflow currently sends 2 entries (1 binary + 1 caption text); see <a class="docs-ref" href="#improvements">Possible Improvements</a></td></tr>
+        <tr><td>Embedding multipart parts</td><td>Gemini Embedding 2 per-call caps: ≤6 images, ≤1 PDF file (which itself can be up to 6 pages), ≤1 audio, ≤1 video per <code>embedContent</code> call; ≤8192 input tokens overall. Workflow currently sends 2 entries in <code>content.parts</code>: 1 binary + 1 caption text. See <a class="docs-ref" href="#improvements">Possible Improvements</a></td></tr>
         <tr><td>Audio length</td><td>180s -- enforced by <code>prepare_audio</code> (WAV via RIFF, MP3 via frame-header bitrate); oversized files routed to <code>notify_skipped</code></td></tr>
         <tr><td>Video length</td><td>120s -- enforced by <code>prepare_video</code> (Drive <code>videoMediaMetadata</code> primary, MP4/MOV <code>mvhd</code> / <code>mdhd</code> binary parse fallback); oversized files routed to <code>notify_skipped</code></td></tr>
         <tr><td>Conversation history</td><td>last 10 turns (20 messages) per tab; all sent to Claude on each request</td></tr>
@@ -197,7 +197,7 @@ import '../../styles/rag-docs.css';
     <h3 class="docs-heading">// POSSIBLE IMPROVEMENTS</h3>
     <p>Capabilities within reach but not currently implemented -- documented here so the gap between "what the API supports" and "what this workflow does today" is explicit.</p>
     <ul class="docs-list">
-      <li><strong>Per-page PDF embedding.</strong> Today the workflow sends an entire PDF as one <code>inlineData</code> blob and stores one vector per file. Splitting by page and batching up to 6 pages per call (the Gemini multipart ceiling) would yield finer-grained retrieval for long documents -- page ranges become individually addressable in the index, and a query about a specific section lands on the right pages instead of the whole document.</li>
+      <li><strong>Per-chunk PDF embedding.</strong> Today the workflow sends an entire PDF as one <code>inlineData</code> blob and stores one vector per file. Splitting long PDFs into 6-page chunks (Gemini Embedding 2's per-call PDF limit) and embedding each chunk separately would yield finer-grained retrieval -- page ranges become individually addressable in the index, and a query about a specific section lands on the right chunk instead of the whole document.</li>
       <li><strong>Folder-convention image batches.</strong> Gemini Embedding 2 can fuse up to 6 images into a single aggregated vector, useful when several images form one logical unit (a multi-step diagram, a screenshot sequence). The current Drive trigger fires per file. A convention like "files in a sub-folder share one vector" would unlock multi-image fusion without changing the trigger model.</li>
     </ul>
   </section>

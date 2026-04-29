@@ -128,7 +128,7 @@ Architecture выше описывает «что делает каждая но
 |---|---|
 | Fetch timeout | 30 с — покрывает холодные пути Gemini + Claude |
 | Text chunking | ~400 токенов на фрагмент, overlap 50 токенов, sentence-aware |
-| Embedding multipart parts | до 6 элементов в массиве `content.parts` на вызов Gemini Embedding 2 (cap API) — workflow сейчас шлёт 2 элемента (1 binary + 1 caption text); см. [Possible Improvements](#improvements) |
+| Embedding multipart parts | per-call cap'ы Gemini Embedding 2: ≤6 изображений, ≤1 PDF-файл (сам до 6 страниц), ≤1 audio, ≤1 video на вызов `embedContent`; общий ≤8192 input tokens. Workflow шлёт 2 элемента в `content.parts`: 1 binary + 1 caption-text. См. [Possible Improvements](#improvements) |
 | Audio length | 180 с — enforced в `prepare_audio` (WAV через RIFF, MP3 через frame-header bitrate); oversized уходят в `notify_skipped` |
 | Video length | 120 с — enforced в `prepare_video` (Drive `videoMediaMetadata` primary, MP4/MOV `mvhd` / `mdhd` binary parse fallback); oversized уходят в `notify_skipped` |
 | Conversation history | последние 10 turns (20 сообщений) на вкладку; все отправляются в Claude на каждом запросе |
@@ -158,7 +158,7 @@ Architecture выше описывает «что делает каждая но
 
 Возможности в зоне досягаемости, но в текущей версии не реализованы — задокументированы здесь, чтобы разрыв между «что поддерживает API» и «что workflow делает сегодня» был явным.
 
-- **Per-page embedding для PDF.** Сейчас workflow шлёт весь PDF одним `inlineData` blob'ом и хранит один вектор на файл. Разбиение по страницам с группировкой до 6 страниц на вызов (multipart-cap Gemini) дало бы более гранулярный retrieval по большим документам — страничные диапазоны становились бы адресуемыми по отдельности, и запрос про конкретный раздел попадал бы на нужные страницы, а не на документ целиком.
+- **Per-chunk embedding для PDF.** Сейчас workflow шлёт весь PDF одним `inlineData` blob'ом и хранит один вектор на файл. Разбиение длинных PDF на чанки по 6 страниц (per-call PDF cap Gemini Embedding 2) и embedding'ом каждого чанка отдельно дало бы более гранулярный retrieval — страничные диапазоны становились бы адресуемыми по отдельности, и запрос про конкретный раздел попадал бы на нужный чанк, а не на документ целиком.
 - **Image-батчи через folder-convention.** Gemini Embedding 2 умеет сплавлять до 6 изображений в один aggregated-вектор — полезно, когда несколько картинок логически принадлежат одной единице (многошаговая диаграмма, последовательность скриншотов). Текущий Drive trigger срабатывает per-file. Конвенция «файлы в под-папке делят один вектор» открыла бы multi-image fusion без смены модели триггера.
 
 ### // TEST DATA & EVALUATION
