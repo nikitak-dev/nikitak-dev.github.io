@@ -132,7 +132,7 @@ Architecture выше описывает «что делает каждая но
 | Audio length | 180 с — enforced в `prepare_audio` (WAV через RIFF, MP3 через frame-header bitrate); oversized уходят в `notify_skipped` |
 | Video length | 120 с — enforced в `prepare_video` (Drive `videoMediaMetadata` primary, MP4/MOV `mvhd` / `mdhd` binary parse fallback); oversized уходят в `notify_skipped` |
 | Conversation history | последние 10 turns (20 сообщений) на вкладку; все отправляются в Claude на каждом запросе |
-| Assistant answer clamp | 500 символов на ответ, применяется перед записью в историю |
+| Assistant answer clamp | 500 символов на сообщение ассистента перед записью в историю — держит payload запроса и токены LLM history-блока компактными (10 turns × 500 символов ≈ 1250 токенов вместо unbounded). Trade-off: follow-up со ссылкой на деталь прошлого длинного ответа после 500-го символа эту деталь не увидит (редкий случай) |
 | Vector retrieval | top-K = 20 кандидатов |
 | Rerank | top-N = 5 оставляем, score floor 0.001, modality boost cap 6 |
 | Embedding dimensions | 1536 |

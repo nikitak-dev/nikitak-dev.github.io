@@ -166,7 +166,7 @@ import '../../styles/rag-docs.css';
         <tr><td>Audio length</td><td>180s -- enforced by <code>prepare_audio</code> (WAV via RIFF, MP3 via frame-header bitrate); oversized files routed to <code>notify_skipped</code></td></tr>
         <tr><td>Video length</td><td>120s -- enforced by <code>prepare_video</code> (Drive <code>videoMediaMetadata</code> primary, MP4/MOV <code>mvhd</code> / <code>mdhd</code> binary parse fallback); oversized files routed to <code>notify_skipped</code></td></tr>
         <tr><td>Conversation history</td><td>last 10 turns (20 messages) per tab; all sent to Claude on each request</td></tr>
-        <tr><td>Assistant answer clamp</td><td>500 chars per answer before being written to history</td></tr>
+        <tr><td>Assistant answer clamp</td><td>500 chars per assistant message before being written to history -- keeps the per-request payload and the LLM history-block token cost compact (10 turns &times; 500 chars &asymp; 1250 tokens, vs. unbounded). Trade-off: a follow-up that references a detail past char 500 of an earlier long answer won't see it (rare in practice)</td></tr>
         <tr><td>Vector retrieval</td><td>top-K = 20 candidates</td></tr>
         <tr><td>Rerank</td><td>top-N = 5 kept, score floor 0.001, modality boost cap 6</td></tr>
         <tr><td>Embedding dimensions</td><td>1536</td></tr>
