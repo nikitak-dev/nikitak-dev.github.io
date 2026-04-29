@@ -162,7 +162,7 @@ import '../../styles/rag-docs.css';
       <tbody>
         <tr><td>Fetch timeout</td><td>30s -- accommodates cold Gemini + Claude paths</td></tr>
         <tr><td>Text chunking</td><td>~400 tokens per chunk, 50-token overlap, sentence-aware</td></tr>
-        <tr><td>Embedding multipart parts</td><td>up to 6 per call (Gemini API ceiling) -- workflow currently sends 1 binary + 1 caption text per call; see <a class="docs-ref" href="#improvements">Possible Improvements</a></td></tr>
+        <tr><td>Embedding multipart parts</td><td>up to 6 entries in the <code>content.parts</code> array per Gemini Embedding 2 call (API ceiling) -- workflow currently sends 2 entries (1 binary + 1 caption text); see <a class="docs-ref" href="#improvements">Possible Improvements</a></td></tr>
         <tr><td>Audio length</td><td>180s -- enforced by <code>prepare_audio</code> (WAV via RIFF, MP3 via frame-header bitrate); oversized files routed to <code>notify_skipped</code></td></tr>
         <tr><td>Video length</td><td>120s -- enforced by <code>prepare_video</code> (Drive <code>videoMediaMetadata</code> primary, MP4/MOV <code>mvhd</code> / <code>mdhd</code> binary parse fallback); oversized files routed to <code>notify_skipped</code></td></tr>
         <tr><td>Conversation history</td><td>last 10 turns (20 messages) per tab; all sent to Claude on each request</td></tr>

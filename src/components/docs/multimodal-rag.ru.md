@@ -128,7 +128,7 @@ Architecture выше описывает «что делает каждая но
 |---|---|
 | Fetch timeout | 30 с — покрывает холодные пути Gemini + Claude |
 | Text chunking | ~400 токенов на фрагмент, overlap 50 токенов, sentence-aware |
-| Embedding multipart parts | до 6 на вызов (cap Gemini API) — workflow сейчас шлёт 1 binary + 1 caption text на вызов; см. [Possible Improvements](#improvements) |
+| Embedding multipart parts | до 6 элементов в массиве `content.parts` на вызов Gemini Embedding 2 (cap API) — workflow сейчас шлёт 2 элемента (1 binary + 1 caption text); см. [Possible Improvements](#improvements) |
 | Audio length | 180 с — enforced в `prepare_audio` (WAV через RIFF, MP3 через frame-header bitrate); oversized уходят в `notify_skipped` |
 | Video length | 120 с — enforced в `prepare_video` (Drive `videoMediaMetadata` primary, MP4/MOV `mvhd` / `mdhd` binary parse fallback); oversized уходят в `notify_skipped` |
 | Conversation history | последние 10 turns (20 сообщений) на вкладку; все отправляются в Claude на каждом запросе |
