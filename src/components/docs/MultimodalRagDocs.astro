@@ -180,6 +180,7 @@ import '../../styles/rag-docs.css';
     <h3 class="docs-heading">// ERRORS</h3>
     <p><strong>Server-side.</strong> Both <code>chat</code> and <code>ingestion</code> workflows are linked to the <code>error_handler</code> workflow via n8n's <code>errorWorkflow</code> setting -- any unhandled error in either pipeline fires a Discord alert: workflow name, error type, message, UTC timestamp, and a link to the specific execution. On top of that, the <code>chat</code> pipeline sets <code>onError: continueRegularOutput</code> on HTTP nodes, so transient API failures surface to the user as a friendly error message rather than a hung request. All HTTP nodes retry on failure with backoff (count and wait -- see <a class="docs-ref" href="#limits-timeouts">Limits &amp; Timeouts</a>).</p>
     <p class="docs-note"><strong>Frontend states.</strong></p>
+    <p class="docs-note">The <code>[ CONN: &lt;state&gt; ]</code> indicator at the bottom of the chat input bar reflects whether the backend was reachable on the last request -- <strong>ESTABLISHED</strong> means the backend answered (even with a 4xx -- the connection is fine, the request was just rejected), <strong>LOST</strong> means the request couldn't get through (timeout / network failure / 5xx), <strong>MISSING</strong> means there's no webhook URL configured at build time. The table below maps each scenario to its CONN state and the on-screen message.</p>
     <table class="docs-table">
       <thead><tr><th>Cause</th><th>CONN state</th><th>User sees</th></tr></thead>
       <tbody>
