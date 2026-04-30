@@ -116,5 +116,5 @@ Update `src/data/projects.ts` — append an entry to the `PROJECTS` array with a
 
 ## Maintenance & Refactoring
 
-- **Постоянные правила гигиены** (лимиты файлов, именование, CSS, коммиты, чеклист перед commit/push) → `.claude/rules/portfolio-style.md`
-- **Глубокий аудит / рефакторинг** (структурный обзор, план, поэтапное исполнение) → скилл `auditing-codebase` (триггер: «аудит», «рефакторинг», «приведи в порядок»)
+- **Ongoing hygiene rules** (file limits, naming, CSS, commits, pre-commit/push checklist) → `.claude/rules/portfolio-style.md`
+- **Deep audit / refactor** (structural review, plan, phased execution) → skill `auditing-codebase` (triggers: "audit", "refactor", "clean up")
