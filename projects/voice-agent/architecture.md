@@ -4,20 +4,23 @@ Voice AI receptionist (Sophie) on Vapi for a home-service business. MVP handles 
 
 ## Stack
 
-| Component | Role |
-|---|---|
-| **Vapi** | Voice AI platform — STT, TTS, LLM, system prompt, tool calling. |
-| **n8n** | Backend — MCP server (orchestrator) + tool sub-workflows + end-of-call webhook + error handlers. |
-| **Airtable** | CRM — `customers`, `appointment_logs`, `call_logs`. |
-| **Google Calendar** | Schedule — slot availability checks, event create/update/delete. |
-| **Discord** | Alerts — tool failures and external trigger failures route here. |
+| Component | Provider / model | Role |
+|---|---|---|
+| **LLM** | Anthropic — `claude-sonnet-4-20250514` | Reasoning, tool calling, response generation. |
+| **TTS** | ElevenLabs — `eleven_flash_v2_5`, voice id `g6xIsTj2HwM6VR4iXFCw` | Direct ElevenLabs integration (not via Vapi voice provider). Flash chosen for low latency. |
+| **STT** | Deepgram — `nova-3` | Speech-to-text. |
+| **Voice platform** | Vapi | Hosts assistant, system prompt, tool routing, end-of-call analysis pipeline, KB Files. |
+| **Backend** | n8n (self-hosted) | MCP server (orchestrator) + 7 tool sub-workflows + end-of-call webhook + 2 error handlers. |
+| **CRM** | Airtable | `customers`, `appointment_logs`, `call_logs`. |
+| **Schedule** | Google Calendar | Slot availability checks, event create/update/delete. |
+| **Alerts** | Discord | Tool failures and external trigger failures route here via webhook. |
 
 ## High-level flow
 
 ```
-Caller → Vapi (Sophie, n8n_fixr tool) → orchestrator (MCP trigger)
-                                          │
-              ┌────────────┬──────────────┼──────────────┬────────────┐
+Caller → Vapi (Sophie, n8n_orchestrator tool) → orchestrator (MCP trigger)
+                                                    │
+              ┌────────────┬──────────────┬─────────┴────┬────────────┐
               │            │              │              │            │
         client_lookup  create_client  check_avail   book_event  event_lookup
         (Airtable)     (Airtable)    (GCal)         (GCal+AT)   (GCal)
@@ -28,19 +31,31 @@ Caller → Vapi (Sophie, n8n_fixr tool) → orchestrator (MCP trigger)
         tools_error_handler / external_error_handler → Discord
 ```
 
-`n8n_fixr` is the single Vapi-side tool that fans out into 7 sub-workflows via the orchestrator's MCP routing. `search_knowledge_base` is a separate Vapi-native KB tool backed by Vapi Files.
+`n8n_orchestrator` is the single Vapi-side tool that fans out into 7 sub-workflows via the orchestrator's MCP routing. `search_knowledge_base` is a separate Vapi-native Query Tool backed by Vapi Files.
 
 ## Vapi configuration
 
 | Field | Value |
 |---|---|
 | Assistant ID | `<assistant-id>` |
-| Tool ID — `n8n_fixr` (CRM + calendar router) | `<n8n-tool-id>` |
-| Tool ID — `search_knowledge_base` (Vapi Query Tool, provider: google) | `<kb-tool-id>` |
-| KB File ID (`greenscape-company-info.txt`) | `<kb-file-id>` |
-| n8n base URL | `<n8n-host>` |
+| Tool — `n8n_orchestrator` (CRM + calendar router) | type `mcp`, id `<n8n-tool-id>` |
+| Tool — `search_knowledge_base` | type `query` (Vapi-native), id `<kb-tool-id>` |
+| KB File (`greenscape-company-info.txt`) | `<kb-file-id>` |
+| n8n MCP endpoint | `<n8n-host>/mcp/<webhook-path>` |
+| n8n auth | **Vapi Custom Credential** (Bearer Token type, Encryption disabled) — referenced by `credentialId`, never inlined into `server.headers` |
+| Phone number | not bound at the moment (Sophie is not publicly callable) |
 
 The system prompt lives in [`prompts/vapi-system-prompt.md`](prompts/vapi-system-prompt.md). The knowledge base lives in [`knowledge-base/greenscape-company-info.txt`](knowledge-base/greenscape-company-info.txt).
+
+### Why the n8n token is a Vapi Credential, not an inline header
+
+Vapi management API (`get_tool`, `list_tools`) returns `server.headers` verbatim — any token inlined there is exposed to anyone with read access to Vapi. Vapi Bearer Token Credentials live in a separate object: tools reference them by `credentialId`, the management API returns only the id, and the Bearer header is materialised at runtime by Vapi when calling the n8n endpoint. Result: rotating the n8n token only requires updating the credential, and management-API surface no longer leaks the secret.
+
+## n8n_orchestrator tool description (what Sophie's LLM actually sees)
+
+> "Backend tool for client and appointment management. Use ONLY for: looking up clients by email, creating new client profiles, checking calendar availability, booking/updating/deleting appointments, and saving leads."
+
+The Vapi-side tool is just an MCP shell — its `parameters` schema is empty. The seven concrete operations (`client_lookup`, `create_client`, `check_availability`, `book_event`, `event_lookup`, `update_event`, `delete_event`), their input schemas and per-tool descriptions are advertised by the n8n orchestrator over the MCP protocol on connection. See [`n8n/workflows.md`](n8n/workflows.md) for the full inventory.
 
 ## System prompt structure
 
@@ -56,7 +71,7 @@ Sophie's prompt is split into nine sections. Order matters — each section assu
    - Determine Intent
    - Identification for Action (email → CRM lookup → create if new)
    - Service Matching (KB)
-   - Booking Rules (open-day check via KB → calendar availability via n8n_fixr → book)
+   - Booking Rules (open-day check via KB → calendar availability via `n8n_orchestrator` → book)
    - Appointment Changes (reschedule / cancel)
    - Lead Saving
    - Wrap Up
@@ -68,11 +83,12 @@ Sophie's prompt is split into nine sections. Order matters — each section assu
 
 Rules learned during build-out — preserved here so they survive the source-directory deletion.
 
-### Vapi API quirks
+### Vapi quirks
 
-- **PATCH tool** — must include **all** fields, not just the changed ones (including `server`). Vapi nulls out anything omitted from the payload.
-- **PATCH assistant** — system prompt must be uploaded via `curl`. Python `urllib` is blocked by Cloudflare.
+- **PATCH tool** — must include **all** fields (including `server`), otherwise Vapi nulls out anything omitted from the payload.
+- **System prompt edits** — done in the Vapi Dashboard UI directly; [`prompts/vapi-system-prompt.md`](prompts/vapi-system-prompt.md) is a snapshot, not the live source. Keep them in sync manually after any prompt change.
 - **Tool description vs system prompt** — tool description says **what** the tool does (short, generic). The system prompt says **when** and **how** to use it (specific scenarios).
+- **Secrets in tool config** — never put credentials into `server.headers`. Always use a Vapi Custom Credential and reference by `credentialId`. Vapi management API returns headers verbatim; credentials are returned only by id.
 
 ### Editing rules
 
