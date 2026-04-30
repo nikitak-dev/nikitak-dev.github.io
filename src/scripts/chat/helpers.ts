@@ -185,7 +185,11 @@ function buildSourcesList(sources: Source[], animRevealMs: number, chatEl: HTMLE
     if (!expanded) {
       const delay = reduced ? 0 : animRevealMs;
       setTimeout(() => {
-        chatEl.scrollTo({ top: chatEl.scrollHeight, behavior: reduced ? 'auto' : 'smooth' });
+        const SCROLL_GAP = 12;
+        const overflow = tags.getBoundingClientRect().bottom - chatEl.getBoundingClientRect().bottom + SCROLL_GAP;
+        if (overflow > 0) {
+          chatEl.scrollBy({ top: overflow, behavior: reduced ? 'auto' : 'smooth' });
+        }
       }, delay);
     }
   });
