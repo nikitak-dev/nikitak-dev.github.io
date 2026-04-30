@@ -18,6 +18,7 @@ desktop.ini
 # Claude Code local settings + runtime locks (per-machine, never shared)
 .claude/settings.local.json
 .claude/*.lock
+.mcp.json
 
 # Superpowers dev-process artifacts (specs, plans) — scratch, not part of the project
 docs/superpowers/
