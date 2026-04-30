@@ -3,14 +3,14 @@
 - **Дата:** 2026-04-21
 - **Статус:** ✅ Реализовано — workflow `chat` в n8n (≥ v6), фронтенд `src/scripts/chat/*` в репо `nikitak-dev/nikitak-dev.github.io`, eval-suite класс `multi_turn`
 
-> Документ описывает архитектурное решение по системе multimodal-rag (см. [README репо](../README.md) и live-демо в модалке `DOCS & VIDEO`). Если коротко: три n8n-workflow'а — `ingestion` (загрузка файлов из Google Drive в Pinecone), `chat` (ответ на вопрос с retrieval из векторной базы), `error_handler` (Discord-алерт на упавший execution). Этот ADR касается только `chat`-пайплайна и фронтенда чата.
+> Документ описывает архитектурное решение по системе multimodal-rag (см. [README репо](../README.md) и live-демо в модалке `DOCS & VIDEO`). Если коротко: три workflows — `ingestion` (загрузка файлов из Google Drive в Pinecone), `chat` (ответ на вопрос с retrieval из векторной базы), `error_handler` (Discord-алерт на упавший execution). Этот ADR касается только `chat`-пайплайна и фронтенда чата.
 
 ## Контекст
 
 Production-логи n8n из workflow `chat` (executions `4265–4268`, апрель 2026) показали повторяющийся multi-turn failure mode — три последовательных вопроса в одной сессии возвращали несогласованные ответы:
 
 - **Q2** «Do you have videos?» → ассистент находит 1 из 2 имеющихся видео (recall gap — retrieval-стадия не возвращает оба источника).
-- **Q3** «Maybe any other videos?» → ровно тот же ответ, что на Q2 (местоимение «other» не разрешается к контексту: у backend'а нет conversation memory между запросами).
+- **Q3** «Maybe any other videos?» → ровно тот же ответ, что на Q2 (местоимение «other» не разрешается к контексту: у бэкенда нет conversation memory между запросами).
 - **Q4** «How many videos?» → «0 videos» (LLM теряет контекст и противоречит собственному ответу на Q2).
 
 Baseline автоматического eval-suite (39 кейсов, см. [evaluation.json](../eval/evaluation.json)) на момент старта: **35/36 (97%)**. Цель правки — устранить три указанных failure mode и при этом не уронить eval ниже baseline.
@@ -23,7 +23,7 @@ Baseline автоматического eval-suite (39 кейсов, см. [eval
 
 - **Rollback-точка зафиксирована:** workflow `chat` на version #6 в n8n (internal `versionId 10257`, 2026-04-21 06:55:31). Любой регресс откатывается через n8n UI «Restore from history» к этой версии.
 - **Workflow `ingestion`:** нода `caption_pdf` (Gemini 2.0 Flash для генерации описаний PDF-файлов) — в чистом baseline-состоянии. Предшествующий эксперимент с adjacent-topics к этому моменту уже откачен.
-- **Поведение baseline:** недостающий «-1» в `35/36` (см. Context) — это judge-flakiness (LLM-as-judge — модель, которая оценивает ответы по rubric'у — даёт разные оценки на повторных прогонах). Падает один из трёх кейсов: `generic-01`, `frag-03`, `inject-01` ([evaluation.json](../eval/evaluation.json)). Это нужно учитывать при чтении verification-результатов любой фазы.
+- **Поведение baseline:** недостающий «-1» в `35/36` (см. Context) — это judge-flakiness (LLM-as-judge — модель, которая оценивает ответы по шкале — даёт разные оценки на повторных прогонах). Падает один из трёх кейсов: `generic-01`, `frag-03`, `inject-01` ([evaluation.json](../eval/evaluation.json)). Это нужно учитывать при чтении verification-результатов любой фазы.
 - Этот ADR написан **до** начала фаз — заранее фиксирует план и критерии успеха, чтобы post-hoc rationalisation была невозможна.
 
 ### Phase 1 — Modality-boost в `build_context` (фикс recall gap из Q2)
@@ -103,9 +103,9 @@ Current question: {question}
 Output ONLY the standalone query, nothing else.
 ```
 
-**Skip-logic (важно для backward compatibility):** если `body.history` пустой или отсутствует, `rewrite_question` отдаёт `{ standalone_question: body.question }` без LLM-вызова — passthrough. Single-turn-запросы (без истории) ходят через тот же пайплайн без изменения поведения.
+**Skip-logic (важно для обратной совместимости):** если `body.history` пустой или отсутствует, `rewrite_question` отдаёт `{ standalone_question: body.question }` без LLM-вызова — passthrough. Single-turn-запросы (без истории) ходят через тот же пайплайн без изменения поведения.
 
-**Дополнительная clause в system prompt'е `llm_answer`:**
+**Дополнительный пункт в system prompt ноды `llm_answer`:**
 
 ```
 MULTI-TURN COHERENCE: If conversation history is provided before the <documents>
@@ -151,7 +151,7 @@ let transcript: Array<{ q: string; data: ChatResponse }> = [];
 
 > *Замечание по факту реализации:* финальное значение `HISTORY_MAX_TURNS = 10`, не 5. Бампнули в ходе работы — сетку из 10 turns хватает и не раздувает payload.
 
-**Hydrate при загрузке страницы** (рано в `chat.ts`, после DOM-lookup'ов):
+**Hydrate при загрузке страницы** (рано в `chat.ts`, после обращений к DOM):
 
 ```ts
 try {
@@ -182,7 +182,7 @@ try { sessionStorage.setItem(HISTORY_KEY, JSON.stringify({ h: history, t: transc
 catch { /* quota exceeded — silently ignore, history просто не сохранится */ }
 ```
 
-**Расширение handler'а CLR-кнопки** (в существующий handler добавляется):
+**Расширение обработчика CLR-кнопки** (в существующий handler добавляется):
 
 ```ts
 history = [];
@@ -205,7 +205,7 @@ body: JSON.stringify({
 - Dev-сервер + ручной прогон в браузере:
   1. Задать 3 вопроса → Refresh страницы → транскрипт сохранён, DOM перерисован из sessionStorage.
   2. Нажать CLR → всё очистилось, sessionStorage пустой.
-  3. Закрыть таб → открыть заново → пусто (потому что sessionStorage скоупится по табу).
+  3. Закрыть таб → открыть заново → пусто (потому что sessionStorage привязан к вкладке).
   4. Воспроизвести prod-последовательность Q2 → Q3 → Q4 → Q3 находит другое видео, Q4 не противоречит Q2.
 
 **Rollback:** `git revert` коммита, который ввёл изменения в `chat.ts`.
@@ -214,7 +214,7 @@ body: JSON.stringify({
 
 **Файлы:** [eval/run_eval.py](../eval/run_eval.py) + [eval/evaluation.json](../eval/evaluation.json).
 
-**Расширение runner'а:** поддержка кейсов с массивом `turns` (а не одним вопросом):
+**Расширение eval runner:** поддержка кейсов с массивом `turns` (а не одним вопросом):
 
 ```json
 { "id": "mt-videos", "modality": "multi_turn", "class": "multi_turn",
@@ -245,14 +245,14 @@ body: JSON.stringify({
 - **P1 fail** → rollback P1.
 - **P2 fail** → rollback P2.
 - **P3 fail** → rollback **только P3**. P2 остаётся: skip-logic в `rewrite_question` обеспечивает passthrough, single-turn без истории работает как раньше.
-- **P4 fail** → **не rollback'аем**. Phase 4 — правка только в тестах; падение `mt-*` кейса означает баг в самом тесте или регрессию в P1/P2/P3, разбираемся в каждом кейсе индивидуально.
+- **P4 fail** → **не откатываем**. Phase 4 — правка только в тестах; падение `mt-*` кейса означает баг в самом тесте или регрессию в P1/P2/P3, разбираемся в каждом кейсе индивидуально.
 
 ### Trade-offs (что осознанно **не** делаем)
 
 - **Cross-session memory** (Mem0, Zep, Letta и подобные внешние memory-системы) — намеренно вне scope. Этот ADR — только session memory (живёт в sessionStorage браузера, чистится с закрытием таба). Cross-session — отдельный продуктовый вопрос, требует UX (логин? анонимные ID?) и не является требованием по trace 4265-4268.
 - **Reindex данных в Pinecone** — не нужен. `caption_pdf` в чистом trunk-состоянии, проблема не в качестве индексации.
 - **Смена основной LLM** — Claude Sonnet 4 остаётся. Проблема не в модели, а в архитектуре пайплайна.
-- ~~**Intent classifier как отдельный LLM-вызов** — modality detection через regex.~~ → **Реверс во время Phase 2:** изначальный план фиксировал regex-эвристики (`detectModality()` в Phase 1). По мере реализации стало понятно, что rewrite_question (LLM-вызов из Phase 2) логично нагрузить ещё двумя задачами — классификацией intent (`greeting | pure_meta | content`) и определением modality. Один Gemini Flash-вызов вместо regex покрывает EN/RU/UA, разрешает местоимения и классифицирует intent — единый источник истины. Реальная реализация ушла от regex к LLM-классификатору; regex остался только safeguard'ом в `build_context` (Phase 1) для случая отказа `rewrite_question`.
+- ~~**Intent classifier как отдельный LLM-вызов** — modality detection через regex.~~ → **Реверс во время Phase 2:** изначальный план фиксировал regex-эвристики (`detectModality()` в Phase 1). По мере реализации стало понятно, что rewrite_question (LLM-вызов из Phase 2) логично нагрузить ещё двумя задачами — классификацией intent (`greeting | pure_meta | content`) и определением modality. Один Gemini Flash-вызов вместо regex покрывает EN/RU/UA, разрешает местоимения и классифицирует intent — единый источник истины. Реальная реализация ушла от regex к LLM-классификатору; regex остался только в качестве защитного механизма в `build_context` (Phase 1) для случая отказа `rewrite_question`.
 
 ## Ссылки
 
