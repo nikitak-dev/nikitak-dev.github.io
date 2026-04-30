@@ -148,7 +148,7 @@ Breaking change: `type(scope)!: description` или footer `BREAKING CHANGE: <о
 - **Pushed** → отдельный коммит. Прошлое не переписываем.
 
 Примеры:
-- `feat(card): add WIP status with red theme`
+- `feat(card): add WIP status label`
 - `fix(matrix): read colors from CSS variables on theme switch`
 - `refactor(css): extract section-label pattern into utility class`
 - `perf(hub): lazy-load matrix canvas on boot-complete`

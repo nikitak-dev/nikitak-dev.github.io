@@ -59,7 +59,7 @@ See `DESIGN.md` for the full reference. Key rules:
 
 Each project card has: `data-index`, optional `data-url`, `.card-id`, `.card-status`, `.card-title`, `.card-desc`, `.card-stack`, `.card-meta`, `.card-launch` button.
 
-Status classes: `live` (green), `private` (muted), `wip` (red theme via `theme-red` on card).
+Status classes drive only the `.card-status` label colour (`green / green-dim / green-muted` for `live / private / wip` — see `src/styles/hub.css`). They do **not** change the card palette: the card's overall colour is determined exclusively by `category` (`ai` → green, `automation` → amber via `.theme-amber`). Red palette (`--error-*` tokens) is the project's error/failure idiom — page-level remap via `body[data-error="true"]` in `tokens.css` (used by 404), plus component-level uses in chat (`.bubble--error`, `.media-error`, connection-status indicators in `chat.css`) and matrix rain glitch mode. It marks something broken; do not borrow it for neutral states like "in progress".
 
 Current project list lives in [src/data/projects.ts](src/data/projects.ts) — that file is the source of truth for IDs, statuses, URLs, and button labels. Don't duplicate it here.
 
