@@ -33,10 +33,10 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.2",
-    "astro": "^6.1.7"
+    "astro": "^6.2.1"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.4",
+    "@astrojs/check": "^0.9.9",
     "knip": "^6.7.0",
     "typescript": "^5.7.2"
   }
