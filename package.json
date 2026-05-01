@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
-    "knip": "^6.7.0",
+    "knip": "^6.9.0",
     "typescript": "^5.7.2"
   }
 }
