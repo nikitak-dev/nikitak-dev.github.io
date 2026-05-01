@@ -2,6 +2,8 @@
 
 The n8n side of voice-agent runs as one MCP-routed orchestrator plus seven tool sub-workflows, one webhook for end-of-call reporting, and two error handlers that fan out to Discord. All workflows live on the self-hosted instance at `<n8n-host>`. All 11 are active.
 
+> **Migration note (sub-project A done, sub-project B pending):** the database has been migrated from Airtable to Supabase Postgres (see [`../db/`](../db/)). The workflow descriptions below still reference Airtable nodes — they will be rewired to Supabase / Postgres nodes in sub-project B (next planning cycle). Schema-side fixes for the issues listed in *Known limitations* are already in place at the schema level (UNIQUE on `vapi_call_id`, server-side `customer_id` filter possibility, etc.); only the n8n side remains.
+
 ## Workflow inventory
 
 | Workflow | Type | Status | Role |
@@ -82,16 +84,19 @@ The instruction is tailored to the failed step:
 
 In parallel, the actual error (workflow name, execution URL, message) is posted to the Discord channel by the `tools_error_handler` error workflow. Sophie never sees the underlying exception — only the instruction.
 
-## Airtable schema highlights
+## Database schema
 
-- **`appointment_logs.status`** — single-select with **5** values: `scheduled` (set by `book_event`), `rescheduled` (set by `update_event`), `canceled` (set by `delete_event`), plus `completed` and `no-show` (manually flipped outside n8n).
-- **`appointment_logs.customer`** — linked record to `customers`. Populated via a search-then-link pattern: `book_event` looks up customer by email, `end_of_call` looks up by E.164 phone (`customer.number` from Vapi).
-- **`call_logs`** — receives Vapi's `analysisPlan` structured outputs by hard-coded UUID lookup: `outcome`, `success_evaluation` (boolean), `call_category` (enum: `booking, reschedule, inquiry, cancel, complaint`), `customer_sentiment` (enum: `positive, neutral, negative`). Plus `callrecording_id`, `summary`, `callrecording_url`, `cost`, linked `customer`.
+The current Postgres schema (Supabase) is documented in [`../db/README.md`](../db/README.md). Three tables: `customers`, `calls`, `appointments`. Highlights:
+
+- **`appointments.status`** — text + CHECK with 5 values: `scheduled` / `rescheduled` / `canceled` / `completed` / `no-show`. The first three are set by `book_event` / `update_event` / `delete_event` respectively (after sub-project B); `completed` and `no-show` remain manual.
+- **`appointments.customer_id`** — FK to `customers(id)` with `ON DELETE RESTRICT`. The denormalized `email` / `client_name` / `address` columns of the old Airtable `appointment_logs` are gone; values come through JOIN.
+- **`calls`** — receives Vapi's `analysisPlan` outputs in dedicated columns (`outcome`, `success_evaluation`, `call_category`, `customer_sentiment`, `summary`) plus turn-by-turn `transcript_messages` JSONB, full-text-searchable `transcript_text_tsv`, cost/latency breakdown, and `vapi_call_id` UNIQUE for idempotency.
+- **`recordings` Storage bucket** — private, 50 MB per file, `audio/mpeg` and friends. Files keyed by `{vapi_call_id}.mp3` to join with `calls.recording_storage_path`.
 
 ## External services per workflow
 
 - **Google Calendar:** `check_availability`, `book_event`, `event_lookup`, `update_event`, `delete_event`. Single shared calendar.
-- **Airtable:** `client_lookup`, `create_client`, `book_event`, `update_event`, `delete_event`, `end_of_call`. One base, three tables.
+- **Supabase:** `client_lookup`, `create_client`, `book_event`, `update_event`, `delete_event`, `end_of_call` (target after sub-project B; currently still pointing at Airtable). One Postgres database, three tables (`customers`, `calls`, `appointments`) + Storage bucket `recordings`.
 - **Discord:** `tools_error_handler`, `external_error_handler`. Single channel.
 
 ## Conventions and shared settings

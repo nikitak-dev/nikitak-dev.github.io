@@ -11,7 +11,7 @@ Voice AI receptionist (Sophie) on Vapi for a home-service business. MVP handles 
 | **STT** | Deepgram — `nova-3` | Speech-to-text. |
 | **Voice platform** | Vapi | Hosts assistant, system prompt, tool routing, end-of-call analysis pipeline, KB Files. |
 | **Backend** | n8n (self-hosted) | MCP server (orchestrator) + 7 tool sub-workflows + end-of-call webhook + 2 error handlers. |
-| **CRM** | Airtable | `customers`, `appointment_logs`, `call_logs`. |
+| **CRM** | Supabase (Postgres + Storage) | `customers`, `calls`, `appointments` tables + `recordings` bucket for audio archival. See [`db/`](db/). |
 | **Schedule** | Google Calendar | Slot availability checks, event create/update/delete. |
 | **Alerts** | Discord | Tool failures and external trigger failures route here via webhook. |
 
@@ -23,10 +23,10 @@ Caller → Vapi (Sophie, n8n_orchestrator tool) → orchestrator (MCP trigger)
               ┌────────────┬──────────────┬─────────┴────┬────────────┐
               │            │              │              │            │
         client_lookup  create_client  check_avail   book_event  event_lookup
-        (Airtable)     (Airtable)    (GCal)         (GCal+AT)   (GCal)
+        (Supabase)     (Supabase)    (GCal)         (GCal+SB)   (GCal)
               │            │              │
         update_event  delete_event   end_of_call (separate webhook)
-        (GCal+AT)     (GCal+AT)      (Airtable — call log)
+        (GCal+SB)     (GCal+SB)      (Supabase — calls + recording archival)
               │
         tools_error_handler / external_error_handler → Discord
 ```
