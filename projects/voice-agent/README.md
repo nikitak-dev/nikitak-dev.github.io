@@ -26,36 +26,34 @@ Astro builds only `src/` + `public/`, so nothing here reaches `dist/`. Everythin
 
 Solved during the build-out. Listed for context — none of these are wrapped as ADRs yet.
 
-1. **Status field on `appointment_logs`** — single-select with five values (`scheduled, rescheduled, canceled, completed, no-show`). `book_event`, `update_event`, `delete_event` keep the first three in sync; `completed` and `no-show` are manual.
-2. **Linked customer records** on `appointment_logs` and `call_logs` → `customers`.
+1. **Status field on `appointments`** — text + CHECK with five values (`scheduled, rescheduled, canceled, completed, no-show`). `book_event`, `update_event`, `delete_event` keep the first three in sync; `completed` and `no-show` are manual.
+2. **Linked customer records** on `appointments` and `calls` → `customers` (FK `customer_id`).
 3. **Callback offers replaced live transfers** for out-of-scope requests (commercial team, operations team, field team). System prompt now offers a callback rather than attempting a live handoff.
 4. **Phone number normalization to E.164** in Code nodes inside `client_lookup` and `create_client` (default country code `+1`).
 5. **Idempotent booking** — `book_event` checks Google Calendar within `start_time .. start_time+5min` for an existing event with the caller's email in attendees; if found, returns the existing `appointment_id` instead of creating a duplicate.
 6. **Error contract: instructions, not exceptions** — every tool sub-workflow returns `{ error: true, instruction: "<what Sophie should say>" }`. Sophie speaks the instruction; the underlying error goes to Discord via `tools_error_handler`.
 7. **Input validation** — `IF` nodes at the entry of `book_event` and `create_client`; `fallbackOutput` on `client_lookup` Switch for the case where neither email nor phone was provided.
 8. **Latency tuning** — `maxTokens: 250` on the LLM to keep response time short for voice.
-9. **End-of-call analysis** — Vapi `analysisPlan` produces four structured outputs (`outcome`, `success_evaluation`, `call_category`, `customer_sentiment`); the `end_of_call` webhook reads them by UUID and persists into matching `call_logs` columns. Configured with `onError` + `alwaysOutputData` so a partial Vapi report still creates a record.
+9. **End-of-call analysis** — Vapi `analysisPlan` produces four structured outputs (`outcome`, `success_evaluation`, `call_category`, `customer_sentiment`); the `end_of_call` webhook reads them by UUID and persists into matching `calls` columns. Configured with `onError` + `alwaysOutputData` so a partial Vapi report still creates a record.
 10. **Manual test scenarios** — 15 call scripts in [`tests/scenarios.md`](tests/scenarios.md), with a post-test verification checklist.
 11. **n8n token migration to Vapi Custom Credential** — Bearer Token credential referenced by `credentialId`, no longer inlined into `server.headers`. Removes the leak surface where Vapi management API was returning the token in clear text on every `get_tool` call.
-12. **Backend migration from Airtable to Supabase Postgres** — fresh-start migration. New schema captures everything Vapi `end-of-call-report` provides (turn-by-turn transcript in JSONB, cost/latency breakdown, structured `analysisPlan` outputs, recording archived in Storage bucket). RLS enabled with `service_role`-only policies (production hooks for `authenticated owner` policies are in place but commented). Schema details in [`db/`](db/).
+12. **Schema migrated from Airtable to Supabase Postgres** — fresh-start migration. New schema captures everything Vapi `end-of-call-report` provides (turn-by-turn transcript in JSONB, cost/latency breakdown, structured `analysisPlan` outputs, recording archived in Storage bucket). RLS enabled with `service_role`-only policies (production hooks for `authenticated owner` policies are in place but commented). Schema details in [`db/`](db/).
+13. **n8n workflows rewired to Postgres** — six existing tool sub-workflows (`client_lookup`, `create_client`, `book_event`, `update_event`, `delete_event`, `end_of_call`) converted from Airtable to Postgres nodes; two helper sub-workflows added (`shared_phone_normalize`, `archive_recording`).
+14. **Comma-safe Postgres writes via `upsert` operation** — discovered mid-migration that n8n's Postgres `executeQuery` does a literal comma-split on the resolved `queryReplacement` string, breaking any value containing a comma (addresses, transcripts, names like `Smith, John`). Migrated all write paths to the Postgres `upsert` operation with explicit per-column expressions, which sidesteps the bug. `executeQuery` is kept only for SELECTs with single parameters.
+15. **Idempotency on retries** — `end_of_call.create_record` upserts on `vapi_call_id`; `book_event.upsert_record` upserts on `gcal_event_id`. Vapi retries no longer create duplicate `calls` rows; race conditions on booking no longer create duplicate `appointments`.
+16. **`event_lookup` server-side filter by `customer_id`** — closes the privacy gap where the LLM was responsible for filtering calendar events to the right caller by email. Sophie now passes the `customer_id` she remembered from `client_lookup` / `create_client`, and the workflow returns only that caller's appointments. Status filter `IN ('scheduled', 'rescheduled')` excludes cancelled / completed / no-show rows.
+17. **`extract_call_data` Code node inside `end_of_call`** — parses Vapi payload into typed fields: turn-by-turn transcript, transcript text, tool-call aggregates (`tool_calls_count`, `tool_calls_summary`), cost breakdown, structured `analysisPlan` outputs (matched by configured UUIDs). `try/catch` falls back to a `minimal` skeleton so a partial Vapi payload still creates a row.
+18. **Recording archival** — `archive_recording` triggered fire-and-forget from `end_of_call`. Downloads `.mp3` from Vapi `recording_url`, uploads to Supabase Storage bucket `recordings` via PUT with `x-upsert: true` (idempotent on retries), writes back `recording_storage_path` / `recording_size_bytes` / `recording_archived_at` to the corresponding `calls` row. Skips if `recording_archived_at` is already set.
+19. **System prompt updates** — `customer_id` chain instruction (Sophie remembers UUID from `client_lookup` / `create_client` and passes to `event_lookup`); date verification rule (full day-of-week + month + day + year confirmation before any booking / reschedule / cancel tool call); ISO date format in `[Important Information]` (`YYYY-MM-DD (Day-of-week)`) to reduce LLM date-arithmetic errors; tool name updated from legacy `n8n_fixr` to `n8n_orchestrator`.
+20. **Email regex validation** — replaces the previous `contains "@"` check in `book_event` and `create_client`.
 
 ## Open follow-ups
 
 ### Portfolio side
 - Project page (`src/pages/voice-agent.astro`) and documentation modal — not built yet; the hub card is currently `LOCKED`.
-- Wrap selected items from *Implementation history* as ADRs once a clear "decision under tension" emerges (callback-vs-transfer, MCP-orchestrator routing, idempotency contract, error-instruction contract).
+- Wrap selected items from *Implementation history* as ADRs once a clear "decision under tension" emerges. Strong candidates: callback-vs-transfer, MCP-orchestrator routing, idempotency contract, error-instruction contract, comma-safe writes via `upsert` operation, `customer_id` chain via system prompt instead of session state.
 
 ### Project side
-
-The four data-layer items below will be addressed in **sub-project B** — n8n workflows migration to Supabase (separate brainstorm + plan after the schema is in). The Supabase schema itself is already in place; sub-project B rewires the workflows to it.
-
-- **n8n workflows migration to Supabase** (sub-project B) — convert all 11 workflows from Airtable nodes to Postgres / Supabase nodes. Bundles together:
-  - **`end_of_call` idempotency** — `INSERT ... ON CONFLICT (vapi_call_id) DO UPDATE` (new schema's UNIQUE on `vapi_call_id` makes this trivial).
-  - **`book_event` upsert** — `ON CONFLICT (gcal_event_id) DO UPDATE` (defends against rare Google Calendar event ID re-use after delete).
-  - **Recording archival** — download Vapi `recording_url` into Supabase Storage bucket `recordings`, write `recording_storage_path` + `recording_size_bytes`.
-  - **`event_lookup` server-side filter by `customer_id`** — closes the privacy gap where the LLM was responsible for filtering events to the right caller.
-  - **Stronger email validation** — regex (RFC 5322-ish) instead of `contains "@"`.
-  - **Phone normalisation deduplication** — extract the duplicated E.164 normalisation Code block into a shared sub-workflow.
-  - **Tool-call aggregation** — populate `calls.tool_calls_count` / `calls.tool_calls_summary` from `transcript_messages` in `end_of_call`.
-- Manual test pass — full sweep of all 15 scenarios + post-test checklist verification (will be re-validated against the Supabase schema as part of sub-project B).
-- **Bind a phone number** to the assistant for live testing (currently no `phoneNumber` is attached, Sophie is reachable only via Vapi Web SDK or programmatic `create_call`).
+- **Manual test pass against Supabase** — all 15 scenarios in [`tests/scenarios.md`](tests/scenarios.md). Critical paths (new client booking, reschedule, cancel) were re-validated live; the remaining scenarios still need a sweep.
+- **Bind a phone number** to the assistant for live voice testing (currently no `phoneNumber` is attached, Sophie is reachable only via Vapi Web SDK / chat or programmatic `create_call`). Voice calls will exercise `archive_recording` and `end_of_call` for the first time end-to-end.
+- **Address geocoding sub-tool** — current service-area check is LLM-based against the KB description; valid Tampa-area addresses sometimes get rejected when the wording doesn't obviously match the listed cities. A Google Maps Distance Matrix sub-tool would let the workflow side decide deterministically.

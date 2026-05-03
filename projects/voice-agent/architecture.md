@@ -10,7 +10,7 @@ Voice AI receptionist (Sophie) on Vapi for a home-service business. MVP handles 
 | **TTS** | ElevenLabs — `eleven_flash_v2_5`, voice id `g6xIsTj2HwM6VR4iXFCw` | Direct ElevenLabs integration (not via Vapi voice provider). Flash chosen for low latency. |
 | **STT** | Deepgram — `nova-3` | Speech-to-text. |
 | **Voice platform** | Vapi | Hosts assistant, system prompt, tool routing, end-of-call analysis pipeline, KB Files. |
-| **Backend** | n8n (self-hosted) | MCP server (orchestrator) + 7 tool sub-workflows + end-of-call webhook + 2 error handlers. |
+| **Backend** | n8n (self-hosted) | MCP server (orchestrator) + 7 Vapi-facing tool sub-workflows + 2 internal helpers (`shared_phone_normalize`, `archive_recording`) + end-of-call webhook + 2 error handlers. 13 workflows total. |
 | **CRM** | Supabase (Postgres + Storage) | `customers`, `calls`, `appointments` tables + `recordings` bucket for audio archival. See [`db/`](db/). |
 | **Schedule** | Google Calendar | Slot availability checks, event create/update/delete. |
 | **Alerts** | Discord | Tool failures and external trigger failures route here via webhook. |
@@ -23,15 +23,20 @@ Caller → Vapi (Sophie, n8n_orchestrator tool) → orchestrator (MCP trigger)
               ┌────────────┬──────────────┬─────────┴────┬────────────┐
               │            │              │              │            │
         client_lookup  create_client  check_avail   book_event  event_lookup
-        (Supabase)     (Supabase)    (GCal)         (GCal+SB)   (GCal)
-              │            │              │
-        update_event  delete_event   end_of_call (separate webhook)
-        (GCal+SB)     (GCal+SB)      (Supabase — calls + recording archival)
+        (SB SELECT)    (SB UPSERT)    (GCal)        (GCal+SB)   (SB SELECT
+              │            │                                      WHERE customer_id)
+              │            │
+              │            └──► shared_phone_normalize (E.164)
               │
-        tools_error_handler / external_error_handler → Discord
+        update_event  delete_event   end_of_call (Vapi webhook)
+        (GCal+SB)     (GCal+SB)      ├──► extract_call_data (Code: parse transcript / costs / analysisPlan)
+                                      ├──► SB UPSERT calls (idempotent on vapi_call_id)
+                                      └──► archive_recording (fire-and-forget; .mp3 → SB Storage)
+
+        Any failure → tools_error_handler / external_error_handler → Discord
 ```
 
-`n8n_orchestrator` is the single Vapi-side tool that fans out into 7 sub-workflows via the orchestrator's MCP routing. `search_knowledge_base` is a separate Vapi-native Query Tool backed by Vapi Files.
+`n8n_orchestrator` is the single Vapi-side tool that fans out into 7 sub-workflows via the orchestrator's MCP routing. `search_knowledge_base` is a separate Vapi-native Query Tool backed by Vapi Files. `shared_phone_normalize` and `archive_recording` are internal helpers — not exposed to Vapi, invoked via `executeWorkflow` from peers. `customer_id` (UUID) returned by `client_lookup` / `create_client` flows through Sophie's prompt into `event_lookup` — closes the privacy gap where the LLM previously had to filter calendar events by email.
 
 ## Vapi configuration
 
@@ -64,7 +69,7 @@ Sophie's prompt is split into nine sections. Order matters — each section assu
 1. **Identity** — Sophie's role and tone.
 2. **Voice & Style Rules** — single-question turns, no markdown, TTS-friendly numbers, interrupt handling, empathy on upset callers.
 3. **Tool Calling Rule** — short filler phrase before each tool, then strict silence until the result returns. Single exception: the initial phone lookup runs in parallel with the greeting.
-4. **Data Verification Standards** — spelling confirmation for names, emails, phone numbers, addresses. CRM-side normalization (lowercase emails, Title Case names).
+4. **Data Verification Standards** — spelling confirmation for names, emails, phone numbers, addresses, and dates (full day-of-week + month + day + year confirmation before any booking / reschedule / cancel call). CRM-side normalization (lowercase emails, Title Case names).
 5. **Core Operating Rules** — never invent business facts; always use `search_knowledge_base` for hours/services/pricing/FAQs; never derive a name from an email.
 6. **Call Flow Logic** — main flow:
    - Immediate Phone Lookup (auto-runs during greeting)
@@ -77,7 +82,7 @@ Sophie's prompt is split into nine sections. Order matters — each section assu
    - Wrap Up
 7. **Error Handling** — fallback phrases, retry-then-callback, no invented data on tool failure.
 8. **Callback Routing** — three callback categories: commercial team (large/commercial), operations team (scheduling/billing/complaints), field team (on-site).
-9. **Important Information** — runtime variables: today's date/time (Eastern), caller phone.
+9. **Important Information** — runtime variables resolved by Vapi LiquidJS at session start: today's date in `YYYY-MM-DD (Day-of-week)` format with explicit `America/New_York` timezone, current time, caller phone. ISO format reduces LLM date-arithmetic errors compared to "Monday, May 03, 2026".
 
 ## Operational notes
 

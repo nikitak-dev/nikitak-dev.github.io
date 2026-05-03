@@ -1,9 +1,34 @@
 # VoiceAgent -- Test Scenarios
 
 ## How to test
-- Call the Vapi assistant phone number
+- Call the Vapi assistant phone number, or run a Vapi text chat for paths that don't require voice
 - Follow the scenario script
-- After each call: check Airtable (customers, appointment_logs, call_logs) and Google Calendar
+- After each call: query Supabase (`customers`, `appointments`, `calls` tables) and check Google Calendar
+- For voice calls only: also verify the recording lands in the Supabase Storage `recordings` bucket as `{vapi_call_id}.mp3` and the corresponding `calls.recording_archived_at` is non-null
+
+Useful Supabase queries (run via SQL editor or `mcp__claude_ai_Supabase__execute_sql`):
+
+```sql
+-- Most recent customer
+SELECT id, vapi_customer_number, email, full_name, phone_number, created_at
+FROM customers ORDER BY created_at DESC LIMIT 5;
+
+-- Most recent calls with key signals
+SELECT vapi_call_id, customer_id, started_at, ended_at, end_reason, status,
+       outcome, success_evaluation, call_category, customer_sentiment,
+       summary, tool_calls_count, recording_archived_at
+FROM calls ORDER BY started_at DESC LIMIT 5;
+
+-- Most recent appointments with caller info
+SELECT a.id, a.gcal_event_id, a.status, a.start_time, a.end_time,
+       a.service_type, a.address, c.email, c.full_name
+FROM appointments a JOIN customers c ON c.id = a.customer_id
+ORDER BY a.created_at DESC LIMIT 5;
+
+-- Idempotency check: a single vapi_call_id should never appear twice
+SELECT vapi_call_id, COUNT(*) FROM calls
+GROUP BY vapi_call_id HAVING COUNT(*) > 1;
+```
 
 ---
 
@@ -23,9 +48,9 @@
 
 **Verify:**
 - customers: new record with email, full_name, phone (E.164)
-- appointment_logs: new record with status=scheduled, customer linked
+- appointments: new record with status=scheduled, customer linked
 - Google Calendar: event created with correct time, attendee email
-- call_logs: record with summary, outcome, cost, customer linked
+- calls: record with summary, outcome, cost, customer linked
 
 ---
 
@@ -39,8 +64,8 @@
 4. Sophie answers from knowledge base.
 
 **Verify:**
-- No new records created in customers or appointment_logs
-- call_logs: record created
+- No new records created in customers or appointments
+- calls: record created
 
 ---
 
@@ -55,9 +80,9 @@
 5. Sophie checks availability, updates event.
 
 **Verify:**
-- appointment_logs: status changed to "rescheduled"
+- appointments: status changed to "rescheduled"
 - Google Calendar: event updated with new time
-- call_logs: record with summary mentioning reschedule
+- calls: record with summary mentioning reschedule
 
 ---
 
@@ -72,9 +97,9 @@
 5. Sophie deletes event, confirms cancellation.
 
 **Verify:**
-- appointment_logs: status changed to "canceled"
+- appointments: status changed to "canceled"
 - Google Calendar: event deleted
-- call_logs: record created
+- calls: record created
 
 ---
 
@@ -89,7 +114,7 @@
 
 **Verify:**
 - No customer/appointment records created
-- call_logs: record created
+- calls: record created
 - Sophie did NOT ask for email or try CRM lookup
 
 ---
@@ -151,7 +176,7 @@
 **Verify:**
 - Sophie did not invent pricing or details
 - Callback was offered
-- call_logs: record created
+- calls: record created
 
 ---
 
@@ -165,7 +190,7 @@
 
 **Verify:**
 - Google Calendar: only ONE event exists
-- appointment_logs: only ONE record
+- appointments: only ONE record
 - Second call returned existing appointment_id
 
 ---
@@ -174,7 +199,7 @@
 
 **Goal:** External API error is handled gracefully.
 
-1. Call in during a period when Airtable/GCal might have issues, or simulate by temporarily disabling credentials.
+1. Call in during a period when Supabase/GCal might have issues, or simulate by temporarily disabling credentials.
 2. Try to book or look up an appointment.
 3. Sophie should apologize and offer callback.
 
@@ -230,7 +255,7 @@
 
 **Verify:**
 - Appointment created, then rescheduled
-- appointment_logs: status=rescheduled
+- appointments: status=rescheduled
 - KB question answered mid-call
 - Sophie remembered context throughout
 
@@ -255,10 +280,12 @@
 
 After running all scenarios, verify:
 
-- [ ] All call_logs entries have: summary, outcome, cost, customer link
-- [ ] Phone numbers in customers table are E.164 format (+1XXXXXXXXXX)
-- [ ] appointment_logs have correct status values (scheduled/rescheduled/canceled)
-- [ ] appointment_logs have customer linked records
-- [ ] No duplicate calendar events from scenario 10
-- [ ] Error handling worked in scenario 11 (no crashes)
+- [ ] All `calls` rows have: `vapi_call_id` (UNIQUE), `customer_id` linked (where caller was identified), `started_at`, `summary`, `outcome`, `cost_total_usd`, and `transcript_messages` JSONB populated
+- [ ] Idempotency: `SELECT vapi_call_id, COUNT(*) FROM calls GROUP BY vapi_call_id HAVING COUNT(*) > 1` returns zero rows
+- [ ] Phone numbers in `customers` table are E.164 format (`+1XXXXXXXXXX`) when populated, NULL otherwise (never empty string or unresolved template)
+- [ ] `appointments.status` values are `scheduled` / `rescheduled` / `canceled` only (no `completed` / `no-show` from automation — those are manual)
+- [ ] All `appointments` rows have a non-null `customer_id` FK
+- [ ] No duplicate calendar events from scenario 10; `appointments.gcal_event_id` is UNIQUE
+- [ ] For voice scenarios: corresponding `calls.recording_archived_at` is non-null and the file exists in Storage bucket `recordings`
+- [ ] Error handling worked in scenario 11 (no crashes; Sophie spoke the apology phrase; Discord alert posted)
 - [ ] No tool names or system details leaked in any conversation
