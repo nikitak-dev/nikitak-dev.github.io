@@ -114,7 +114,7 @@ The current Postgres schema (Supabase) is documented in [`../db/README.md`](../d
 - **`alwaysOutputData: true`** on critical "find" nodes (GCal `getAll`, Postgres `SELECT`) — empty result returns `[]` rather than failing the branch; downstream IF nodes handle the not-found case.
 - **`callerPolicy: workflowsFromSameOwner`** on all sub-workflows — only the owning n8n user can call them via `executeWorkflow`.
 - **Timezone:** `America/New_York` everywhere (matches the system prompt's Eastern Time invariant).
-- **`errorWorkflow` setting:** orchestrator + `end_of_call` → `external_error_handler`; the 10 tool sub-workflows → `tools_error_handler`.
+- **`errorWorkflow` setting:** orchestrator + `end_of_call` → `external_error_handler`; the 9 sub-workflows (7 tool + 2 helpers) → `tools_error_handler`.
 - **Phone normalisation** — extracted into the `shared_phone_normalize` sub-workflow, called via `executeWorkflow` from `client_lookup` and `create_client`. Default country code is **+1** (US-only); strips non-digit/non-plus, returns empty string if final length < 10.
 - **Postgres credential** — single `supabase-voice_agent` credential (Session Pooler, port 5432) shared by all Postgres nodes. Storage upload uses a separate `supabase-service_role` HTTP Header Auth credential.
 

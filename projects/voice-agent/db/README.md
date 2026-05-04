@@ -45,7 +45,7 @@ storage://recordings/{vapi_call_id}.mp3 ←─ calls.recording_storage_path
 
 - **Identity:** `id`, `vapi_call_id` (UNIQUE NOT NULL — dedup ключ для idempotency `end_of_call`), `customer_id` FK, `assistant_id`, `direction`, `phone_number`
 - **Timing:** `started_at`, `ended_at`, `duration_sec`, `end_reason`, `status` (`in-progress`/`completed`/`failed`/`voicemail`)
-- **analysisPlan outputs (Vapi):** `outcome`, `summary`, `success_evaluation`, `call_category`, `customer_sentiment`
+- **analysisPlan outputs (Vapi):** `outcome`, `summary`, `appointment_booked`, `call_category`, `customer_sentiment`
 - **Transcript:** `transcript_messages` (jsonb, native Vapi `artifact.messages`), `transcript_text` (plain), `transcript_text_tsv` (GENERATED tsvector + GIN — full-text search), `transcript_lang_detected`
 - **Tool calls (агрегаты):** `tool_calls_count`, `tool_calls_summary` (jsonb `{tool_name: count}`)
 - **Recording:** `recording_url` (Vapi-side, может expire), `recording_storage_path`, `recording_duration_sec`, `recording_size_bytes`, `recording_archived_at`
@@ -109,6 +109,7 @@ storage://recordings/{vapi_call_id}.mp3 ←─ calls.recording_storage_path
 | [`00003_rls_demo_service_role_only.sql`](migrations/00003_rls_demo_service_role_only.sql) | `rls_demo_service_role_only` | RLS enabled + service_role policies |
 | [`00004_security_hardening.sql`](migrations/00004_security_hardening.sql) | `security_hardening` | Fix advisor warnings: `set_updated_at` search_path + `pg_trgm` в schema `extensions` |
 | [`00005_index_rescheduled_from.sql`](migrations/00005_index_rescheduled_from.sql) | `index_rescheduled_from` | Partial index на `appointments.rescheduled_from_id` (FK без index) |
+| [`00006_rename_success_evaluation_to_appointment_booked.sql`](migrations/00006_rename_success_evaluation_to_appointment_booked.sql) | `rename_success_evaluation_to_appointment_booked` | Rename `calls.success_evaluation` → `appointment_booked` (и индекс) — выравнивание имени с реальной Vapi Structured Output |
 
 ### Как применить миграцию
 

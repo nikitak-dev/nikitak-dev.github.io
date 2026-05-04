@@ -48,7 +48,7 @@ Caller → Vapi (Sophie, n8n_orchestrator tool) → orchestrator (MCP trigger)
 | KB File (`greenscape-company-info.txt`) | `<kb-file-id>` |
 | n8n MCP endpoint | `<n8n-host>/mcp/<webhook-path>` |
 | n8n auth | **Vapi Custom Credential** (Bearer Token type, Encryption disabled) — referenced by `credentialId`, never inlined into `server.headers` |
-| Phone number | not bound at the moment (Sophie is not publicly callable) |
+| Phone number | bound (US `+1 727 …`) but unlisted — number is not promoted in this repo or in the showcase; assistant remains effectively PRIVATE |
 
 The system prompt lives in [`prompts/vapi-system-prompt.md`](prompts/vapi-system-prompt.md). The knowledge base lives in [`knowledge-base/greenscape-company-info.txt`](knowledge-base/greenscape-company-info.txt).
 

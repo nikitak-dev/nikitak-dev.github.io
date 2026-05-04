@@ -32,7 +32,7 @@ export const PROJECTS: readonly Project[] = [
     status: 'wip',
     category: 'ai',
     desc: 'Never miss a lead because no one picked up the phone. An AI agent handles inbound calls 24/7 — qualifies prospects, schedules meetings and logs key metrics to a database automatically. Built on voice AI infrastructure.',
-    stack: 'VAPI | n8n | Airtable | Google Calendar',
+    stack: 'Vapi | n8n | Supabase | Google Calendar',
     meta: 'For companies paying humans to answer routine calls',
     button: { label: 'LOCKED', disabled: true, ariaLabel: 'VOICE_AGENT is preparing for launch' },
   },
