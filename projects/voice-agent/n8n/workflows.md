@@ -97,7 +97,7 @@ The current Postgres schema (Supabase) is documented in [`../db/README.md`](../d
 
 - **`appointments.status`** — text + CHECK with 5 values: `scheduled` / `rescheduled` / `canceled` / `completed` / `no-show`. The first three are set by `book_event` / `update_event` / `delete_event` respectively; `completed` and `no-show` remain manual.
 - **`appointments.customer_id`** — FK to `customers(id)` with `ON DELETE RESTRICT`. The denormalized `email` / `client_name` / `address` columns of the old Airtable `appointment_logs` are gone; values come through JOIN.
-- **`calls`** — receives Vapi's `analysisPlan` outputs in dedicated columns (`outcome`, `success_evaluation`, `call_category`, `customer_sentiment`, `summary`) plus turn-by-turn `transcript_messages` JSONB, full-text-searchable `transcript_text_tsv`, cost/latency breakdown, and `vapi_call_id` UNIQUE for idempotency.
+- **`calls`** — receives Vapi's `analysisPlan` outputs in dedicated columns (`outcome` enum, `appointment_booked` boolean, `call_category`, `customer_sentiment`, `summary` from built-in `analysis.summary`) plus turn-by-turn `transcript_messages` JSONB, full-text-searchable `transcript_text_tsv`, cost/latency breakdown, and `vapi_call_id` UNIQUE for idempotency.
 - **`recordings` Storage bucket** — private, 50 MB per file, `audio/mpeg` and friends. Files keyed by `{vapi_call_id}.mp3` to join with `calls.recording_storage_path`.
 
 ## External services per workflow

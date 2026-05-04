@@ -1,6 +1,6 @@
 // AUTO-GENERATED. Do not edit by hand.
 // Regenerate after schema changes:
-//   mcp__claude_ai_Supabase__generate_typescript_types(project_id='<supabase-project-id>')
+//   mcp__supabase__generate_typescript_types(project_id='<supabase-project-id>')
 // Then overwrite this file with the result.
 //
 // Source: Supabase project 'voice_agent' (id: <supabase-project-id>, region: eu-west-1).
@@ -93,6 +93,7 @@ export type Database = {
       }
       calls: {
         Row: {
+          appointment_booked: boolean | null
           assistant_id: string | null
           call_category: string | null
           cost_breakdown: Json | null
@@ -116,7 +117,6 @@ export type Database = {
           recording_url: string | null
           started_at: string
           status: string | null
-          success_evaluation: boolean | null
           summary: string | null
           tags: string[]
           tool_calls_count: number
@@ -130,6 +130,7 @@ export type Database = {
           vapi_metadata: Json | null
         }
         Insert: {
+          appointment_booked?: boolean | null
           assistant_id?: string | null
           call_category?: string | null
           cost_breakdown?: Json | null
@@ -153,7 +154,6 @@ export type Database = {
           recording_url?: string | null
           started_at: string
           status?: string | null
-          success_evaluation?: boolean | null
           summary?: string | null
           tags?: string[]
           tool_calls_count?: number
@@ -167,6 +167,7 @@ export type Database = {
           vapi_metadata?: Json | null
         }
         Update: {
+          appointment_booked?: boolean | null
           assistant_id?: string | null
           call_category?: string | null
           cost_breakdown?: Json | null
@@ -190,7 +191,6 @@ export type Database = {
           recording_url?: string | null
           started_at?: string
           status?: string | null
-          success_evaluation?: boolean | null
           summary?: string | null
           tags?: string[]
           tool_calls_count?: number

@@ -6,9 +6,9 @@ Voice AI receptionist (Sophie) on Vapi for a home-service business. MVP handles 
 
 | Component | Provider / model | Role |
 |---|---|---|
-| **LLM** | Anthropic — `claude-sonnet-4-20250514` | Reasoning, tool calling, response generation. |
+| **LLM** | Anthropic — `claude-haiku-4-5-20251001` | Reasoning, tool calling, response generation. Haiku trades reasoning headroom for sub-second TTFT — the receptionist flow doesn't need Sonnet-level reasoning, voice latency wins. |
 | **TTS** | ElevenLabs — `eleven_flash_v2_5`, voice id `g6xIsTj2HwM6VR4iXFCw` | Direct ElevenLabs integration (not via Vapi voice provider). Flash chosen for low latency. |
-| **STT** | Deepgram — `nova-3` | Speech-to-text. |
+| **STT** | Deepgram — `flux-general-en` | Speech-to-text. Flux has built-in end-of-turn detection, which supersedes Vapi's `transcriptionEndpointingPlan` — `smartEndpointingPlan` is set to `Off` in Start Speaking Plan to avoid double-handling. |
 | **Voice platform** | Vapi | Hosts assistant, system prompt, tool routing, end-of-call analysis pipeline, KB Files. |
 | **Backend** | n8n (self-hosted) | MCP server (orchestrator) + 7 Vapi-facing tool sub-workflows + 2 internal helpers (`shared_phone_normalize`, `archive_recording`) + end-of-call webhook + 2 error handlers. 13 workflows total. |
 | **CRM** | Supabase (Postgres + Storage) | `customers`, `calls`, `appointments` tables + `recordings` bucket for audio archival. See [`db/`](db/). |

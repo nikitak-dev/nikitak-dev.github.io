@@ -15,7 +15,7 @@ FROM customers ORDER BY created_at DESC LIMIT 5;
 
 -- Most recent calls with key signals
 SELECT vapi_call_id, customer_id, started_at, ended_at, end_reason, status,
-       outcome, success_evaluation, call_category, customer_sentiment,
+       outcome, appointment_booked, call_category, customer_sentiment,
        summary, tool_calls_count, recording_archived_at
 FROM calls ORDER BY started_at DESC LIMIT 5;
 

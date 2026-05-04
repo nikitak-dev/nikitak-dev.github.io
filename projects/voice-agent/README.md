@@ -4,7 +4,7 @@ Voice AI receptionist (Sophie) on Vapi for a home-service business. MVP handles 
 
 - **Status:** PRIVATE. The Vapi assistant is not publicly callable; the project ships as a portfolio artifact, not a live demo.
 - **Test case:** GreenScape Landscaping (Saint Petersburg, FL) — fictional landscaping company.
-- **Stack:** Vapi (assistant host) · Anthropic Claude Sonnet 4 (LLM) · ElevenLabs Flash v2.5 (TTS) · Deepgram Nova-3 (STT) · n8n (backend) · Supabase (Postgres CRM + Storage for recordings) · Google Calendar · Discord (alerts).
+- **Stack:** Vapi (assistant host) · Anthropic Claude Haiku 4.5 (LLM) · ElevenLabs Flash v2.5 (TTS) · Deepgram Flux General English (STT) · n8n (backend) · Supabase (Postgres CRM + Storage for recordings) · Google Calendar · Discord (alerts).
 
 For the technical breakdown, start with [`architecture.md`](architecture.md) — stack, high-level flow, Vapi configuration, system prompt structure, operational notes.
 
@@ -34,7 +34,7 @@ Solved during the build-out. Listed for context — none of these are wrapped as
 6. **Error contract: instructions, not exceptions** — every tool sub-workflow returns `{ error: true, instruction: "<what Sophie should say>" }`. Sophie speaks the instruction; the underlying error goes to Discord via `tools_error_handler`.
 7. **Input validation** — `IF` nodes at the entry of `book_event` and `create_client`; `fallbackOutput` on `client_lookup` Switch for the case where neither email nor phone was provided.
 8. **Latency tuning** — `maxTokens: 250` on the LLM to keep response time short for voice.
-9. **End-of-call analysis** — Vapi `analysisPlan` produces four structured outputs (`outcome`, `success_evaluation`, `call_category`, `customer_sentiment`); the `end_of_call` webhook reads them by UUID and persists into matching `calls` columns. Configured with `onError` + `alwaysOutputData` so a partial Vapi report still creates a record.
+9. **End-of-call analysis** — Vapi `analysisPlan` produces four custom Structured Outputs (`outcome` as enum: `booking_completed` / `reschedule_completed` / `cancellation_completed` / `info_provided` / `callback_promised` / `no_resolution`; `appointment_booked` boolean; `call_category` string; `customer_sentiment` string); the `end_of_call` webhook reads them by UUID and persists into matching `calls` columns. Built-in `summary` is read from `analysis.summary` directly (not via Structured Output) — repurposing `outcome` as enum avoids the duplicate "brief summary" content the field used to hold. Configured with `onError` + `alwaysOutputData` so a partial Vapi report still creates a record.
 10. **Manual test scenarios** — 15 call scripts in [`tests/scenarios.md`](tests/scenarios.md), with a post-test verification checklist.
 11. **n8n token migration to Vapi Custom Credential** — Bearer Token credential referenced by `credentialId`, no longer inlined into `server.headers`. Removes the leak surface where Vapi management API was returning the token in clear text on every `get_tool` call.
 12. **Schema migrated from Airtable to Supabase Postgres** — fresh-start migration. New schema captures everything Vapi `end-of-call-report` provides (turn-by-turn transcript in JSONB, cost/latency breakdown, structured `analysisPlan` outputs, recording archived in Storage bucket). RLS enabled with `service_role`-only policies (production hooks for `authenticated owner` policies are in place but commented). Schema details in [`db/`](db/).
