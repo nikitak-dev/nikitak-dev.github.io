@@ -110,6 +110,7 @@ storage://recordings/{vapi_call_id}.mp3 ←─ calls.recording_storage_path
 | [`00004_security_hardening.sql`](migrations/00004_security_hardening.sql) | `security_hardening` | Fix advisor warnings: `set_updated_at` search_path + `pg_trgm` в schema `extensions` |
 | [`00005_index_rescheduled_from.sql`](migrations/00005_index_rescheduled_from.sql) | `index_rescheduled_from` | Partial index на `appointments.rescheduled_from_id` (FK без index) |
 | [`00006_rename_success_evaluation_to_appointment_booked.sql`](migrations/00006_rename_success_evaluation_to_appointment_booked.sql) | `rename_success_evaluation_to_appointment_booked` | Rename `calls.success_evaluation` → `appointment_booked` (и индекс) — выравнивание имени с реальной Vapi Structured Output |
+| [`00007_unique_active_appointment_per_customer_time.sql`](migrations/00007_unique_active_appointment_per_customer_time.sql) | `unique_active_appointment_per_customer_time` | Partial UNIQUE index на `(customer_id, start_time) WHERE status IN ('scheduled','rescheduled')` — DB-уровень защита от двойного booking, дополняет `book_event` GCal idempotency check |
 
 ### Как применить миграцию
 
