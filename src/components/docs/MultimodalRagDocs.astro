@@ -1,7 +1,7 @@
 ---
-import '../../styles/rag-docs.css';
+import '../../styles/docs.css';
 ---
-<div class="rag-docs">
+<div class="project-docs">
 
   <p class="docs-note">// RU version: <a class="docs-link" href="https://github.com/nikitak-dev/nikitak-dev.github.io/blob/main/src/components/docs/multimodal-rag.ru.md" target="_blank" rel="noopener noreferrer">multimodal-rag.ru.md</a></p>
 
@@ -226,7 +226,7 @@ import '../../styles/rag-docs.css';
   document.addEventListener('click', (event) => {
     const target = event.target;
     if (!(target instanceof Element)) return;
-    const link = target.closest('.rag-docs .docs-ref');
+    const link = target.closest('.project-docs .docs-ref');
     if (!link) return;
     const href = link.getAttribute('href') || '';
     if (!href.startsWith('#')) return;

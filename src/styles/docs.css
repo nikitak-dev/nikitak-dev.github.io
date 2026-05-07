@@ -1,8 +1,9 @@
-/* MultimodalRagDocs -- styles for the overview slot of <DocsModal> on multimodal-rag.
-   Scoped via .rag-docs descendant-selectors so these generic class names don't
-   collide with other globals. Imported by src/components/docs/MultimodalRagDocs.astro. */
+/* Shared styles for the overview slot of <DocsModal> across project pages.
+   Scoped via .project-docs descendant-selectors so these generic class names
+   don't collide with other globals. Imported by every <Slug>Docs.astro under
+   src/components/docs/. */
 
-.rag-docs {
+.project-docs {
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   font-weight: 400;
@@ -14,19 +15,19 @@
   font-variant-ligatures: none;
   font-feature-settings: "liga" 0, "calt" 0;
 }
-.rag-docs p { margin: 0 0 10px; }
-.rag-docs p:last-child { margin-bottom: 0; }
-.rag-docs strong {
+.project-docs p { margin: 0 0 10px; }
+.project-docs p:last-child { margin-bottom: 0; }
+.project-docs strong {
   color: var(--green);
   font-weight: 700;
 }
-.rag-docs em {
+.project-docs em {
   font-style: normal;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: inherit;
 }
-.rag-docs code {
+.project-docs code {
   font-family: inherit;
   color: var(--green-mid);
   background: var(--bg-input);
@@ -34,10 +35,10 @@
   border: 1px solid var(--border-hover);
 }
 
-.rag-docs .docs-block { margin-bottom: 24px; }
-.rag-docs .docs-block:last-of-type { margin-bottom: 0; }
+.project-docs .docs-block { margin-bottom: 24px; }
+.project-docs .docs-block:last-of-type { margin-bottom: 0; }
 
-.rag-docs .docs-heading {
+.project-docs .docs-heading {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.10em;
@@ -46,12 +47,12 @@
   margin: 0 0 10px;
 }
 
-.rag-docs .docs-list { margin: 0 0 10px; padding-left: 18px; }
-.rag-docs .docs-list li { margin-bottom: 6px; }
-.rag-docs .docs-list li::marker { color: var(--green-mid); content: '> '; }
+.project-docs .docs-list { margin: 0 0 10px; padding-left: 18px; }
+.project-docs .docs-list li { margin-bottom: 6px; }
+.project-docs .docs-list li::marker { color: var(--green-mid); content: '> '; }
 
-.rag-docs .docs-diagram,
-.rag-docs .docs-code {
+.project-docs .docs-diagram,
+.project-docs .docs-code {
   font-family: inherit;
   font-size: 11px;
   line-height: 1.4;
@@ -63,23 +64,23 @@
   tab-size: 2;
   white-space: pre;
 }
-.rag-docs .docs-diagram { color: var(--green-mid); }
-.rag-docs .docs-code { color: var(--text); }
+.project-docs .docs-diagram { color: var(--green-mid); }
+.project-docs .docs-code { color: var(--text); }
 
-.rag-docs .docs-table {
+.project-docs .docs-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 11px;
   margin: 10px 0;
 }
-.rag-docs .docs-table th,
-.rag-docs .docs-table td {
+.project-docs .docs-table th,
+.project-docs .docs-table td {
   border: 1px solid var(--border-hover);
   padding: 6px 10px;
   text-align: left;
   vertical-align: top;
 }
-.rag-docs .docs-table th {
+.project-docs .docs-table th {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -88,9 +89,9 @@
   font-weight: 700;
 }
 
-.rag-docs .docs-note { color: var(--text-muted); font-size: 12px; letter-spacing: 0.06em; }
+.project-docs .docs-note { color: var(--text-muted); font-size: 12px; letter-spacing: 0.06em; }
 
-.rag-docs .docs-figure {
+.project-docs .docs-figure {
   position: relative;
   /* Lift above the docs-modal's CRT scanline overlay (z-index 9999 on
      dialog.docs-modal[open]::after). Keeps workflow screenshots readable
@@ -102,14 +103,14 @@
   border: 1px solid var(--border-hover);
   overflow-x: auto;
 }
-.rag-docs .docs-image {
+.project-docs .docs-image {
   display: block;
   max-width: 100%;
   height: auto;
 }
 /* Narrow variant for small diagrams (e.g. 2-node error handler). Keep them
    from stretching edge-to-edge which would dwarf the tiny graph. */
-.rag-docs .docs-image--narrow {
+.project-docs .docs-image--narrow {
   max-width: 320px;
   margin: 0 auto;
 }
@@ -120,8 +121,8 @@
    Rendered as a bracket-tag "[ text ]": brackets muted by default, text in
    full --green at weight 700. Hover/focus lifts brackets to --green and
    applies a strong 12px glow to the whole tag -- outline suppressed. */
-.rag-docs .docs-ref,
-.rag-docs .docs-link {
+.project-docs .docs-ref,
+.project-docs .docs-link {
   color: var(--green);
   font-weight: 700;
   cursor: pointer;
@@ -131,46 +132,46 @@
   white-space: nowrap;
   transition: color 0.2s, text-shadow 0.2s;
 }
-.rag-docs .docs-ref::before,
-.rag-docs .docs-ref::after,
-.rag-docs .docs-link::before,
-.rag-docs .docs-link::after {
+.project-docs .docs-ref::before,
+.project-docs .docs-ref::after,
+.project-docs .docs-link::before,
+.project-docs .docs-link::after {
   color: var(--green-dim);
   font-weight: 700;
   transition: color 0.2s, text-shadow 0.2s;
 }
-.rag-docs .docs-ref::before,
-.rag-docs .docs-link::before { content: '[ '; }
-.rag-docs .docs-ref::after,
-.rag-docs .docs-link::after  { content: ' ]'; }
+.project-docs .docs-ref::before,
+.project-docs .docs-link::before { content: '[ '; }
+.project-docs .docs-ref::after,
+.project-docs .docs-link::after  { content: ' ]'; }
 
-.rag-docs .docs-ref:hover,
-.rag-docs .docs-ref:focus-visible,
-.rag-docs .docs-link:hover,
-.rag-docs .docs-link:focus-visible {
+.project-docs .docs-ref:hover,
+.project-docs .docs-ref:focus-visible,
+.project-docs .docs-link:hover,
+.project-docs .docs-link:focus-visible {
   outline: none;
   text-shadow: 0 0 12px var(--green-glow-strong);
 }
-.rag-docs .docs-ref:hover::before,
-.rag-docs .docs-ref:hover::after,
-.rag-docs .docs-ref:focus-visible::before,
-.rag-docs .docs-ref:focus-visible::after,
-.rag-docs .docs-link:hover::before,
-.rag-docs .docs-link:hover::after,
-.rag-docs .docs-link:focus-visible::before,
-.rag-docs .docs-link:focus-visible::after {
+.project-docs .docs-ref:hover::before,
+.project-docs .docs-ref:hover::after,
+.project-docs .docs-ref:focus-visible::before,
+.project-docs .docs-ref:focus-visible::after,
+.project-docs .docs-link:hover::before,
+.project-docs .docs-link:hover::after,
+.project-docs .docs-link:focus-visible::before,
+.project-docs .docs-link:focus-visible::after {
   color: var(--green);
   text-shadow: 0 0 12px var(--green-glow-strong);
 }
 /* Scroll-anchor padding so the target section lands slightly below the
    modal-frame top edge instead of flush against it. */
-.rag-docs .docs-block { scroll-margin-top: 16px; }
+.project-docs .docs-block { scroll-margin-top: 16px; }
 
 /* Divider between User Guide (TL;DR .. WHAT'S IN SCOPE) and the Technical
    Reference block. Renders as two horizontal rules with a centered label --
    a clear "here the deep docs start" marker without adding another heading
    level to the type hierarchy. */
-.rag-docs .docs-divider {
+.project-docs .docs-divider {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -178,15 +179,15 @@
 }
 /* First divider opens the document -- no top margin, flush with the
    scrollable area so the label anchors the user's eye immediately. */
-.rag-docs .docs-divider--first { margin-top: 0; }
-.rag-docs .docs-divider::before,
-.rag-docs .docs-divider::after {
+.project-docs .docs-divider--first { margin-top: 0; }
+.project-docs .docs-divider::before,
+.project-docs .docs-divider::after {
   content: '';
   flex: 1;
   height: 1px;
   background: var(--border-hover);
 }
-.rag-docs .docs-divider-label {
+.project-docs .docs-divider-label {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.10em;
@@ -196,7 +197,7 @@
   white-space: nowrap;
 }
 
-.rag-docs .docs-footer {
+.project-docs .docs-footer {
   border-top: 1px dashed var(--border-hover);
   margin-top: 32px;
   padding-top: 12px;
@@ -204,12 +205,12 @@
   letter-spacing: 0.06em;
   color: var(--text-muted);
 }
-.rag-docs .docs-footer div + div { margin-top: 4px; }
+.project-docs .docs-footer div + div { margin-top: 4px; }
 
 @media (max-width: 640px) {
-  .rag-docs { font-size: 11px; }
-  .rag-docs .docs-diagram,
-  .rag-docs .docs-code,
-  .rag-docs .docs-table { font-size: 10px; }
-  .rag-docs .docs-block { margin-bottom: 20px; }
+  .project-docs { font-size: 11px; }
+  .project-docs .docs-diagram,
+  .project-docs .docs-code,
+  .project-docs .docs-table { font-size: 10px; }
+  .project-docs .docs-block { margin-bottom: 20px; }
 }
