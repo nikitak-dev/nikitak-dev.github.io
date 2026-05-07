@@ -1,4 +1,4 @@
-# vapi-evals/create-suite.ps1
+# eval/create-suite.ps1
 #
 # One-time setup: register the test suite in Vapi.
 # Two-step flow per Vapi API:

@@ -1,6 +1,6 @@
-# vapi-evals/run-suite.ps1
+# eval/run-suite.ps1
 #
-# Trigger one evaluation run via /eval/simulation/run, poll until completion,
+# Trigger one evaluation run via /test-suite/{id}/run, poll until completion,
 # save the final result JSON to results/<timestamp>.json, print a summary.
 #
 # Each run executes ALL test cases in the suite against the assistant whose
@@ -49,7 +49,6 @@ if (-not (Test-Path $suiteIdFile)) {
 }
 
 $suiteId = (Get-Content $suiteIdFile -Raw).Trim()
-$assistantId = $env:VAPI_ASSISTANT_ID
 
 $headers = @{
   Authorization  = "Bearer $($env:VAPI_PRIVATE_TOKEN)"

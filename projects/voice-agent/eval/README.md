@@ -1,4 +1,4 @@
-# vapi-evals — regression test suite for Sophie
+# eval — regression test suite for Sophie
 
 Vapi Test Suite definition for the `voice_agent` assistant. Five smoke-test scenarios that verify Sophie's prompt-driven behavior survives prompt edits without manual click-through testing.
 

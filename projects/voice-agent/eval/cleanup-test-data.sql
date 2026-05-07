@@ -1,4 +1,4 @@
--- vapi-evals/cleanup-test-data.sql
+-- eval/cleanup-test-data.sql
 --
 -- Removes residue created by Vapi Test Suite runs from the voice_agent
 -- Supabase database. Run AFTER each suite execution.
