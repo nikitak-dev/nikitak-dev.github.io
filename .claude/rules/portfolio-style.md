@@ -194,6 +194,17 @@ Pre-commit hook (`.githooks/pre-commit`, активируется через `gi
 
 **Раз в квартал:** `/auditing-codebase` light-pass — ловит то, что автоматика пропускает (неиспользуемые CSS-правила, расхождение документации, архитектурные смещения).
 
+## Документация проектов
+
+При добавлении нового проекта в `projects/<slug>/` или аудите существующего — следовать шаблону [`.claude/templates/project-docs.md`](templates/project-docs.md). Зафиксированы: раскладка файлов, структура секций канонической модалки, иерархия источников правды, соглашения по именам / языку / cross-link'ам.
+
+Главные правила:
+- Narrative-файлы (`architecture.md`, `workflows.md`, `CHANGELOG.md`, narrative `db/README.md`) в `projects/<slug>/` — анти-паттерн. Narrative живёт в канонической модалке `src/components/docs/<Slug>Docs.astro`
+- `projects/<slug>/README.md` — индекс директории, ≤25 строк
+- ADR в `projects/<slug>/adrs/`, формат Nygard
+- Eval suite — `projects/<slug>/eval/` (не `vapi-evals/`, не `tests/`)
+- Карточка хаба в `src/data/projects.ts` — производная сводка модалки, не источник
+
 ## Запреты (hard rules)
 
 - Не коммитить `.env`, `.mcp.json`, `node_modules/`, `dist/`, `.astro/`, `.playwright-mcp/`
