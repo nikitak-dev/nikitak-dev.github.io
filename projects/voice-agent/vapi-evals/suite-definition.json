@@ -1,0 +1,61 @@
+{
+  "name": "voice_agent_smoke_tests",
+  "_assistantId_for_runs": "${VAPI_ASSISTANT_ID}",
+  "tests": [
+    {
+      "name": "CS-1 - booking flow gates on email collection",
+      "type": "chat",
+      "script": "Open with: 'I'd like to schedule landscaping for next Tuesday at two p m.' Do NOT volunteer an email address. When Sophie asks for the caller's email, provide 'test.cs1@example.com' and let the conversation continue naturally for one or two more turns, then politely close: 'Sorry, I need to think about this more - I'll call back later. Thanks!'",
+      "scorers": [
+        {
+          "type": "ai",
+          "rubric": "PASS if ALL of the following are true:\n1. Sophie asked the caller for an email address at some point in the conversation.\n2. Sophie did NOT call book_event, check_availability, update_event, or delete_event at any point.\n3. Sophie politely acknowledged the caller's decision to call back later.\n\nACCEPTABLE: Sophie may have called search_knowledge_base, client_lookup, or create_client during the flow - those are read-only or identification-stage calls and are not booking tools.\n\nFAIL if:\n- Sophie tried to book without first asking for email.\n- Sophie called book_event or check_availability before email was provided.\n- Sophie was rude or pressured the caller to continue."
+        }
+      ]
+    },
+    {
+      "name": "CS-2 - KB-first for factual pricing query",
+      "type": "chat",
+      "script": "Open with: 'Hi, how much does lawn maintenance cost per visit?' Wait for Sophie's answer. If she gives prices, ask one follow-up: 'And what about bi-weekly service, is that cheaper?' Then close: 'Thanks, that helps. Bye.'",
+      "scorers": [
+        {
+          "type": "ai",
+          "rubric": "PASS if ALL of the following are true:\n1. Sophie called search_knowledge_base at least once before quoting any price figures.\n2. Sophie's quoted price ranges fall within or close to KB ranges: weekly service $50-120 per visit, bi-weekly service $70-150 per visit. Approximate phrasing like 'typically ranges from' or 'usually around' is acceptable.\n3. Sophie did NOT invent figures outside the KB ranges (e.g., '$5 per visit' or '$1000 per visit').\n\nFAIL if:\n- Sophie quoted any price without invoking search_knowledge_base first.\n- Quoted figures contradict KB ranges by more than ~30%.\n- Sophie invented services that are not in the KB."
+        }
+      ]
+    },
+    {
+      "name": "CS-3 - service-area informational query for non-listed city",
+      "type": "chat",
+      "script": "Open with: 'Hi, quick question - do you guys serve Naples, Florida? I am just exploring options.' Wait for Sophie's answer. If she asks for clarification, repeat: 'Just want to know if Naples is in your service area.' Close politely: 'Got it, thanks for letting me know.'",
+      "scorers": [
+        {
+          "type": "ai",
+          "rubric": "PASS if ALL of the following are true:\n1. Sophie called search_knowledge_base at least once during the conversation.\n2. Sophie's final answer EITHER (a) clearly indicates Naples is outside the service area / not on the list, OR (b) offers a callback so the team can confirm.\n3. Sophie did NOT call any booking-related tool (book_event, check_availability, create_client).\n\nACCEPTABLE responses include: 'Unfortunately, Naples is outside our service area - we cover the Tampa Bay region within thirty-five miles of Saint Petersburg', or 'Let me have someone from our team reach out to confirm that for you.'\n\nFAIL if:\n- Sophie said 'yes, we serve Naples' without verification.\n- Sophie attempted to start booking despite the location concern.\n- Sophie fabricated service-area details not present in the KB."
+        }
+      ]
+    },
+    {
+      "name": "CS-4 - emergency routing for tree damage",
+      "type": "chat",
+      "script": "Open with urgency: 'There is a tree blocking my driveway from the storm last night, this is an emergency!' Wait for Sophie's full response. If she provides a phone number, acknowledge: 'OK, I will call that number.' If she does not, push: 'But I need help right now, what should I do?' Close after Sophie's emergency directive: 'Thanks, calling now.'",
+      "scorers": [
+        {
+          "type": "ai",
+          "rubric": "PASS if ALL of the following are true:\n1. Sophie's response includes the emergency phone number - either in spoken-numbers form ('seven two seven, five five five, zero one seven three') or digit form ('727 555 0173' / '(727) 555-0173') - AND mentions 'press two' or similar to reach the emergency team.\n2. Sophie attempted to end (or did end) the conversation rather than continuing into a regular booking flow.\n3. Sophie did NOT call any tool during the conversation.\n\nFAIL if:\n- Sophie tried to schedule a regular appointment for the emergency.\n- Sophie did not provide the emergency number.\n- Sophie continued small-talk or attempted KB lookups instead of routing the emergency immediately."
+        }
+      ]
+    },
+    {
+      "name": "CS-5 - out-of-scope commercial project handoff",
+      "type": "chat",
+      "script": "Open with: 'Hi, I need landscaping services for my office park. About three acres total, our budget is around fifty thousand dollars. When can you start?' Wait for Sophie's response. If she offers a callback choice, choose: 'Yes, please have your commercial team reach out.' If she progresses into booking flow without mentioning commercial team, that is a FAIL signal - note it but continue the conversation briefly then close: 'OK, I will wait for the call. Bye.'",
+      "scorers": [
+        {
+          "type": "ai",
+          "rubric": "PASS if ALL of the following are true:\n1. Sophie acknowledged that the request is commercial in nature (e.g., 'commercial projects are usually handled by a dedicated team', or similar mention of commercial routing).\n2. Sophie offered a callback option from the commercial team - either as the only path or as a choice between callback and continuing.\n3. Sophie did NOT silently progress to booking without raising the commercial-team handoff first.\n\nACCEPTABLE: Sophie may also offer the choice to continue booking after callback is mentioned - that matches the prompt's commercial-decision rule.\n\nFAIL if:\n- Sophie did not mention the commercial team or commercial routing.\n- Sophie quoted residential pricing for a fifty thousand dollar project.\n- Sophie began collecting email / address as if for a routine residential booking without the commercial-team mention."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,206 @@
+{
+  "id": "<run-id>",
+  "testSuiteId": "<vapi-test-suite-id>",
+  "orgId": "<vapi-org-id>",
+  "name": "Run 5/7/2026, 12:52:32 PM",
+  "testResults": [
+    {
+      "test": {
+        "id": "<vapi-test-id>",
+        "name": "CS-5 - out-of-scope commercial project handoff",
+        "type": "chat",
+        "orgId": "<vapi-org-id>",
+        "script": "Open with: 'Hi, I need landscaping services for my office park. About three acres total, our budget is around fifty thousand dollars. When can you start?' Wait for Sophie's response. If she offers a callback choice, choose: 'Yes, please have your commercial team reach out.' If she progresses into booking flow without mentioning commercial team, that is a FAIL signal - note it but continue the conversation briefly then close: 'OK, I will wait for the call. Bye.'",
+        "scorers": [
+          {
+            "type": "ai",
+            "rubric": "PASS if ALL of the following are true:\n1. Sophie acknowledged that the request is commercial in nature (e.g., 'commercial projects are usually handled by a dedicated team', or similar mention of commercial routing).\n2. Sophie offered a callback option from the commercial team - either as the only path or as a choice between callback and continuing.\n3. Sophie did NOT silently progress to booking without raising the commercial-team handoff first.\n\nACCEPTABLE: Sophie may also offer the choice to continue booking after callback is mentioned - that matches the prompt's commercial-decision rule.\n\nFAIL if:\n- Sophie did not mention the commercial team or commercial routing.\n- Sophie quoted residential pricing for a fifty thousand dollar project.\n- Sophie began collecting email / address as if for a routine residential booking without the commercial-team mention."
+          }
+        ],
+        "createdAt": "2026-05-07T09:47:16.956Z",
+        "updatedAt": "2026-05-07T09:47:16.956Z",
+        "numAttempts": 1,
+        "testSuiteId": "<vapi-test-suite-id>"
+      },
+      "attempts": [
+        {
+          "call": {
+            "artifact": {
+              "transcript": "AI: Hey there! Thanks for calling GreenScape Landscaping. This is Sophie, your AI assistant — calls may be recorded for quality and training. How can I help you?\nUser: Hi, I need landscaping services for my office park. About three acres total, our budget is around fifty thousand dollars. When can you start?\nAI: Great, thanks for reaching out! I'd love to help you with that. Since you mentioned a commercial project, let me get you connected with our commercial team who specialize in office park work — they'll be the best fit for a project at that scale and budget.\n\nI can have them call you back to discuss the details and timeline. Would that work for you?\nUser: Yes, please have your commercial team reach out.\nAI: Perfect! I'll make sure they get your information. What's the best phone number or email for them to reach you?\nUser: You can have them call me at this number. OK, I will wait for the call. Bye.\nUser: Goodbye\nUser: OK, I will wait for the call. Bye."
+            }
+          },
+          "metadata": {
+            "sessionId": "<chat-session-id>"
+          },
+          "scorerResults": [
+            {
+              "type": "ai",
+              "result": "pass",
+              "rubric": "PASS if ALL of the following are true:\n1. Sophie acknowledged that the request is commercial in nature (e.g., 'commercial projects are usually handled by a dedicated team', or similar mention of commercial routing).\n2. Sophie offered a callback option from the commercial team - either as the only path or as a choice between callback and continuing.\n3. Sophie did NOT silently progress to booking without raising the commercial-team handoff first.\n\nACCEPTABLE: Sophie may also offer the choice to continue booking after callback is mentioned - that matches the prompt's commercial-decision rule.\n\nFAIL if:\n- Sophie did not mention the commercial team or commercial routing.\n- Sophie quoted residential pricing for a fifty thousand dollar project.\n- Sophie began collecting email / address as if for a routine residential booking without the commercial-team mention.",
+              "reasoning": "The AI (Sophie) correctly identified the request as commercial in nature, explicitly mentioning the commercial team and stating that they specialize in office park work. Sophie offered a callback from the commercial team as the next step and did not proceed to collect booking information or quote residential pricing. All required behaviors for a pass were met."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": {
+        "id": "<vapi-test-id>",
+        "name": "CS-4 - emergency routing for tree damage",
+        "type": "chat",
+        "orgId": "<vapi-org-id>",
+        "script": "Open with urgency: 'There is a tree blocking my driveway from the storm last night, this is an emergency!' Wait for Sophie's full response. If she provides a phone number, acknowledge: 'OK, I will call that number.' If she does not, push: 'But I need help right now, what should I do?' Close after Sophie's emergency directive: 'Thanks, calling now.'",
+        "scorers": [
+          {
+            "type": "ai",
+            "rubric": "PASS if ALL of the following are true:\n1. Sophie's response includes the emergency phone number - either in spoken-numbers form ('seven two seven, five five five, zero one seven three') or digit form ('727 555 0173' / '(727) 555-0173') - AND mentions 'press two' or similar to reach the emergency team.\n2. Sophie attempted to end (or did end) the conversation rather than continuing into a regular booking flow.\n3. Sophie did NOT call any tool during the conversation.\n\nFAIL if:\n- Sophie tried to schedule a regular appointment for the emergency.\n- Sophie did not provide the emergency number.\n- Sophie continued small-talk or attempted KB lookups instead of routing the emergency immediately."
+          }
+        ],
+        "createdAt": "2026-05-07T09:47:16.729Z",
+        "updatedAt": "2026-05-07T09:47:16.729Z",
+        "numAttempts": 1,
+        "testSuiteId": "<vapi-test-suite-id>"
+      },
+      "attempts": [
+        {
+          "call": {
+            "artifact": {
+              "transcript": "AI: Hey there! Thanks for calling GreenScape Landscaping. This is Sophie, your AI assistant — calls may be recorded for quality and training. How can I help you?\nUser: There is a tree blocking my driveway from the storm last night, this is an emergency!\nAI: For emergency tree or storm damage, please call us back at seven two seven, five five five, zero one seven three and press two — our emergency team is available twenty-four seven. Once again, that's seven two seven, five five five, zero one seven three, press two.\nAI: tool_calls: {\"name\":\"endCall\",\"arguments\":\"{}\"}\nAI: Goodbye\nAI: Success.\nAI: tool_call_results: \"Success.\""
+            }
+          },
+          "metadata": {
+            "sessionId": "<chat-session-id>"
+          },
+          "scorerResults": [
+            {
+              "type": "ai",
+              "result": "pass",
+              "rubric": "PASS if ALL of the following are true:\n1. Sophie's response includes the emergency phone number - either in spoken-numbers form ('seven two seven, five five five, zero one seven three') or digit form ('727 555 0173' / '(727) 555-0173') - AND mentions 'press two' or similar to reach the emergency team.\n2. Sophie attempted to end (or did end) the conversation rather than continuing into a regular booking flow.\n3. Sophie did NOT call any tool during the conversation.\n\nFAIL if:\n- Sophie tried to schedule a regular appointment for the emergency.\n- Sophie did not provide the emergency number.\n- Sophie continued small-talk or attempted KB lookups instead of routing the emergency immediately.",
+              "reasoning": "The AI, Sophie, provided the emergency phone number in spoken-numbers form ('seven two seven, five five five, zero one seven three') and clearly instructed the user to 'press two' to reach the emergency team. Sophie did not attempt to schedule a regular appointment or continue with small talk, and instead ended the conversation promptly by calling the endCall tool. No other tools were called, and the behavior aligns with the ideal outcome requirements."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": {
+        "id": "<vapi-test-id>",
+        "name": "CS-3 - service-area informational query for non-listed city",
+        "type": "chat",
+        "orgId": "<vapi-org-id>",
+        "script": "Open with: 'Hi, quick question - do you guys serve Naples, Florida? I am just exploring options.' Wait for Sophie's answer. If she asks for clarification, repeat: 'Just want to know if Naples is in your service area.' Close politely: 'Got it, thanks for letting me know.'",
+        "scorers": [
+          {
+            "type": "ai",
+            "rubric": "PASS if ALL of the following are true:\n1. Sophie called search_knowledge_base at least once during the conversation.\n2. Sophie's final answer EITHER (a) clearly indicates Naples is outside the service area / not on the list, OR (b) offers a callback so the team can confirm.\n3. Sophie did NOT call any booking-related tool (book_event, check_availability, create_client).\n\nACCEPTABLE responses include: 'Unfortunately, Naples is outside our service area - we cover the Tampa Bay region within thirty-five miles of Saint Petersburg', or 'Let me have someone from our team reach out to confirm that for you.'\n\nFAIL if:\n- Sophie said 'yes, we serve Naples' without verification.\n- Sophie attempted to start booking despite the location concern.\n- Sophie fabricated service-area details not present in the KB."
+          }
+        ],
+        "createdAt": "2026-05-07T09:47:16.471Z",
+        "updatedAt": "2026-05-07T09:47:16.471Z",
+        "numAttempts": 1,
+        "testSuiteId": "<vapi-test-suite-id>"
+      },
+      "attempts": [
+        {
+          "call": {
+            "artifact": {
+              "transcript": "AI: Hey there! Thanks for calling GreenScape Landscaping. This is Sophie, your AI assistant — calls may be recorded for quality and training. How can I help you?\nUser: Hi, quick question - do you guys serve Naples, Florida? I am just exploring options.\nAI: One moment.\nAI: tool_calls: {\"name\":\"search_knowledge_base\",\"arguments\":\"{\\\"knowledgeBaseNames\\\": [\\\"greenscape_kb\\\"]}\"}\nAI: ```text\nWe serve the greater Tampa Bay area, including:\n  - Saint Petersburg\n  - Clearwater and Clearwater Beach\n  - Tampa\n  - Largo and Seminole\n  - Pinellas Park and Kenneth City\n  - Gulfport and South Pasadena\n  - Bradenton (limited availability)\n\nMaximum service radius: thirty-five miles from downtown Saint Petersburg.\n```\nAI: tool_call_results: \"```text\\nWe serve the greater Tampa Bay area, including:\\n  - Saint Petersburg\\n  - Clearwater and Clearwater Beach\\n  - Tampa\\n  - Largo and Seminole\\n  - Pinellas Park and Kenneth City\\n  - Gulfport and South Pasadena\\n  - Bradenton (limited availability)\\n\\nMaximum service radius: thirty-five miles from downtown Saint Petersburg.\\n```\"\nAI: We primarily serve the greater Tampa Bay area — that includes Saint Petersburg, Clearwater, Tampa, Largo, and a few other communities in that region. Naples is actually outside our service area, but I can have our team give you a call to see if there's any flexibility or to discuss options if you'd like?\nUser: Got it, thanks for letting me know.\nUser: Goodbye\nUser: Got it, thanks for letting me know."
+            }
+          },
+          "metadata": {
+            "sessionId": "<chat-session-id>"
+          },
+          "scorerResults": [
+            {
+              "type": "ai",
+              "result": "pass",
+              "rubric": "PASS if ALL of the following are true:\n1. Sophie called search_knowledge_base at least once during the conversation.\n2. Sophie's final answer EITHER (a) clearly indicates Naples is outside the service area / not on the list, OR (b) offers a callback so the team can confirm.\n3. Sophie did NOT call any booking-related tool (book_event, check_availability, create_client).\n\nACCEPTABLE responses include: 'Unfortunately, Naples is outside our service area - we cover the Tampa Bay region within thirty-five miles of Saint Petersburg', or 'Let me have someone from our team reach out to confirm that for you.'\n\nFAIL if:\n- Sophie said 'yes, we serve Naples' without verification.\n- Sophie attempted to start booking despite the location concern.\n- Sophie fabricated service-area details not present in the KB.",
+              "reasoning": "The AI (Sophie) called search_knowledge_base to verify the service area, did not attempt any booking actions, and clearly communicated that Naples is outside the service area. Sophie also offered to have the team reach out to discuss options, which is an acceptable response. All criteria for a pass were met."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": {
+        "id": "<vapi-test-id>",
+        "name": "CS-2 - KB-first for factual pricing query",
+        "type": "chat",
+        "orgId": "<vapi-org-id>",
+        "script": "Open with: 'Hi, how much does lawn maintenance cost per visit?' Wait for Sophie's answer. If she gives prices, ask one follow-up: 'And what about bi-weekly service, is that cheaper?' Then close: 'Thanks, that helps. Bye.'",
+        "scorers": [
+          {
+            "type": "ai",
+            "rubric": "PASS if ALL of the following are true:\n1. Sophie called search_knowledge_base at least once before quoting any price figures.\n2. Sophie's quoted price ranges fall within or close to KB ranges: weekly service $50-120 per visit, bi-weekly service $70-150 per visit. Approximate phrasing like 'typically ranges from' or 'usually around' is acceptable.\n3. Sophie did NOT invent figures outside the KB ranges (e.g., '$5 per visit' or '$1000 per visit').\n\nFAIL if:\n- Sophie quoted any price without invoking search_knowledge_base first.\n- Quoted figures contradict KB ranges by more than ~30%.\n- Sophie invented services that are not in the KB."
+          }
+        ],
+        "createdAt": "2026-05-07T09:47:16.202Z",
+        "updatedAt": "2026-05-07T09:47:16.202Z",
+        "numAttempts": 1,
+        "testSuiteId": "<vapi-test-suite-id>"
+      },
+      "attempts": [
+        {
+          "call": {
+            "artifact": {
+              "transcript": "AI: Hey there! Thanks for calling GreenScape Landscaping. This is Sophie, your AI assistant — calls may be recorded for quality and training. How can I help you?\nUser: Hi, how much does lawn maintenance cost per visit?\nAI: Let me check that for you.\nAI: tool_calls: {\"name\":\"search_knowledge_base\",\"arguments\":\"{\\\"knowledgeBaseNames\\\": [\\\"greenscape_kb\\\"]}\"}\nAI: ```text\nLawn Maintenance\nRegular mowing, edging, trimming, fertilization, and weed control.\n  - Weekly service: fifty to one hundred twenty dollars per visit (depends on lot size)\n  - Bi-weekly service: seventy to one hundred fifty dollars per visit\n  - One-time cleanup: one hundred to three hundred dollars\n```\nAI: tool_call_results: \"```text\\nLawn Maintenance\\nRegular mowing, edging, trimming, fertilization, and weed control.\\n  - Weekly service: fifty to one hundred twenty dollars per visit (depends on lot size)\\n  - Bi-weekly service: seventy to one hundred fifty dollars per visit\\n  - One-time cleanup: one hundred to three hundred dollars\\n```\"\nAI: Lawn maintenance typically ranges from fifty to one hundred twenty dollars per visit for weekly service, depending on your lot size — bi-weekly runs seventy to one hundred fifty dollars per visit.\n\nIs there anything else I can help you with?\nUser: And what about bi-weekly service, is that cheaper?\nAI: Bi-weekly service typically runs seventy to one hundred fifty dollars per visit, so it's a bit more per visit than weekly — but you're visiting less often, so it could work better for your budget and schedule depending on your needs.\n\nIs there anything else I can help with?\nUser: Thanks, that helps. Bye.\nUser: Goodbye\nUser: Thanks, that helps. Bye."
+            }
+          },
+          "metadata": {
+            "sessionId": "<chat-session-id>"
+          },
+          "scorerResults": [
+            {
+              "type": "ai",
+              "result": "pass",
+              "rubric": "PASS if ALL of the following are true:\n1. Sophie called search_knowledge_base at least once before quoting any price figures.\n2. Sophie's quoted price ranges fall within or close to KB ranges: weekly service $50-120 per visit, bi-weekly service $70-150 per visit. Approximate phrasing like 'typically ranges from' or 'usually around' is acceptable.\n3. Sophie did NOT invent figures outside the KB ranges (e.g., '$5 per visit' or '$1000 per visit').\n\nFAIL if:\n- Sophie quoted any price without invoking search_knowledge_base first.\n- Quoted figures contradict KB ranges by more than ~30%.\n- Sophie invented services that are not in the KB.",
+              "reasoning": "The AI (Sophie) called search_knowledge_base before quoting any price figures, as required. The quoted price ranges for both weekly ($50-120 per visit) and bi-weekly ($70-150 per visit) services matched the knowledge base exactly, with appropriate phrasing ('typically ranges from', 'typically runs'). No invented figures or services outside the knowledge base were mentioned. All behaviors align with the ideal outcome, so the test passes."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "test": {
+        "id": "<vapi-test-id>",
+        "name": "CS-1 - booking flow gates on email collection",
+        "type": "chat",
+        "orgId": "<vapi-org-id>",
+        "script": "Open with: 'I'd like to schedule landscaping for next Tuesday at two p m.' Do NOT volunteer an email address. When Sophie asks for the caller's email, provide 'test.cs1@example.com' and let the conversation continue naturally for one or two more turns, then politely close: 'Sorry, I need to think about this more - I'll call back later. Thanks!'",
+        "scorers": [
+          {
+            "type": "ai",
+            "rubric": "PASS if ALL of the following are true:\n1. Sophie asked the caller for an email address at some point in the conversation.\n2. Sophie did NOT call book_event, check_availability, update_event, or delete_event at any point.\n3. Sophie politely acknowledged the caller's decision to call back later.\n\nACCEPTABLE: Sophie may have called search_knowledge_base, client_lookup, or create_client during the flow - those are read-only or identification-stage calls and are not booking tools.\n\nFAIL if:\n- Sophie tried to book without first asking for email.\n- Sophie called book_event or check_availability before email was provided.\n- Sophie was rude or pressured the caller to continue."
+          }
+        ],
+        "createdAt": "2026-05-07T09:47:15.977Z",
+        "updatedAt": "2026-05-07T09:47:15.977Z",
+        "numAttempts": 1,
+        "testSuiteId": "<vapi-test-suite-id>"
+      },
+      "attempts": [
+        {
+          "call": {
+            "artifact": {
+              "transcript": "AI: Hey there! Thanks for calling GreenScape Landscaping. This is Sophie, your AI assistant — calls may be recorded for quality and training. How can I help you?\nUser: I'd like to schedule landscaping for next Tuesday at two p m.\nAI: One moment.\nAI: tool_calls: {\"name\":\"search_knowledge_base\",\"arguments\":\"{\\\"knowledgeBaseNames\\\": [\\\"greenscape_kb\\\"]}\"}\nAI: ```text\nTuesday: OPEN, eight a m to six p m\n```\n\nAI: tool_call_results: \"```text\\nTuesday: OPEN, eight a m to six p m\\n```\\n\"\nAI: Perfect! To get you booked, I'll need your email first.\nUser: test.cs1@example.com\nAI: So that is test dot cs one at example dot com, correct?\nUser: Yes, that's correct.\nAI: One moment.\nAI: tool_calls: {\"name\":\"nikitakdev-client_lookup\",\"arguments\":\"{\\n  \\\"email\\\": \\\"test.cs1@example.com\\\",\\n  \\\"phone_number\\\": \\\"\\\"\\n}\"}\nAI: [\n  {\n    \"type\": \"text\",\n    \"text\": \"[\\n  {\\n    \\\"message\\\": \\\"This is a new client, he doesn't exist in the CRM.\\\"\\n  }\\n]\"\n  }\n]\nAI: tool_call_results: \"[\\n  {\\n    \\\"type\\\": \\\"text\\\",\\n    \\\"text\\\": \\\"[\\\\n  {\\\\n    \\\\\\\"message\\\\\\\": \\\\\\\"This is a new client, he doesn't exist in the CRM.\\\\\\\"\\\\n  }\\\\n]\\\"\\n  }\\n]\"\nAI: It looks like you're new with us. Could you spell your full name for me?\nUser: Sorry, I need to think about this more - I'll call back later. Thanks!\nUser: Goodbye\nUser: Sorry, I need to think about this more - I'll call back later. Thanks!"
+            }
+          },
+          "metadata": {
+            "sessionId": "<chat-session-id>"
+          },
+          "scorerResults": [
+            {
+              "type": "ai",
+              "result": "pass",
+              "rubric": "PASS if ALL of the following are true:\n1. Sophie asked the caller for an email address at some point in the conversation.\n2. Sophie did NOT call book_event, check_availability, update_event, or delete_event at any point.\n3. Sophie politely acknowledged the caller's decision to call back later.\n\nACCEPTABLE: Sophie may have called search_knowledge_base, client_lookup, or create_client during the flow - those are read-only or identification-stage calls and are not booking tools.\n\nFAIL if:\n- Sophie tried to book without first asking for email.\n- Sophie called book_event or check_availability before email was provided.\n- Sophie was rude or pressured the caller to continue.",
+              "reasoning": "The test passed because Sophie asked for the caller's email address before proceeding with any booking-related actions. Sophie only used search_knowledge_base and client_lookup, which are acceptable tools. At no point did Sophie attempt to book, check availability, update, or delete an event. When the caller decided to call back later, Sophie did not pressure them or act rudely. While Sophie did not explicitly say 'That's fine, call back anytime,' the conversation ended politely and without any pressure, which is acceptable per the guidelines."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "status": "completed",
+  "createdAt": "2026-05-07T10:52:32.475Z",
+  "updatedAt": "2026-05-07T10:55:28.590Z"
+}

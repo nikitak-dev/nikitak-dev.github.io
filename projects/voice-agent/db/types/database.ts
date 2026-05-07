@@ -213,8 +213,70 @@ export type Database = {
           },
         ]
       }
+      consent_log: {
+        Row: {
+          call_id: string | null
+          consent_action: string
+          consent_type: string
+          customer_id: string | null
+          disclosure_channel: string
+          disclosure_text: string
+          expires_at: string | null
+          id: string
+          metadata: Json | null
+          phone_number: string
+          recorded_at: string
+          vapi_call_id: string | null
+        }
+        Insert: {
+          call_id?: string | null
+          consent_action: string
+          consent_type: string
+          customer_id?: string | null
+          disclosure_channel: string
+          disclosure_text: string
+          expires_at?: string | null
+          id?: string
+          metadata?: Json | null
+          phone_number: string
+          recorded_at?: string
+          vapi_call_id?: string | null
+        }
+        Update: {
+          call_id?: string | null
+          consent_action?: string
+          consent_type?: string
+          customer_id?: string | null
+          disclosure_channel?: string
+          disclosure_text?: string
+          expires_at?: string | null
+          id?: string
+          metadata?: Json | null
+          phone_number?: string
+          recorded_at?: string
+          vapi_call_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consent_log_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consent_log_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
+          anonymized_at: string | null
+          anonymized_reason: string | null
           consent_marketing: boolean | null
           consent_recording: boolean | null
           created_at: string
@@ -228,6 +290,8 @@ export type Database = {
           vapi_customer_number: string | null
         }
         Insert: {
+          anonymized_at?: string | null
+          anonymized_reason?: string | null
           consent_marketing?: boolean | null
           consent_recording?: boolean | null
           created_at?: string
@@ -241,6 +305,8 @@ export type Database = {
           vapi_customer_number?: string | null
         }
         Update: {
+          anonymized_at?: string | null
+          anonymized_reason?: string | null
           consent_marketing?: boolean | null
           consent_recording?: boolean | null
           created_at?: string
@@ -260,7 +326,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      anonymize_customer: {
+        Args: { p_customer_id: string; p_reason?: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

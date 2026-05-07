@@ -27,6 +27,9 @@ docs/superpowers/
 # README.md, plans/*.md and eval/ (small Python harness) are tracked.
 projects/**/test_data/
 
+# Obsidian local workspace (per-machine notes UI state, not part of the project)
+.obsidian/
+
 # Python build artifacts (eval runners or any future Python may produce these)
 __pycache__/
 *.pyc
