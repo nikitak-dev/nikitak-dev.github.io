@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import DocsModal from '../components/DocsModal.astro';
+import VoiceAgentDocs from '../components/docs/VoiceAgentDocs.astro';
 import '../styles/voice-agent.css';
 ---
 <BaseLayout
@@ -64,7 +65,9 @@ import '../styles/voice-agent.css';
       </aside>
     </div>
   </main>
-  <DocsModal id="docs-modal" title="PROJECT :: VOICE_AGENT" />
+  <DocsModal id="docs-modal" title="PROJECT :: VOICE_AGENT">
+    <VoiceAgentDocs slot="overview" />
+  </DocsModal>
 </BaseLayout>
 
 <script>

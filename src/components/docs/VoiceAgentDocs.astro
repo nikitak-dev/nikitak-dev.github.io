@@ -1,0 +1,80 @@
+---
+import '../../styles/docs.css';
+---
+<div class="project-docs">
+
+  <p class="docs-note">// RU version: <a class="docs-link" href="https://github.com/nikitak-dev/nikitak-dev.github.io/blob/main/src/components/docs/voice-agent.ru.md" target="_blank" rel="noopener noreferrer">voice-agent.ru.md</a></p>
+
+  <div class="docs-divider docs-divider--first" role="separator" aria-label="User guide begins">
+    <span class="docs-divider-label">// USER GUIDE</span>
+  </div>
+
+  <section class="docs-block">
+    <h3 class="docs-heading">// TL;DR</h3>
+    <p>An AI voice receptionist (Sophie) on Vapi for a home-service business: caller identification, knowledge-base lookup, appointment booking, reschedule and cancel, error escalation. Test case is GreenScape Landscaping (Saint Petersburg, FL) -- a fictional landscaping company.</p>
+    <p class="docs-note"><strong>Visitor access is read-only.</strong> The Vapi assistant has a US phone number bound but is kept unlisted -- the project ships as a portfolio artifact, not a live demo. Hear the agent on this page through the recorded-call player.</p>
+  </section>
+
+  <section class="docs-block">
+    <h3 class="docs-heading">// HOW IT WORKS</h3>
+    <p>An incoming call lands on the Vapi assistant. Sophie greets the caller -- the opening line lives in Vapi's <code>firstMessage</code> field and is proxied directly to TTS at call connect (no LLM round-trip), carrying the AI disclosure and the recording notice. While the greeting plays, an immediate phone lookup runs in parallel against the CRM so the result is ready by the time the caller finishes responding.</p>
+    <p>Sophie uses two tools. <code>n8n_orchestrator</code> is a single MCP tool that fans out into seven concrete operations -- client lookup, client creation, availability check, booking, appointment lookup, reschedule, cancel -- over the MCP protocol. The LLM picks the right operation by argument shape; the n8n side runs it against Supabase Postgres and Google Calendar. <code>search_knowledge_base</code> is a separate Vapi-native tool backed by Vapi Files (services, pricing, hours, FAQs, escalation policy).</p>
+    <p>After the call ends, Vapi posts an end-of-call report to a separate n8n webhook. That webhook persists the call (transcript, costs, structured outcome) into Postgres, writes a TCPA / wiretap audit row into <code>consent_log</code>, and fires a fire-and-forget archival of the recording into Supabase Storage.</p>
+    <p class="docs-note">Failure modes are covered in <a class="docs-ref" href="#errors">Errors</a>; specific design decisions are listed in <a class="docs-ref" href="#key-patterns">Key Patterns</a> with cross-links to the full ADRs.</p>
+  </section>
+
+  <section class="docs-block" id="whats-in-scope">
+    <h3 class="docs-heading">// WHAT'S IN SCOPE</h3>
+    <p>Sophie's knowledge of the business is a fixed knowledge-base file (<code>greenscape-company-info.txt</code>) loaded into Vapi Files. Anything outside the KB is either declined or routed via callback offer.</p>
+    <table class="docs-table">
+      <thead><tr><th>Capability</th><th>Coverage</th></tr></thead>
+      <tbody>
+        <tr><td>KB lookups</td><td>Services, pricing ranges, business hours, service area cities, FAQs, escalation policy. Outside the KB &rarr; Sophie offers a callback rather than guessing.</td></tr>
+        <tr><td>Booking</td><td>New appointments, reschedule, cancel. Two-hour blocks within business hours, Eastern Time. Service-area address verification is collected but not actively checked &mdash; confirmed post-booking by the operations team (see <a class="docs-ref" href="#improvements">Possible Improvements</a>).</td></tr>
+        <tr><td>Caller identification</td><td>Auto-lookup by phone at call start (parallel with greeting). For action requests (booking / reschedule / cancel), Sophie collects email, looks up the CRM, and applies a secondary verification gate (last four digits of the phone on file) when phone-side matching wasn't possible.</td></tr>
+        <tr><td>Out of scope</td><td>Live transfers (callback offer instead). Tree / storm emergency (routed to a separate phone with explicit instructions, no CRM action). Pure information requests outside the KB &rarr; callback offer.</td></tr>
+      </tbody>
+    </table>
+    <p class="docs-note"><strong>Compliance.</strong> The opening line discloses the AI nature and that calls may be recorded for quality and training (FCC AI-voice ruling Feb 2024 + CIPA / two-party-consent state coverage). Each completed call writes a <code>consent_log</code> row capturing the disclosure text actually spoken, fetched live from Vapi <code>assistant.firstMessage</code> at end-of-call so the audit row reflects what the caller heard, independent of any later prompt edits.</p>
+  </section>
+
+  <div class="docs-divider" role="separator" aria-label="Technical reference begins">
+    <span class="docs-divider-label">// TECHNICAL REFERENCE</span>
+  </div>
+
+  <section class="docs-block">
+    <h3 class="docs-heading">// STACK</h3>
+    <table class="docs-table">
+      <thead><tr><th>Layer</th><th>Technology</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td>Voice platform</td><td>Vapi</td><td>Hosts the assistant, system prompt, tool routing, end-of-call analysis pipeline, knowledge-base files</td></tr>
+        <tr><td>LLM</td><td><code>anthropic/claude-haiku-4-5-20251001</code></td><td>Reasoning, tool calling, response generation. Haiku trades reasoning headroom for sub-second TTFT (time-to-first-token) -- the receptionist flow doesn't need Sonnet-level reasoning, voice latency wins</td></tr>
+        <tr><td>TTS</td><td>ElevenLabs <code>eleven_flash_v2_5</code></td><td>Speech synthesis. Direct ElevenLabs integration (not via Vapi voice provider), Flash chosen for low latency</td></tr>
+        <tr><td>STT</td><td>Deepgram <code>flux-general-en</code></td><td>Speech-to-text. Flux has built-in end-of-turn detection, which supersedes Vapi's <code>transcriptionEndpointingPlan</code> -- <code>smartEndpointingPlan</code> is set to <code>Off</code> to avoid double-handling</td></tr>
+        <tr><td>Backend</td><td>n8n (self-hosted)</td><td>13 workflows total -- MCP orchestrator + 7 Vapi-facing tool sub-workflows + 2 internal helpers (<code>shared_phone_normalize</code>, <code>archive_recording</code>) + end-of-call webhook + 2 error handlers</td></tr>
+        <tr><td>CRM</td><td>Supabase (Postgres + Storage)</td><td>Four tables (<code>customers</code>, <code>calls</code>, <code>appointments</code>, <code>consent_log</code>) + private <code>recordings</code> bucket for archived audio</td></tr>
+        <tr><td>Schedule</td><td>Google Calendar</td><td>Slot availability checks, event create / update / delete</td></tr>
+        <tr><td>Alerts</td><td>Discord</td><td>Tool failures and external trigger failures via webhook (separate channels for tools vs external)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>
+
+<script is:inline>
+  /* Smooth-scroll for in-document references inside the voice-agent docs modal.
+     Same pattern as MultimodalRagDocs — kept duplicated rather than extracted
+     because each component owns its own scoped behaviour. */
+  document.addEventListener('click', (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const link = target.closest('.project-docs .docs-ref');
+    if (!link) return;
+    const href = link.getAttribute('href') || '';
+    if (!href.startsWith('#')) return;
+    const dest = document.getElementById(href.slice(1));
+    if (!dest) return;
+    event.preventDefault();
+    dest.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+</script>
