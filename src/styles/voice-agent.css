@@ -1,0 +1,292 @@
+/* Voice-agent project page: 3-pane sync player (phone / transcript / events).
+   Empty state ships in v1 until the first call recording lands. */
+
+#voice-agent-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  padding: 24px 32px;
+  gap: 16px;
+}
+
+.header-left h1 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* === SCENARIO TABS === */
+#va-tablist {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+#va-tablist:empty,
+#va-tablist[hidden] { display: none; }
+
+.va-tab[aria-selected="true"] {
+  --btn-bg: var(--user-border);
+  --btn-border: var(--green);
+  --btn-color: var(--text-bright);
+  --btn-box-shadow: 0 0 20px var(--green-glow-mid), inset 0 0 10px var(--green-glow-soft);
+  --btn-text-shadow: 0 0 8px var(--green-glow-mid);
+}
+
+/* === EMPTY STATE === */
+.va-empty-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.va-empty-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  user-select: none;
+}
+
+.va-empty-icon {
+  font-family: var(--font);
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--green);
+  text-shadow: 0 0 20px var(--green-glow-mid);
+}
+
+.va-empty-main h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--green-dim);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.va-empty-main p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* === PLAYER LAYOUT === */
+.va-player {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 240px 1fr 300px;
+  gap: 16px;
+  min-height: 0;
+}
+
+.va-player[hidden] { display: none; }
+
+.va-phone,
+.va-transcript-pane,
+.va-events-pane {
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* === PHONE === */
+.va-phone-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.va-phone-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
+.va-caller-id {
+  font-size: 14px;
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green-glow-mid);
+}
+
+.va-phone-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.va-play { flex-shrink: 0; }
+
+#va-scrubber {
+  flex: 1;
+  appearance: none;
+  height: 2px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+}
+
+#va-scrubber::-webkit-slider-thumb {
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  background: var(--green);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--green-glow-mid);
+  cursor: pointer;
+}
+
+#va-scrubber::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  background: var(--green);
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--green-glow-mid);
+  cursor: pointer;
+}
+
+.va-time {
+  font-size: 11px;
+  color: var(--text-muted);
+  min-width: 80px;
+  text-align: right;
+}
+
+.va-phone-status {
+  margin-top: auto;
+  font-size: 11px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+
+.va-status[data-status="idle"]        { color: var(--text-muted); }
+.va-status[data-status="talking"]     { color: var(--green); animation: vaPulse 1.4s ease-in-out infinite; }
+.va-status[data-status="ended"]       { color: var(--green-dim); }
+.va-status[data-status="unavailable"] { color: var(--error); }
+
+@keyframes vaPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+
+/* === TRANSCRIPT === */
+.va-transcript-pane .section-label { margin-bottom: 12px; }
+
+.va-transcript {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--green-muted) transparent;
+}
+
+.va-turn {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 12px;
+  border-left: 2px solid transparent;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+
+.va-turn[data-active="true"] {
+  background: var(--green-ghost);
+  border-left-color: var(--green);
+}
+
+.va-turn-label {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.va-turn--sophie .va-turn-label { color: var(--green); }
+.va-turn--caller .va-turn-label { color: var(--text-muted); }
+
+.va-turn-text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--green-mid);
+}
+
+.va-turn[data-active="true"] .va-turn-text { color: var(--text-bright); }
+
+/* === EVENTS === */
+.va-events-pane .section-label { margin-bottom: 12px; }
+
+.va-events {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0 4px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  scrollbar-width: thin;
+  scrollbar-color: var(--green-muted) transparent;
+}
+
+.va-event {
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity var(--anim-message), transform var(--anim-message), color var(--transition);
+  line-height: 1.5;
+}
+
+.va-event[data-revealed="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.va-event[data-active="true"] {
+  color: var(--green);
+  text-shadow: 0 0 6px var(--green-glow-soft);
+}
+
+.va-events[data-view="plain"]     .va-event-technical { display: none; }
+.va-events[data-view="technical"] .va-event-plain     { display: none; }
+
+.va-events-toggle {
+  margin-top: 12px;
+  font-size: 10px;
+  align-self: flex-start;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 900px) {
+  .va-player {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+  }
+
+  #voice-agent-page {
+    padding: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .va-status[data-status="talking"] { animation: none; }
+
+  .va-event {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+}

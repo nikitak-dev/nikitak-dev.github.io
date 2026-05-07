@@ -1,0 +1,72 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import DocsModal from '../components/DocsModal.astro';
+import '../styles/voice-agent.css';
+---
+<BaseLayout
+  title="VOICE_AGENT // AI Voice Receptionist"
+  logoText="VOICE_AGENT"
+  subtitle="// inbound call handling for home-service businesses"
+  hideSocial={true}
+  emptyFooter={true}
+  backHref="/"
+  scanlineMode="per-section"
+  description="AI voice agent (Sophie) on Vapi for inbound call handling: caller identification, knowledge-base lookup, appointment booking. n8n + Supabase backend."
+  ogTitle="VOICE_AGENT // AI Voice Receptionist"
+  ogDescription="AI voice agent on Vapi: handles inbound calls, qualifies leads, books appointments. Built on Vapi · n8n · Supabase · Google Calendar."
+>
+  <button
+    type="button"
+    id="docs-trigger"
+    class="btn-terminal"
+    slot="header-action"
+    aria-haspopup="dialog"
+    aria-controls="docs-modal"
+    aria-expanded="false"
+  >DOCS &amp; VIDEO</button>
+  <main id="voice-agent-page">
+    <div id="va-tablist" role="tablist" aria-label="Demo call scenarios" hidden></div>
+
+    <div id="va-empty" class="va-empty-state scanlines-section" data-cascade-item>
+      <div class="va-empty-main">
+        <div class="va-empty-icon">[ REC ]</div>
+        <h2><span>Demo recording in progress</span><span class="await-cursor" aria-hidden="true"></span></h2>
+        <p>Real call to a bound US number — coming soon.</p>
+      </div>
+    </div>
+
+    <div id="va-player" class="va-player" hidden>
+      <aside id="va-phone" class="va-phone scanlines-section" aria-label="Demo call controls">
+        <div class="va-phone-row">
+          <span class="va-phone-label">[ CALLER ]</span>
+          <span id="va-caller-id" class="va-caller-id"></span>
+        </div>
+        <div class="va-phone-controls">
+          <button id="va-play" type="button" class="btn-terminal va-play" aria-label="Play demo call">[ ▶ ]</button>
+          <input id="va-scrubber" type="range" min="0" max="1000" value="0" step="1" aria-label="Seek demo call" />
+          <span id="va-time" class="va-time">0:00 / 0:00</span>
+        </div>
+        <div class="va-phone-status">
+          <span id="va-status" class="va-status" data-status="idle">● RING</span>
+        </div>
+        <audio id="va-audio" preload="metadata"></audio>
+      </aside>
+
+      <section id="va-transcript-pane" class="va-transcript-pane scanlines-section" aria-label="Call transcript">
+        <div class="section-label">// TRANSCRIPT</div>
+        <div id="va-transcript" class="va-transcript" role="log" aria-live="polite" aria-atomic="false"></div>
+      </section>
+
+      <aside id="va-events-pane" class="va-events-pane scanlines-section" aria-label="Behind the scenes">
+        <div class="section-label">// EVENTS</div>
+        <ol id="va-events" class="va-events" data-view="plain" aria-live="polite"></ol>
+        <button id="va-events-toggle" type="button" class="btn-terminal va-events-toggle" aria-label="Toggle event view">[ show technical ]</button>
+      </aside>
+    </div>
+  </main>
+  <DocsModal id="docs-modal" title="PROJECT :: VOICE_AGENT" />
+</BaseLayout>
+
+<script>
+  import '../scripts/voice-agent';
+</script>
