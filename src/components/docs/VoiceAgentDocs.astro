@@ -51,12 +51,111 @@ import '../../styles/docs.css';
         <tr><td>LLM</td><td><code>anthropic/claude-haiku-4-5-20251001</code></td><td>Reasoning, tool calling, response generation. Haiku trades reasoning headroom for sub-second TTFT (time-to-first-token) -- the receptionist flow doesn't need Sonnet-level reasoning, voice latency wins</td></tr>
         <tr><td>TTS</td><td>ElevenLabs <code>eleven_flash_v2_5</code></td><td>Speech synthesis. Direct ElevenLabs integration (not via Vapi voice provider), Flash chosen for low latency</td></tr>
         <tr><td>STT</td><td>Deepgram <code>flux-general-en</code></td><td>Speech-to-text. Flux has built-in end-of-turn detection, which supersedes Vapi's <code>transcriptionEndpointingPlan</code> -- <code>smartEndpointingPlan</code> is set to <code>Off</code> to avoid double-handling</td></tr>
-        <tr><td>Backend</td><td>n8n (self-hosted)</td><td>13 workflows total -- MCP orchestrator + 7 Vapi-facing tool sub-workflows + 2 internal helpers (<code>shared_phone_normalize</code>, <code>archive_recording</code>) + end-of-call webhook + 2 error handlers</td></tr>
+        <tr><td>Backend</td><td>n8n (self-hosted)</td><td>12 workflows total -- MCP orchestrator + 7 Vapi-facing tool sub-workflows + 2 internal helpers (<code>shared_phone_normalize</code>, <code>archive_recording</code>) + end-of-call webhook + 1 error handler</td></tr>
         <tr><td>CRM</td><td>Supabase (Postgres + Storage)</td><td>Four tables (<code>customers</code>, <code>calls</code>, <code>appointments</code>, <code>consent_log</code>) + private <code>recordings</code> bucket for archived audio</td></tr>
         <tr><td>Schedule</td><td>Google Calendar</td><td>Slot availability checks, event create / update / delete</td></tr>
-        <tr><td>Alerts</td><td>Discord</td><td>Tool failures and external trigger failures via webhook (separate channels for tools vs external)</td></tr>
+        <tr><td>Alerts</td><td>Discord</td><td>Tool failures and external trigger failures funnel into a single error_handler workflow that posts to a Discord webhook</td></tr>
       </tbody>
     </table>
+  </section>
+
+  <section class="docs-block" id="architecture">
+    <h3 class="docs-heading">// ARCHITECTURE</h3>
+    <p>Twelve n8n workflows cooperate. <code>orchestrator</code> is the single Vapi-side entry — an MCP server that advertises seven concrete tool operations. <code>end_of_call</code> is a separate webhook that fires when Vapi finishes a call; it persists the call record, audits consent, and kicks off recording archival. <code>archive_recording</code> runs fire-and-forget from <code>end_of_call</code> to upload the <code>.mp3</code> into Supabase Storage. <code>error_handler</code> catches unhandled failures across all of them and posts a Discord alert. Two internal helpers (<code>shared_phone_normalize</code>, <code>archive_recording</code>) are not exposed to Vapi — they are invoked via <code>executeWorkflow</code> from peers. Five most representative workflows are shown below; the other tool sub-workflows (<code>create_client</code>, <code>check_availability</code>, <code>event_lookup</code>, <code>update_event</code>, <code>delete_event</code>) follow the same patterns as <code>client_lookup</code> and <code>book_event</code>.</p>
+
+    <p class="docs-note"><strong>// ORCHESTRATOR</strong> -- the single Vapi-side tool. MCP server fans out to seven concrete operations.</p>
+    <figure class="docs-figure">
+      <img
+        class="docs-image"
+        src="/docs/voice-agent/orchestrator.png"
+        alt="Orchestrator workflow: an MCP server trigger advertises seven tool sub-workflows, grouped into Scanning tools (client_lookup, check_availability, event_lookup) and Action tools (create_client, book_event, update_event, delete_event)."
+        loading="lazy"
+        decoding="async"
+      />
+    </figure>
+    <ul class="docs-list">
+      <li><code>MCP_server_trigger</code> -- entry point for Vapi's <code>n8n_orchestrator</code> tool. Advertises the seven sub-workflows over the MCP protocol; Sophie's LLM picks one by argument shape</li>
+      <li><strong>Scanning tools</strong> (read-only): <code>client_lookup</code>, <code>check_availability</code>, <code>event_lookup</code></li>
+      <li><strong>Action tools</strong> (mutating): <code>create_client</code>, <code>book_event</code>, <code>update_event</code>, <code>delete_event</code></li>
+    </ul>
+
+    <p class="docs-note"><strong>// CLIENT_LOOKUP</strong> -- a representative scanning tool. Look up a customer by email or phone, return CRM record + customer_id (UUID).</p>
+    <figure class="docs-figure">
+      <img
+        class="docs-image"
+        src="/docs/voice-agent/client_lookup.png"
+        alt="Client_lookup workflow: a switch routes by which input is non-empty (email or phone_number); each branch runs a Postgres executeQuery against customers, then an IF node decides whether the record exists. The email branch returns either client_found or new_client_message; the phone branch normalizes the number first then returns either client_found or no_number_message."
+        loading="lazy"
+        decoding="async"
+      />
+    </figure>
+    <ul class="docs-list">
+      <li><code>triggered_by</code> -- invoked by orchestrator via the MCP <code>toolWorkflow</code> node</li>
+      <li><code>switch</code> -- Rules mode, routes by which input is non-empty: <code>email</code>, <code>phone_number</code>, or fallthrough <code>error</code></li>
+      <li>Email branch: <code>search_by_email</code> (Postgres <code>executeQuery</code>) → <code>email_exists?</code> (IF) → <code>client_found</code> or <code>new_client_message</code></li>
+      <li>Phone branch: <code>normalize_phone</code> (<code>executeWorkflow</code> → <code>shared_phone_normalize</code> for E.164) → <code>search_by_phone</code> → <code>phone_exists?</code> → <code>client_found</code> or <code>no_number_message</code></li>
+      <li><code>validation_error</code> -- fallback when neither input is provided; instructs Sophie to ask for either email or phone</li>
+    </ul>
+
+    <p class="docs-note"><strong>// BOOK_EVENT</strong> -- a representative action tool. Idempotent: a duplicate booking request returns the existing appointment_id, no new event is created.</p>
+    <figure class="docs-figure">
+      <img
+        class="docs-image"
+        src="/docs/voice-agent/book_event.png"
+        alt="Book_event workflow: validate_input gates required fields, then check_existing queries Google Calendar for a matching slot in the start_time-to-start_time-plus-five-minutes window. check_duplicate analyzes the result, is_duplicate? branches on whether a duplicate was found — true returns the existing appointment via return_existing, false flows through create_event (Google Calendar create), find_customer (Postgres lookup of customer_id by email), and upsert_record (Postgres upsert appointments ON CONFLICT gcal_event_id with status scheduled)."
+        loading="lazy"
+        decoding="async"
+      />
+    </figure>
+    <ul class="docs-list">
+      <li><code>validate_input</code> -- IF gate on required fields (<code>start_time</code>, <code>end_time</code>, <code>email</code>, <code>client_name</code>, <code>service_type</code>, <code>address</code>)</li>
+      <li><code>check_existing</code> -- GCal <code>getAll</code> within <code>start_time</code> to <code>start_time + 5 min</code> with caller's email in attendees</li>
+      <li><code>check_duplicate</code> + <code>is_duplicate?</code> -- match analysis + IF branching</li>
+      <li>Duplicate match: <code>return_existing</code> returns the existing <code>appointment_id</code>, no new event created (idempotency)</li>
+      <li>No match: <code>create_event</code> (GCal create) → <code>find_customer</code> (Postgres lookup of <code>customer_id</code> by email) → <code>upsert_record</code> (Postgres upsert <code>appointments</code> ON CONFLICT <code>gcal_event_id</code>, status <code>scheduled</code>)</li>
+      <li><code>error_message</code> / <code>validation_error</code> -- common error sinks; return error instruction for Sophie</li>
+    </ul>
+
+    <p class="docs-note"><strong>// END_OF_CALL</strong> -- runs after each Vapi call ends. Persists the call, audits consent, kicks off recording archival.</p>
+    <figure class="docs-figure">
+      <img
+        class="docs-image"
+        src="/docs/voice-agent/end_of_call.png"
+        alt="End_of_call workflow: a webhook receives Vapi's end-of-call POST, find_customer looks up the caller in Postgres, extract_call_data parses the payload, create_record upserts into calls (on conflict by vapi_call_id), verify_persisted asserts the row carries id and vapi_call_id, fetch_assistant_first_message HTTP-GETs the live disclosure text from Vapi, record_consent upserts a consent_log audit row, respond_ok returns 200 to Vapi, and trigger_archive_recording fire-and-forget launches the archive_recording sub-workflow."
+        loading="lazy"
+        decoding="async"
+      />
+    </figure>
+    <ul class="docs-list">
+      <li><code>end_of_call</code> -- Vapi webhook (<code>POST</code>) authenticated via Header Auth Bearer; rejected at HTTP layer if missing or wrong</li>
+      <li><code>find_customer</code> -- Postgres <code>executeQuery</code> on <code>customers</code> by <code>customer.number</code> (E.164)</li>
+      <li><code>extract_call_data</code> -- Code node parses transcript, tool-call aggregates, costs, structured <code>analysisPlan</code> outputs (matched by configured UUIDs)</li>
+      <li><code>create_record</code> -- Postgres <code>upsert</code> on <code>calls</code>, ON CONFLICT <code>(vapi_call_id)</code> -- idempotent on retries</li>
+      <li><code>verify_persisted</code> -- Code node asserting the upserted row has both <code>id</code> and <code>vapi_call_id</code>; throws otherwise so Vapi retries</li>
+      <li><code>fetch_assistant_first_message</code> -- HTTP GET <code>/assistant/&#123;id&#125;</code> at Vapi (Bearer auth) so <code>consent_log.disclosure_text</code> reflects exactly what was spoken</li>
+      <li><code>record_consent</code> -- Postgres <code>upsert</code> on <code>consent_log</code>, ON CONFLICT <code>(vapi_call_id, consent_type)</code> -- TCPA / wiretap audit row</li>
+      <li><code>respond_ok</code> -- 200 to Vapi</li>
+      <li><code>trigger_archive_recording</code> -- fire-and-forget <code>executeWorkflow</code> into <code>archive_recording</code></li>
+    </ul>
+
+    <p class="docs-note"><strong>// ARCHIVE_RECORDING</strong> -- internal helper, runs fire-and-forget from <code>end_of_call</code>.</p>
+    <figure class="docs-figure">
+      <img
+        class="docs-image"
+        src="/docs/voice-agent/archive_recording.png"
+        alt="Archive_recording workflow: triggered_by is the executeWorkflow entry from end_of_call, has_recording_url? IF gates on whether Vapi provided a URL, check_already_archived queries Postgres for an existing recording_archived_at, already_archived? IF branches on the result. The archival path runs http_get_audio (download mp3 from Vapi), http_put_storage (upload to Supabase Storage with x-upsert true), and update_calls (Postgres executeQuery to update recording metadata)."
+        loading="lazy"
+        decoding="async"
+      />
+    </figure>
+    <ul class="docs-list">
+      <li><code>has_recording_url?</code> -- guard: skip if Vapi returned no <code>recording_url</code></li>
+      <li><code>check_already_archived</code> -- Postgres <code>executeQuery</code> for an existing <code>recording_archived_at</code></li>
+      <li><code>already_archived?</code> -- guard: skip if already done (idempotent on retries)</li>
+      <li><code>http_get_audio</code> -- HTTP GET the <code>.mp3</code> from Vapi <code>recording_url</code></li>
+      <li><code>http_put_storage</code> -- HTTP PUT to Supabase Storage bucket <code>recordings</code> with header <code>x-upsert: true</code> (idempotent)</li>
+      <li><code>update_calls</code> -- Postgres <code>executeQuery</code> to write back <code>recording_storage_path</code> / <code>recording_size_bytes</code> / <code>recording_archived_at</code></li>
+    </ul>
   </section>
 
 </div>
