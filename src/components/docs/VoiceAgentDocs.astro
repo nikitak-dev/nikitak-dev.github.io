@@ -182,6 +182,84 @@ import '../../styles/docs.css';
     <p class="docs-note">Numeric parameters (model versions, retry counts, recording cap, retention windows) -- see <a class="docs-ref" href="#limits-timeouts">Limits &amp; Timeouts</a>.</p>
   </section>
 
+  <section class="docs-block" id="limits-timeouts">
+    <h3 class="docs-heading">// LIMITS &amp; TIMEOUTS</h3>
+    <table class="docs-table">
+      <tbody>
+        <tr><td>LLM</td><td>Claude Haiku 4.5 (<code>claude-haiku-4-5-20251001</code>) -- sub-second TTFT for voice; <code>maxTokens: 250</code> per response to keep voice turns short</td></tr>
+        <tr><td>TTS</td><td>ElevenLabs Flash v2.5, voice id <code>g6xIsTj2HwM6VR4iXFCw</code> -- chosen for low latency over richer voice models</td></tr>
+        <tr><td>STT</td><td>Deepgram Flux General English -- built-in end-of-turn detection supersedes Vapi's <code>transcriptionEndpointingPlan</code> (Vapi's <code>smartEndpointingPlan</code> is set to <code>Off</code> to avoid double-handling)</td></tr>
+        <tr><td>Booking blocks</td><td>Two-hour windows within business hours, Eastern Time (<code>America/New_York</code>); <code>start_time</code> must be at least one hour in the future; past times never booked</td></tr>
+        <tr><td>Service area</td><td>35-mile radius around Saint Petersburg, FL -- collected at booking, confirmed post-booking by the operations team (see <a class="docs-ref" href="#improvements">Possible Improvements</a>)</td></tr>
+        <tr><td>Project minimum</td><td>$500 residential; commercial (&gt;$25k) is callback-only</td></tr>
+        <tr><td>n8n HTTP retries</td><td><code>retryOnFail: true</code> with <code>waitBetweenTries: 3000 ms</code> on every external-API node (Postgres, Google Calendar, Vapi API). Postgres writes use <code>onError: continueErrorOutput</code> to route failures into the error-instruction path; reads use <code>alwaysOutputData: true</code> so an empty result still passes to the next IF rather than failing the branch</td></tr>
+        <tr><td>Discord error truncation</td><td>500 characters max per error message; longer messages get a <code>... [truncated]</code> suffix to keep Discord webhook payloads compact</td></tr>
+        <tr><td>Recording cap</td><td>50 MB per file in the Supabase Storage <code>recordings</code> bucket; ~3-6 MB per typical call → about 200 calls before the free-tier 1 GB total storage limit needs cleanup</td></tr>
+        <tr><td>Recording archival</td><td>Fire-and-forget from <code>end_of_call</code>; <code>x-upsert: true</code> header on the Supabase PUT so a retried upload overwrites rather than fails; idempotent guard via <code>recording_archived_at</code> column</td></tr>
+        <tr><td><code>consent_log</code> retention</td><td>At least four years from <code>recorded_at</code> per TCPA + FCC implementing rules (47 USC §227); intentionally retained through GDPR Art.17 erasure (carved out by Art.17(3)(b))</td></tr>
+        <tr><td>Eval suite cost</td><td>~$0.10-0.20 per full run (5 chat-mode cases &times; ~10-15 turns &times; Haiku 4.5 + Vapi tester AI + LLM judge); manual cadence (one run per major prompt edit), not per-commit CI</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="docs-block" id="errors">
+    <h3 class="docs-heading">// ERRORS</h3>
+    <p><strong>Server-side.</strong> Every workflow in the project is wired to the centralised <code>error_handler</code> via the <code>errorWorkflow</code> setting. On any unhandled error the handler fires a Discord message: workflow name, the node that threw, NY-time timestamp, the first 500 characters of the error message, and a link to the specific execution. Postgres write nodes additionally set <code>onError: continueErrorOutput</code> so a transient API failure routes into the <code>error_message</code> node and returns the standard error-instruction shape to Sophie, rather than throwing and ending the call abruptly.</p>
+    <p class="docs-note"><strong>Per-tool error instructions.</strong> Sophie speaks these phrases verbatim when a sub-workflow returns <code>&#123;error: true, instruction: "..."&#125;</code>.</p>
+    <table class="docs-table">
+      <thead><tr><th>Failure</th><th>Instruction Sophie says</th></tr></thead>
+      <tbody>
+        <tr><td><code>client_lookup</code> -- neither email nor phone</td><td>"Ask the customer to provide either their email address or phone number so you can look them up."</td></tr>
+        <tr><td><code>create_client</code> -- validation</td><td>"Ask the customer to spell their full name and provide a valid email address."</td></tr>
+        <tr><td><code>create_client</code> -- runtime</td><td>"Apologize for the difficulty creating the account. Offer to have someone call the customer back."</td></tr>
+        <tr><td><code>book_event</code> -- validation</td><td>"Ask the customer to provide their name, email address, and preferred appointment time."</td></tr>
+        <tr><td><code>book_event</code> -- runtime</td><td>"Apologize for the difficulty booking the appointment. Offer to have someone call the customer back."</td></tr>
+        <tr><td><code>check_availability</code> -- runtime</td><td>"Apologize for the difficulty checking the schedule. Offer to have someone call the customer back."</td></tr>
+        <tr><td><code>event_lookup</code> -- runtime</td><td>"Apologize for the difficulty looking up appointments. Offer to have someone call the customer back."</td></tr>
+        <tr><td><code>update_event</code> -- ownership mismatch</td><td>"I couldn't find that appointment under your account. Could you confirm the date and time again?"</td></tr>
+        <tr><td><code>update_event</code> -- runtime</td><td>"Apologize for the difficulty updating the appointment. Offer to have someone call the customer back."</td></tr>
+        <tr><td><code>delete_event</code> -- ownership mismatch</td><td>"I couldn't find that appointment under your account. Could you confirm the date and time again?"</td></tr>
+        <tr><td><code>delete_event</code> -- runtime</td><td>"Apologize for the difficulty canceling the appointment. Offer to have someone call the customer back."</td></tr>
+      </tbody>
+    </table>
+    <p class="docs-note"><strong>Caller-side fallbacks.</strong> Unclear input → Sophie asks for clarification up to two times, then offers a callback. Caller silent (not counting tool-execution silence) → "Are you still there?" then ends the call politely. Caller disputes system info → Sophie apologizes and offers a manager callback, never argues. Wrong-number caller → polite goodbye, end call.</p>
+  </section>
+
+  <section class="docs-block" id="improvements">
+    <h3 class="docs-heading">// POSSIBLE IMPROVEMENTS</h3>
+    <p>Capabilities within reach but not currently implemented -- documented here so the gap between "what the platform supports" and "what this MVP does today" is explicit.</p>
+    <ul class="docs-list">
+      <li><strong>Service-area address verification via geocoding.</strong> Today Sophie collects the address as-is and operations confirms it post-booking. The earlier prompt-driven approach (Sophie reading a city list from the KB and judging distance against it) produced flaky results: false negatives on in-radius addresses not literally listed (e.g. Apollo Beach FL -- inside the 35-mile circle but absent from the KB enumeration), and false positives on ambiguous city names (e.g. "Sun City" -- could be Tampa-area Sun City Center or Sun City California, 2,500 miles away). Production fix: a dedicated <code>verify_address_in_service_area</code> n8n sub-workflow that calls Google Maps Distance Matrix API with the property address and the business HQ, returns boolean <code>in_radius</code> based on a 35-mile threshold.</li>
+      <li><strong>HMAC signature on the <code>end_of_call</code> webhook.</strong> The current Bearer Auth header is static and replayable; an intercepted request can be re-sent. The industry-standard fix is an <code>X-Vapi-Signature</code> header carrying an HMAC of the payload + timestamp, validated server-side. Vapi does not yet publish the exact <code>X-Vapi-Signature</code> format -- header name, payload-to-sign, separator, hex vs base64; community threads confirm intermittent missing-header bugs. Adoption waits on Vapi's spec or empirical reverse-engineering.</li>
+      <li><strong>n8n executions data redaction.</strong> The Bearer header is captured into <code>body.headers.authorization</code> of every saved <code>end_of_call</code> execution. Visible to anyone with n8n access (single user -- owner -- in the current setup). The n8n enterprise-tier "Redact production execution data" toggle would solve this; community edition cannot. Revisit on production deploy via <code>EXECUTIONS_DATA_SAVE_ON_SUCCESS=none</code> or per-workflow "do not save" toggle.</li>
+      <li><strong>Outbound callback automation.</strong> Sophie's callback offer is currently a verbal promise -- nobody is actually called back automatically. Acceptable for an MVP without a real customer base; production needs a workflow that consumes <code>calls.outcome = 'callback_promised'</code> + the agreed phone from the transcript, queues a task in the appropriate team's system, and applies an SLA per category (commercial / operations / field).</li>
+      <li><strong>Owner dashboard + signed-URL playback for recordings.</strong> The production RLS layer (migration 00010) is in place but inert until two pieces ship: (a) a Supabase Auth Custom Access Token Hook that injects <code>user_role='owner'</code> into the JWT, and (b) a read-only owner-dashboard frontend that authenticates and calls PostgREST. Recording playback should go through a Supabase Edge Function that mints a short-lived signed URL using the <code>service_role</code> key -- owners never receive the bucket key directly.</li>
+      <li><strong><code>vapi_metadata</code> column cleanup.</strong> The <code>calls.vapi_metadata</code> jsonb column stores Vapi's full raw payload as a backup during the early phase of the project, useful for debugging schema drift in <code>analysisPlan</code> outputs. Once the schema stabilises, the column should be dropped -- nothing queries it and it bloats the row.</li>
+      <li><strong><code>archive_recording.update_calls</code> migration to <code>upsert</code>.</strong> The current node uses <code>executeQuery</code> with three comma-joined parameters (<code>vapi_call_id</code>, file size integer, <code>vapi_call_id</code> again). All values are currently comma-free, but the pattern violates ADR-005's discipline; a follow-up should migrate it to the <code>upsert</code> operation or to <code>$1</code> / <code>$2</code> / <code>$3</code> parameterisation.</li>
+      <li><strong>Per-assistant authentication if multi-assistant.</strong> The current Bearer secret is shared across all assistants that might hit the n8n <code>end_of_call</code> endpoint. If a second voice assistant is bound to the same n8n instance, both will share the same Bearer. Splitting per-assistant means a credential per assistant plus a small router upstream of <code>end_of_call</code>.</li>
+      <li><strong>Voice-mode tests in <code>eval/</code>.</strong> The current suite runs in chat mode -- text-only, no real call cost. TTS pronunciation of numbers, STT robustness under accents, latency / interruption handling are not exercised. Voice mode costs $0.20-0.50 per case and tests platform-specific rendering rather than prompt logic. Add when a staging assistant + isolated n8n + isolated Supabase exist.</li>
+      <li><strong>Mutating happy-path tests.</strong> A booking-success test would create a real Google Calendar event + Postgres rows; cleaning up GCal automatically isn't wired yet. Out of scope until a staging Vapi assistant + isolated n8n project + isolated Supabase project make mutating tests safe.</li>
+      <li><strong>CI gating for evals.</strong> No GitHub Actions integration -- every run hits production Vapi + n8n + Supabase, and a missing staging environment makes per-PR auto-runs costly and noisy. Manual cadence (one run per major prompt edit) is sufficient at this stage.</li>
+    </ul>
+  </section>
+
+  <section class="docs-block">
+    <h3 class="docs-heading">// TEST DATA &amp; EVALUATION</h3>
+    <p>The Vapi assistant is regression-checked through a chat-mode test suite hosted on Vapi (<a class="docs-link" href="https://github.com/nikitak-dev/nikitak-dev.github.io/blob/main/projects/voice-agent/eval/" target="_blank" rel="noopener noreferrer">projects/voice-agent/eval/</a>). Five smoke scenarios target the load-bearing prompt rules; each runs a tester AI against the assistant in chat mode, and an LLM-as-judge grades the transcript against a binary PASS / FAIL rubric.</p>
+    <table class="docs-table">
+      <thead><tr><th>ID</th><th>Asserts</th></tr></thead>
+      <tbody>
+        <tr><td><strong>CS-1</strong></td><td><em>Always collect email first</em> -- Sophie does not invoke booking tools before email is provided and confirmed</td></tr>
+        <tr><td><strong>CS-2</strong></td><td><em>ALWAYS call <code>search_knowledge_base</code> before answering pricing</em> -- Sophie hits the KB before quoting figures; quoted figures match KB ranges</td></tr>
+        <tr><td><strong>CS-3</strong></td><td><em>For ambiguous service-area queries, offer callback</em> -- Sophie checks KB for Naples FL, answers honestly (outside service area), does not start booking</td></tr>
+        <tr><td><strong>CS-4</strong></td><td><em>Emergency routing</em> -- on tree / storm emergency, Sophie produces the emergency phone (727-555-0173, press 2) and ends the call without entering booking flow</td></tr>
+        <tr><td><strong>CS-5</strong></td><td><em>Out-of-scope commercial handoff</em> -- Sophie identifies a $50k office-park request as commercial, mentions the commercial team, offers callback with a contact-confirmation gate</td></tr>
+      </tbody>
+    </table>
+    <p class="docs-note"><strong>Latest run:</strong> 2026-05-07, <strong>5 / 5 PASS</strong> after a polish-pass for three behaviours flagged in run 1 (email-dot preservation, callback-without-contact gate, emergency phone repetition). Suite source: <a class="docs-link" href="https://github.com/nikitak-dev/nikitak-dev.github.io/blob/main/projects/voice-agent/eval/suite-definition.json" target="_blank" rel="noopener noreferrer">suite-definition.json</a>, runner: <a class="docs-link" href="https://github.com/nikitak-dev/nikitak-dev.github.io/blob/main/projects/voice-agent/eval/run-suite.ps1" target="_blank" rel="noopener noreferrer">run-suite.ps1</a>. Vapi has announced deprecation of Test Suites in favour of Simulations -- suite definitions carry over, scripts will be ported when Vapi publishes the migration guide.</p>
+    <p class="docs-note">Future expansion: voice-mode tests for TTS / STT robustness, mutating happy-path tests against a staging environment, and CI gating per pull request -- all blocked on a staging Vapi + isolated n8n + isolated Supabase setup. See <a class="docs-ref" href="#improvements">Possible Improvements</a>.</p>
+  </section>
+
 </div>
 
 <script is:inline>
