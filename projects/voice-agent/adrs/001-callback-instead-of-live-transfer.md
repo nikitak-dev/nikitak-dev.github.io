@@ -59,6 +59,5 @@ The intent is captured implicitly via Vapi's `analysisPlan` — the call ends in
 
 - [`prompts/vapi-system-prompt.md`](../prompts/vapi-system-prompt.md) — sections `[Callback Routing]` and `[Error Handling]` (callback as fallback on tool failure).
 - [`db/migrations/00001_init_voice_agent_schema.sql`](../db/migrations/00001_init_voice_agent_schema.sql) — `calls.outcome` enum includes `callback_promised`.
-- [`CHANGELOG.md`](../CHANGELOG.md) — "Callback offers replaced live transfers" entry under the 2026-03 callback flow.
 - No `transfer_call` tool is exposed to Sophie; this decision is enforced entirely in the system prompt.
 - **Format:** Michael Nygard, [Documenting Architecture Decisions (2011)](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions).

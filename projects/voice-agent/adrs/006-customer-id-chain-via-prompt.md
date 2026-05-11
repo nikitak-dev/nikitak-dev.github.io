@@ -61,7 +61,6 @@ Status filter excludes already-cancelled / completed / no-show rows — the call
 ## References
 
 - [`prompts/vapi-system-prompt.md`](../prompts/vapi-system-prompt.md) — `[Identification for Action]` and `[Appointment Changes]` sections.
-- [`n8n/workflows.md`](../n8n/workflows.md) — `event_lookup` description.
-- [`CHANGELOG.md`](../CHANGELOG.md) — "`event_lookup` server-side filter by `customer_id`" and "System prompt updates" entries under the 2026-05 migration.
+- [`VoiceAgentDocs.astro`](../../../src/components/docs/VoiceAgentDocs.astro) — `// ARCHITECTURE` describes `event_lookup`, `update_event`, `delete_event` flow; `// KEY PATTERNS` covers the customer_id chain + ownership-check rationale.
 - ADR-002 — `customer_id` is the input schema's required field as advertised through MCP.
 - **Format:** Michael Nygard, [Documenting Architecture Decisions (2011)](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions).

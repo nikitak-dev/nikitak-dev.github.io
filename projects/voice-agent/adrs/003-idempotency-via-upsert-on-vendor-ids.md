@@ -53,7 +53,7 @@ Concretely:
 ## References
 
 - [`db/migrations/00001_init_voice_agent_schema.sql`](../db/migrations/00001_init_voice_agent_schema.sql) — UNIQUE constraints on `calls.vapi_call_id` and `appointments.gcal_event_id`.
-- [`n8n/workflows.md`](../n8n/workflows.md) — `end_of_call` and `book_event` workflows, idempotency notes in "Conventions and shared settings".
-- [`tests/scenarios.md`](../tests/scenarios.md) §10 "Double booking attempt (idempotency)" + post-test checklist invariant.
-- [`CHANGELOG.md`](../CHANGELOG.md) — "Idempotent booking" (2026-02) and "Idempotency on retries" (2026-05) entries.
+- [`db/migrations/00007_unique_active_appointment_per_customer_time.sql`](../db/migrations/00007_unique_active_appointment_per_customer_time.sql) — defence-in-depth partial UNIQUE on `(customer_id, start_time)`.
+- [`VoiceAgentDocs.astro`](../../../src/components/docs/VoiceAgentDocs.astro) — `// ARCHITECTURE` describes `end_of_call` and `book_event` flow; `// KEY PATTERNS` covers the idempotency rationale.
+- [`eval/manual-tests.md`](../eval/manual-tests.md) §10 "Double booking attempt (idempotency)" + post-test checklist invariant.
 - **Format:** Michael Nygard, [Documenting Architecture Decisions (2011)](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions).

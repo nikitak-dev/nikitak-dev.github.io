@@ -53,13 +53,11 @@ Sophie's LLM receives the seven sub-tool descriptions through MCP discovery on c
 ### Trade-offs (Non-goals — deliberately not done)
 
 - **No per-sub-tool Vapi metrics.** Vapi-side analytics aggregates everything under `n8n_orchestrator`. To break down which sub-tool failed and how often, you query n8n executions or `calls.tool_calls_summary` JSONB. Acceptable for current scale.
-- **MCP auth is bearer-only.** No HMAC-signed payload. If the token leaks, attacker has unrestricted MCP access — see the "known limitations" section in [`n8n/workflows.md`](../n8n/workflows.md).
+- **MCP auth is bearer-only.** No HMAC-signed payload. If the token leaks, attacker has unrestricted MCP access — see the HMAC follow-up in `// POSSIBLE IMPROVEMENTS` of the canonical docs.
 - **Discovery latency on cold start.** First MCP handshake adds ~200 ms. Acceptable for inbound voice flows.
 
 ## References
 
-- [`architecture.md`](../architecture.md) — Vapi configuration table and "n8n_orchestrator tool description" section.
-- [`n8n/workflows.md`](../n8n/workflows.md) — full workflow inventory and per-sub-tool descriptions.
+- [`VoiceAgentDocs.astro`](../../../src/components/docs/VoiceAgentDocs.astro) — `// STACK` (Vapi configuration) and `// ARCHITECTURE` (orchestrator workflow inventory + per-sub-tool descriptions) sections.
 - [`prompts/vapi-system-prompt.md`](../prompts/vapi-system-prompt.md) — `[Tool Calling Rule]` and `[Call Flow Logic]` reference `n8n_orchestrator` only, never the sub-tools.
-- [`CHANGELOG.md`](../CHANGELOG.md) — "n8n token migration to Vapi Custom Credential" entry under the 2026-02 build-out.
 - **Format:** Michael Nygard, [Documenting Architecture Decisions (2011)](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions).

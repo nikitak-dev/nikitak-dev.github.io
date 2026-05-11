@@ -68,7 +68,6 @@ Validation instructions are constructive ("ask for X"); runtime instructions are
 
 ## References
 
-- [`n8n/workflows.md`](../n8n/workflows.md) — "Error contract — Sophie reads instructions, not stack traces" section with the full failure → instruction table.
+- [`VoiceAgentDocs.astro`](../../../src/components/docs/VoiceAgentDocs.astro) — `// ERRORS` section carries the full failure → instruction table; `// KEY PATTERNS` covers the contract rationale.
 - [`prompts/vapi-system-prompt.md`](../prompts/vapi-system-prompt.md) — `[Error Handling]` and `[Tool Calling Rule]` sections that wire Sophie to obey the instruction field.
-- [`CHANGELOG.md`](../CHANGELOG.md) — "Error contract: instructions, not exceptions" entry under the 2026-02 build-out.
 - **Format:** Michael Nygard, [Documenting Architecture Decisions (2011)](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions).

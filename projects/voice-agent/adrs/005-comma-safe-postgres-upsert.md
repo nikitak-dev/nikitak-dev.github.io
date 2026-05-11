@@ -56,7 +56,6 @@ The `upsert` operation also subsumes idempotency (see ADR-003) — `matchingColu
 
 ## References
 
-- [`n8n/workflows.md`](../n8n/workflows.md) — "Conventions and shared settings" section: Postgres write operations.
-- [`CHANGELOG.md`](../CHANGELOG.md) — "Comma-safe Postgres writes via `upsert` operation" entry under the 2026-05 migration.
+- [`VoiceAgentDocs.astro`](../../../src/components/docs/VoiceAgentDocs.astro) — `// KEY PATTERNS` describes the n8n `executeQuery` comma-split bug and the `upsert` workaround.
 - ADR-003 (idempotency via UPSERT on vendor IDs) — the `matchingColumns` choice in this ADR.
 - **Format:** Michael Nygard, [Documenting Architecture Decisions (2011)](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions).

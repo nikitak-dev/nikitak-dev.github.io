@@ -53,12 +53,10 @@ The earlier short-lived approach using a `verify_auth` Code node inside the work
 - **Plaintext compare.** n8n's built-in `Header Auth` is `===` not `crypto.timingSafeEqual`. For an opaque random 32-byte secret with no structure, the timing-leak risk is academic — an attacker has no symbol-by-symbol oracle to exploit, network jitter swamps the nanosecond differential, and brute-forcing a 256³² space is infeasible.
 - **No header redaction in saved execution data.** Bearer value is captured into `body.headers.authorization` of every saved execution. Visible to anyone with n8n access (single user — owner — in current setup). n8n's enterprise-tier "Redact production execution data" toggle would solve this; community edition cannot. Revisit on production-deploy phase via `EXECUTIONS_DATA_SAVE_ON_SUCCESS=none` env var (workflow-scoped) or selective per-workflow `Save successful production executions: Do not save`.
 - **Single secret across all assistants.** If a second Vapi assistant is bound to the same n8n endpoint later, both will share the same Bearer. Splitting per-assistant means a credential per assistant and a small router upstream of `end_of_call`. Out of scope for the current single-assistant setup.
-- **Orchestrator (MCP) endpoint not retouched.** The `n8n_orchestrator` MCP webhook also lives on this n8n instance and was already protected by the MCP protocol-level Bearer credential (configured per-tool on the Vapi side via Custom Credentials, see ADR-002 + `architecture.md`). This ADR specifically closes the `end_of_call` REST webhook gap, not the MCP one.
+- **Orchestrator (MCP) endpoint not retouched.** The `n8n_orchestrator` MCP webhook also lives on this n8n instance and was already protected by the MCP protocol-level Bearer credential (configured per-tool on the Vapi side via Custom Credentials, see ADR-002). This ADR specifically closes the `end_of_call` REST webhook gap, not the MCP one.
 
 ## References
 
-- [`n8n/workflows.md`](../n8n/workflows.md) — `end_of_call` row in inventory; Conventions section names the credential and the convention.
-- [`architecture.md`](../architecture.md) — Vapi configuration block names `server.headers` Bearer.
-- [`CHANGELOG.md`](../CHANGELOG.md) — "`end_of_call` webhook now requires Header Auth Bearer" entry under 2026-05.
+- [`VoiceAgentDocs.astro`](../../../src/components/docs/VoiceAgentDocs.astro) — `// ARCHITECTURE` describes the `end_of_call` webhook flow; `// KEY PATTERNS` covers the Bearer Auth Header rationale; `// STACK` notes Vapi `server.headers` carries the matching Bearer.
 - ADR-002 — orchestrator MCP endpoint already used Bearer Credential at the Vapi side.
 - **Format:** Michael Nygard, [Documenting Architecture Decisions (2011)](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions).
