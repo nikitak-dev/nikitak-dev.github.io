@@ -8,6 +8,23 @@ Mirrors the `eval/` discipline of the [`multimodal-rag`](../../multimodal-rag/ev
 > The Vapi Dashboard surfaces this notice on the Test Suites tab: *"Test Suites is being deprecated. It will be replaced by Simulations, a more powerful way to test your voice agents. You can keep using Test Suites in the meantime, and we'll share a migration guide once Simulations is ready."*
 > This suite was built against `/test-suite` because the Simulations API is not yet GA and lacks public docs. When Vapi publishes the migration guide, the scripts here (`create-suite.ps1`, `run-suite.ps1`) will need to be ported to `/eval/simulation/run` + `simulationSuiteId`. The test definitions themselves — scripts and rubrics — should carry over without semantic changes.
 
+## Vapi Evals + backend ownership test (Gate B, 2026-06-01)
+
+A second, newer layer sits alongside the Test Suite above: Vapi **Evals** (`chat.mockConversation`) for the mutating flows, built via the REST API (`POST/PATCH https://api.vapi.ai/eval`) and run from the Dashboard against `voice_agent`. Each scripts a deterministic conversation with **mocked** tool responses, then judges ONE model-generated turn.
+
+| Eval | Eval ID | Asserts (text/negative-tool only) |
+|---|---|---|
+| cancel happy-path | `9b924173-9a89-4579-874b-31ec22fc6b7d` | asks "Are you sure?" + does NOT call delete_event |
+| book happy-path | `8c06e23e-85c6-4a4f-81ab-80079e467993` | after check_availability, offers ONLY the returned windows (no invented/shifted times) |
+| reschedule happy-path | `66c79738-0d90-4b4d-807d-dc8d83b2898b` | after event_lookup, reads the appointment back with returned day_of_week + time verbatim |
+| phone greet-by-name | `1c469520-3d9d-488d-ab46-0703a280efc8` | with `customer.number` set, greets the looked-up caller by name without re-asking email |
+
+**Limitation (why these assert text, not the mutating call).** In `chat.mockConversation` this assistant (Haiku 4.5 + the "say a filler phrase, then STOP" Tool Calling Rule) emits EITHER filler text with no tool call OR a bare tool call with no text — never both in one turn. The harness only judges turns that produce text, so a generated `book_event` / `update_event` call is never surfaced for judging. Positive mutating-tool-call assertions are therefore **not achievable** here. These evals lock conversational decisions only; the mutating call's args/ownership are covered by the live web tests + the backend test below.
+
+**SQL-invariant check.** [`ownership-regression.sql`](ownership-regression.sql) exercises the same `verify_ownership` predicate the mutating flows use — `gcal_event_id + customer_id` (not the row UUID — the 2026-05-31 bug). Important honesty: it runs a **transcribed copy** of the node's SQL directly against Supabase; it does NOT run the n8n workflow, and is kept in sync with the node by hand. Deterministic, self-seeding + self-cleaning; run via Supabase SQL editor or MCP `execute_sql`. PASS = NOTICE `ownership-regression: ALL CHECKS PASSED`.
+
+**What actually runs n8n.** Neither the Evals (mock tools) nor the SQL check executes the real n8n workflows. Real end-to-end execution (n8n + GCal + Supabase) is proven by the **live test** (2026-05-31: same-call book→cancel and book→reschedule, validated against GCal + Postgres). These automated artifacts are lower-fidelity regression nets — the eval catches prompt-decision drift, the SQL check catches predicate drift — not substitutes for the live run.
+
 ## Files
 
 | File | Purpose |
@@ -16,6 +33,7 @@ Mirrors the `eval/` discipline of the [`multimodal-rag`](../../multimodal-rag/ev
 | [`create-suite.ps1`](create-suite.ps1) | One-time: registers the suite in Vapi via `POST /test-suite`. Saves the returned suite ID to `.suite-id` (gitignored). |
 | [`run-suite.ps1`](run-suite.ps1) | Trigger one evaluation run, poll until terminal status, save the full result JSON to `results/<timestamp>.json`, print pass/fail summary. |
 | [`cleanup-test-data.sql`](cleanup-test-data.sql) | Removes residue from Supabase (calls, consent_log, customers, appointments) created by mutating test cases. Runs after each suite execution. |
+| [`ownership-regression.sql`](ownership-regression.sql) | Backend regression test (deterministic, self-seeding + self-cleaning) for the gcal_event_id+customer_id ownership invariant that the LLM evals can't cover. See "Vapi Evals + backend ownership test" below. |
 | [`results/`](results/) | Per-run JSON outputs from `run-suite.ps1` — full Vapi response with transcripts, scorer reasoning, tool-call payloads. Filenames `YYYY-MM-DD_HHmmss.json` are the run's `createdAt` in UTC. |
 
 ## Test scenarios
@@ -35,7 +53,7 @@ Each case targets a specific prompt rule. Rubrics are written as bullet checklis
 These behaviors aren't covered here — each is documented as a future addition, not a forgotten gap.
 
 - **Voice mode tests.** TTS pronunciation of numbers, STT robustness under accents, latency / interruption handling. Voice mode is real-call cost ($0.20-0.50 per case) and tests platform-specific rendering rather than prompt logic. Add when binding a public phone number — see audit follow-ups.
-- **Mutating happy-path booking, reschedule, cancel.** A booking-success test would create a real Google Calendar event + Postgres rows; cleaning up GCal automatically isn't wired yet. Adding a staging Vapi assistant + isolated n8n project + isolated Supabase project (audit follow-up R-8) makes mutating tests safe.
+- **Mutating happy-path booking, reschedule, cancel — partially covered now** (see "Vapi Evals + backend ownership test" above): the conversational decisions are locked by the mocked-tool Evals, and the gcal-id ownership invariant by `ownership-regression.sql`. Still NOT covered: a true end-to-end run that actually creates a Google Calendar event + Postgres rows (cleaning up GCal automatically isn't wired). Adding a staging Vapi assistant + isolated n8n project + isolated Supabase project (audit follow-up R-8) makes full mutating tests safe.
 - **R-1 caller secondary verification (last-4 of phone).** Chat mode doesn't expose a way to control the caller's pre-matched phone identity from the script side, so we can't reliably set up the "phone-not-pre-matched + email-found" branch the rule guards. Real voice tests with controlled phone fixtures will cover this.
 - **Greeting compliance (AI / recording disclosure).** The opening line lives in the Vapi assistant's `First Message` field, not in the LLM's response stream. Chat mode may not replay it the same way voice mode does. Static configuration audit catches drift faster than a runtime eval.
 - **CI gating.** No GitHub Actions integration — every run hits production Vapi + n8n + Supabase, and a missing staging environment makes per-PR auto-runs costly and noisy. Manual cadence (one run per major prompt edit) is sufficient at this stage.

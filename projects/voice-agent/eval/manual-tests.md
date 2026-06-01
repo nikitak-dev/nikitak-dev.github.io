@@ -15,7 +15,7 @@ FROM customers ORDER BY created_at DESC LIMIT 5;
 
 -- Most recent calls with key signals
 SELECT vapi_call_id, customer_id, started_at, ended_at, end_reason, status,
-       outcome, appointment_booked, call_category, customer_sentiment,
+       outcome, call_category, customer_sentiment,
        summary, tool_calls_count, recording_archived_at
 FROM calls ORDER BY started_at DESC LIMIT 5;
 
@@ -276,6 +276,56 @@ GROUP BY vapi_call_id HAVING COUNT(*) > 1;
 
 ---
 
+## 16. Dashboard Talk button — smoke test (web channel)
+
+**Goal:** Regression check the voice stack through the Vapi Dashboard Talk button (web SDK channel), not via the PSTN phone number. After Vapi support fixed the Dashboard Talk button (2026-05-13), this channel is the cheapest way to self-test the full stack without spending PSTN minutes.
+
+**Channel note:** Dashboard Talk button uses Vapi's web SDK, not the phone trunk. The end-of-call payload has **no `customer.number`** — this is a known gap surfaced during initial testing, see *Known issues*.
+
+**Mock data to dictate to Sophie:**
+
+| Field | Value |
+|---|---|
+| Email | `webtest+booking@example.com` |
+| Full name | "Alex Webtester" (spell as `A-L-E-X  W-E-B-T-E-S-T-E-R`) |
+| Service | "lawn mowing" |
+| Address | "123 Main Street, Saint Petersburg, Florida 33701" |
+| Date / time | "the next business day at 10 in the morning Eastern Time" — Sophie resolves the concrete date and reads it back |
+
+**Steps:**
+
+1. Open the Vapi Dashboard, click Talk on this assistant.
+2. Sophie greets without a name (no phone lookup possible on web).
+3. Say: "I'd like to book a lawn mowing appointment."
+4. Sophie asks for email. Provide `webtest+booking@example.com`, spelling letter-by-letter when she confirms.
+5. Sophie searches CRM — not found. Asks for name.
+6. Spell: "Alex Webtester" letter by letter.
+7. Sophie creates the client, asks for address and date/time.
+8. Address: "one two three Main Street, Saint Petersburg, Florida, three three seven zero one".
+9. Date/time: "the next business day at ten in the morning Eastern Time". Sophie reads back the concrete day-of-week + date + year — confirm.
+10. Sophie checks availability, books, confirms appointment summary.
+11. Say: "That's all, thanks. Goodbye." Sophie wraps up, hangs up.
+
+**Verify:**
+- `customers`: new row, `email = webtest+booking@example.com`, `full_name = "Alex Webtester"`, **`phone_number IS NULL`** (web call carried no phone)
+- `appointments`: new row, `status = scheduled`, linked to the customer, `start_time` = the resolved next-business-day 10:00 America/New_York, `address = "123 Main Street, Saint Petersburg, Florida 33701"` — also implicitly exercises ADR-005 (comma-safe writes)
+- Google Calendar: event created at the same `start_time`, attendee email `webtest+booking@example.com`
+- `calls`: row created with `outcome`, `summary`, transcript, cost, `customer_id` linked
+- `calls.recording_archived_at` non-null + the `{vapi_call_id}.mp3` file exists in the `recordings` bucket
+
+**Known issues to watch:**
+- ⚠️ `calls.recording_size_bytes` is currently written as `0` (placeholder) by `archive_recording.update_calls`. n8n expression evaluator does not surface `$binary.data.bytes` reliably in the current UI build; the Update node sends `0` until ADR-005 follow-up replaces this with proper binary-metadata mapping.
+- ⚠️ STT (Deepgram Flux General English) occasionally mishears spelled letters (e.g. `t` → `g`). Sophie's prompt now switches to word-by-word name collection after a failed spelling confirmation, which works around this — but emails still rely on letter-by-letter and may carry STT-introduced typos. Not a backend fix; consider switching STT model or adding a post-confirmation email regex echo in a future iteration.
+
+**Previously open, now closed (2026-05-13):**
+- ✅ `end_of_call.find_customer` failure on web calls (no `customer.number`) — fixed via `is_phone_call?` IF-guard before find_customer + try/catch around `$('find_customer')` reference inside `extract_call_data`.
+- ✅ `create_client.upsert_customer` ON CONFLICT mismatch — fixed via migration `00013_unique_customers_email_plain.sql` (functional UNIQUE on `LOWER(email)` replaced with plain UNIQUE on `email`; workflow already lowercases upstream).
+- ✅ `end_of_call.create_record` `transcript_messages jsonb vs text[]` — fixed via migration `00014_transcript_messages_jsonb_to_text.sql` (jsonb → text) + `JSON.stringify(messages)` in `extract_call_data`.
+- ✅ `end_of_call.record_consent` `phone_number NOT NULL` on web calls — fixed via migration `00015_consent_log_phone_number_nullable.sql`.
+- ✅ `archive_recording.update_calls` `executeQuery` comma-split bug — switched the node from `Execute Query` to `Update` operation (closes the ADR-005 follow-up for this specific node).
+
+---
+
 ## Post-test checklist
 
 After running all scenarios, verify:
@@ -289,3 +339,4 @@ After running all scenarios, verify:
 - [ ] For voice scenarios: corresponding `calls.recording_archived_at` is non-null and the file exists in Storage bucket `recordings`
 - [ ] Error handling worked in scenario 11 (no crashes; Sophie spoke the apology phrase; Discord alert posted)
 - [ ] No tool names or system details leaked in any conversation
+- [ ] Web-channel calls (scenario 16): `customers.phone_number IS NULL` for callers identified only by email; no phantom phone values written from missing `customer.number` field

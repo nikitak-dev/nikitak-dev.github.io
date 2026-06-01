@@ -17,12 +17,14 @@ Insurance: Fully insured, two million dollar general liability coverage
 SERVICES AND PRICING
 
 Lawn Maintenance
-Regular mowing, edging, trimming, fertilization, and weed control.
+Pricing model: fixed -- price is published below; state the range and proceed to booking, no on-site estimate needed
+Regular mowing, edging, trimming, fertilization, and weed control. Fixed per-visit pricing -- state the range and book, no on-site estimate.
   - Weekly service: fifty to one hundred twenty dollars per visit (depends on lot size)
   - Bi-weekly service: seventy to one hundred fifty dollars per visit
   - One-time cleanup: one hundred to three hundred dollars
 
 Landscape Design and Installation
+Pricing model: estimate -- wide range; give the approximate range below, exact price comes from a free on-site estimate
 Custom garden design, plant selection, flower beds, shrub installation, and outdoor lighting.
   - Design consultation: free for projects over two thousand dollars
   - Small projects (under one thousand square feet): one thousand to five thousand dollars
@@ -30,6 +32,7 @@ Custom garden design, plant selection, flower beds, shrub installation, and outd
   - Large projects (over three thousand square feet): fifteen thousand dollars and up, quoted individually
 
 Hardscaping
+Pricing model: estimate -- wide range; give the approximate range below, exact price comes from a free on-site estimate
 Patios, walkways, retaining walls, fire pits, and outdoor kitchens.
   - Patio or walkway: three thousand to twelve thousand dollars
   - Retaining wall: two thousand to eight thousand dollars
@@ -37,6 +40,7 @@ Patios, walkways, retaining walls, fire pits, and outdoor kitchens.
   - Outdoor kitchen: ten thousand to twenty-five thousand dollars
 
 Irrigation Systems
+Pricing model: estimate -- wide range; give the approximate range below, exact price comes from a free on-site estimate
 Sprinkler installation, drip irrigation, smart controller setup, and system repair.
   - New sprinkler system: two thousand to five thousand dollars (typical residential lot)
   - Drip irrigation: five hundred to two thousand dollars
@@ -44,7 +48,8 @@ Sprinkler installation, drip irrigation, smart controller setup, and system repa
   - Repair and maintenance: one hundred to four hundred dollars per visit
 
 Seasonal Cleanup
-Spring and fall cleanup, leaf removal, mulching, and bed preparation.
+Pricing model: fixed -- price is published below; state the range and proceed to booking, no on-site estimate needed
+Spring and fall cleanup, leaf removal, mulching, and bed preparation. Fixed pricing -- state the range and book, no on-site estimate.
   - Standard cleanup (quarter acre or less): two hundred to four hundred dollars
   - Large property cleanup: four hundred to eight hundred dollars
   - Mulch installation: seventy-five to one hundred twenty dollars per cubic yard (installed)

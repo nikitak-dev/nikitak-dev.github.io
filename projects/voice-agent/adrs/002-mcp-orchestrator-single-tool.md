@@ -56,6 +56,16 @@ Sophie's LLM receives the seven sub-tool descriptions through MCP discovery on c
 - **MCP auth is bearer-only.** No HMAC-signed payload. If the token leaks, attacker has unrestricted MCP access — see the HMAC follow-up in `// POSSIBLE IMPROVEMENTS` of the canonical docs.
 - **Discovery latency on cold start.** First MCP handshake adds ~200 ms. Acceptable for inbound voice flows.
 
+## Update (2026-06-01) — eighth sub-workflow added
+
+`resolve_date` (n8n workflow `bDoisnJxBHg4k9gz`) was added as the **eighth** orchestrator sub-workflow — exactly the dynamic-discovery extensibility this ADR predicted (*"Adding an eighth sub-workflow = `toolWorkflow` node + connect to `MCP_server_trigger`"*). No Vapi-side change was needed; the sub-tool was advertised through MCP discovery on the next connect.
+
+| Sub-workflow | Inputs | Vapi sees this as |
+|---|---|---|
+| `resolve_date` | date_phrase | "Resolve a natural-language date phrase (e.g. 'next Saturday', 'tomorrow', 'June sixth') into an exact calendar date and day of week in Eastern Time. ALWAYS call this to turn a caller's spoken date into a concrete date before confirming or booking — never compute the date yourself. Returns `resolved_date` (YYYY-MM-DD), `day_of_week`, `month`, `day`, `year`." |
+
+The seven-operation prose above reflects the system as of 2026-02-19 and is left unchanged; the live count is now **eight**.
+
 ## References
 
 - [`VoiceAgentDocs.astro`](../../../src/components/docs/VoiceAgentDocs.astro) — `// STACK` (Vapi configuration) and `// ARCHITECTURE` (orchestrator workflow inventory + per-sub-tool descriptions) sections.
