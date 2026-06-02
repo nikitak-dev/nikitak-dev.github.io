@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import DocsModal from '../components/DocsModal.astro';
+import DocsTrigger from '../components/DocsTrigger.astro';
+---
+<BaseLayout
+  title="FOLDER_CLONE // Recursive Drive Folder Copy"
+  logoText="FOLDER_CLONE"
+  subtitle="// clone a Google Drive folder tree, structure intact"
+  theme="amber"
+  hideSocial={true}
+  emptyFooter={true}
+  backHref="/"
+  scanlineMode="global"
+  description="FOLDER_CLONE — automation that recursively copies a Google Drive folder tree, preserving the full nested structure."
+  ogTitle="FOLDER_CLONE // Recursive Drive Folder Copy"
+  ogDescription="Automation that recursively clones a Google Drive folder tree, structure intact."
+>
+  <DocsTrigger slot="header-action" />
+  <main id="folder-clone-page"></main>
+  <DocsModal id="docs-modal" title="PROJECT :: FOLDER_CLONE" />
+</BaseLayout>
+
+<style>
+  #folder-clone-page { flex: 1; }
+</style>
