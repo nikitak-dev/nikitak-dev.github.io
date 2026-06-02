@@ -3,7 +3,7 @@
 5-modal RAG pipeline (text / image / audio / video / PDF → vector → grounded answer).
 
 - **Live demo:** [/multimodal-rag/](https://nikitak-dev.github.io/multimodal-rag/)
-- **Canonical docs:** click `DOCS & VIDEO` on the live page (modal). Source: [src/components/docs/MultimodalRagDocs.astro](../../src/components/docs/MultimodalRagDocs.astro) (EN) and [src/components/docs/multimodal-rag.ru.md](../../src/components/docs/multimodal-rag.ru.md) (RU companion).
+- **Live demo:** the `ABOUT` modal shows a short, non-technical overview. Deep implementation docs are intentionally kept local-only (not published) — this directory's ADRs / eval are the public technical record.
 
 ## What's in this directory
 
