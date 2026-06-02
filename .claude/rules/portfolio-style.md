@@ -199,7 +199,7 @@ Pre-commit hook (`.githooks/pre-commit`, активируется через `gi
 При добавлении нового проекта в `projects/<slug>/` или аудите существующего — следовать шаблону [`.claude/templates/project-docs.md`](templates/project-docs.md). Зафиксированы: раскладка файлов, структура секций канонической модалки, иерархия источников правды, соглашения по именам / языку / cross-link'ам.
 
 Главные правила:
-- Narrative-файлы (`architecture.md`, `workflows.md`, `CHANGELOG.md`, narrative `db/README.md`) в `projects/<slug>/` — анти-паттерн. Narrative живёт в канонической модалке `src/components/docs/<Slug>Docs.astro`
+- Модалка `src/components/docs/<Slug>Docs.astro` — короткий value-блерб для посетителя (что делает / как попробовать / scope), без ссылки на реализацию (решение 2026-06-02, аудитория в основном нетехническая). Глубокий технический нарратив — local-only в gitignored `projects/<slug>/docs/reference.md` (+ `.ru.md`), не пушится в публичный remote. ADR / миграции / prompt / eval — публичный технический record
 - `projects/<slug>/README.md` — индекс директории, ≤25 строк
 - ADR в `projects/<slug>/adrs/`, формат Nygard
 - Eval suite — `projects/<slug>/eval/` (не `vapi-evals/`, не `tests/`)
