@@ -4,7 +4,7 @@ Voice AI receptionist (Sophie) on Vapi for a home-service business. MVP handles 
 
 - **Status:** PRIVATE. The Vapi assistant is not publicly callable; project ships as a portfolio artifact, not a live demo.
 - **Live page:** [/voice-agent/](https://nikitak-dev.github.io/voice-agent/)
-- **Canonical docs:** click `DOCS & VIDEO` on the live page (modal). Source: [`src/components/docs/VoiceAgentDocs.astro`](../../src/components/docs/VoiceAgentDocs.astro) (EN) and [`src/components/docs/voice-agent.ru.md`](../../src/components/docs/voice-agent.ru.md) (RU companion).
+- **Live page:** the `ABOUT` modal shows a short, non-technical overview. Deep implementation docs are intentionally kept local-only (not published) — this directory's ADRs / migrations / prompt / eval are the public technical record.
 
 ## What's in this directory
 
