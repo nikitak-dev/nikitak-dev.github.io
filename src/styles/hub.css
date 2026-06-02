@@ -239,9 +239,6 @@ header.cascade-ready { animation: fadeSlideDown var(--anim-shell) ease-out forwa
   --user-border: var(--user-border-amber);
 }
 
-/* Brighter than --text-muted → --amber-muted for legibility on amber bg */
-.theme-amber .card-desc { color: var(--amber-mid); }
-
 /* Keep disabled label readable after .btn-terminal:disabled opacity 0.3 */
 .theme-amber .card-launch:disabled { color: var(--amber-mid); }
 

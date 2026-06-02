@@ -77,7 +77,7 @@ Key structural elements follow a **4px grid**. Content elements follow a **2px g
 --amber-bright: #ffcc44;           /* keyboard-pulse ring accent (amber theme) */
 --amber-mid: #e59400;
 --amber-dim: #b87400;
---amber-muted: #8a5700;
+--amber-muted: #9c6400;
 --amber-deep: #3d2605;
 --amber-ghost: rgba(255, 170, 0, 0.08);
 --amber-glow-weak:   rgba(255, 170, 0, 0.05);
