@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import DocsModal from '../components/DocsModal.astro';
 import VoiceAgentDocs from '../components/docs/VoiceAgentDocs.astro';
+import DocsTrigger from '../components/DocsTrigger.astro';
 import '../styles/voice-agent.css';
 ---
 <BaseLayout
@@ -16,15 +17,7 @@ import '../styles/voice-agent.css';
   ogTitle="VOICE_AGENT // AI Voice Receptionist"
   ogDescription="AI voice agent on Vapi: handles inbound calls, qualifies leads, books appointments. Built on Vapi · n8n · Supabase · Google Calendar."
 >
-  <button
-    type="button"
-    id="docs-trigger"
-    class="btn-terminal"
-    slot="header-action"
-    aria-haspopup="dialog"
-    aria-controls="docs-modal"
-    aria-expanded="false"
-  >ABOUT</button>
+  <DocsTrigger slot="header-action" />
   <main id="voice-agent-page">
     <div id="va-tablist" role="tablist" aria-label="Demo call scenarios" hidden></div>
 
