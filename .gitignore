@@ -27,6 +27,9 @@ docs/superpowers/
 # README.md, plans/*.md and eval/ (small Python harness) are tracked.
 projects/**/test_data/
 
+# Per-project deep technical docs — kept local-only for reverse-engineering, never published.
+projects/**/docs/
+
 # Obsidian local workspace (per-machine notes UI state, not part of the project)
 .obsidian/
 
