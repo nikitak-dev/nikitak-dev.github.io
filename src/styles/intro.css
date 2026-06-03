@@ -1,0 +1,128 @@
+/* Intro overlay — replaces the old decorative boot. A project-card-surface
+   panel ignites like a bunker lamp, types a short human intro, then lights its
+   header/footer beams. Feature-scoped: imported by index.astro, not the styles
+   barrel. The global body::after scanline (z-9999) overlays this z-100 screen
+   for free — no per-element scanline needed.
+   NOTE: lamp/typing timings are artistic (tuned by eye), not functional. */
+
+/* Return visitors: the is:inline guard in index.astro sets this before paint so
+   the overlay never flashes before the module decides what to do. */
+html[data-intro-seen] #intro-screen { display: none; }
+
+#intro-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--bg-void);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+}
+#intro-screen.done {
+  animation: fadeSlideOut var(--anim-content) ease-in forwards;
+  pointer-events: none;
+}
+
+/* panel = a project-card surface */
+.intro-panel {
+  width: 100%;
+  max-width: 560px;
+  position: relative;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-inset-deep);
+  opacity: 0;                                   /* dark until the lamp ignites */
+}
+.intro-panel.igniting { animation: lampIgnite 1s linear forwards; }
+.intro-panel.lit { opacity: 1; animation: lampHum 5.5s ease-in-out infinite; }
+
+/* startup: irregular fluorescent strikes, then settle */
+@keyframes lampIgnite {
+  0%{opacity:0;filter:brightness(.2)} 7%{opacity:.55;filter:brightness(1.5)}
+  11%{opacity:.04;filter:brightness(.2)} 19%{opacity:.85;filter:brightness(1.7)}
+  25%{opacity:.08;filter:brightness(.3)} 34%{opacity:1;filter:brightness(2)}
+  40%{opacity:.28;filter:brightness(.5)} 50%{opacity:1;filter:brightness(1.25)}
+  60%{opacity:.72;filter:brightness(.92)} 71%{opacity:1;filter:brightness(1.12)}
+  83%{opacity:.9;filter:brightness(.98)} 100%{opacity:1;filter:brightness(1)}
+}
+/* steady-but-alive: low-amplitude breathing + one brief dip */
+@keyframes lampHum {
+  0%,100%{filter:brightness(1)} 18%{filter:brightness(.975)} 40%{filter:brightness(1.03)}
+  44%{filter:brightness(.88)} 46%{filter:brightness(1.02)} 68%{filter:brightness(.985)} 85%{filter:brightness(1.015)}
+}
+
+.intro-header { padding: 11px 18px 9px; }   /* title uses the global .section-label */
+
+/* dividers: dim --border line + a luminous .intro-glow layer.
+   The glow = constant soft green (faint --green-ghost line + green-dim halo, =
+   site border glow) plus a brighter --green spot sweeping across (peak = site
+   beam, no higher). The sweep runs continuously from load on BOTH dividers, so
+   they stay locked in phase; only opacity is gated on .lit → it ignites exactly
+   when the window finishes forming, and fades in smoothly (no snap, no desync). */
+.intro-divider { position: relative; height: 1px; background-color: var(--border); }
+.intro-divider .intro-glow {
+  position: absolute;
+  inset: 0;
+  --beam-span: 560px;
+  background-image:
+    linear-gradient(90deg, transparent 35%, var(--green) 50%, transparent 65%),
+    linear-gradient(90deg, var(--green-ghost), var(--green-ghost));
+  background-size: var(--beam-span) 100%, 100% 100%;
+  background-repeat: no-repeat, no-repeat;
+  background-position: calc(var(--beam-span) * -0.75) 0, 0 0;
+  box-shadow: 0 0 4px var(--green-dim);
+  filter: drop-shadow(0 0 var(--beam-blur) var(--green-dim));
+  opacity: 0;
+  transition: opacity 0.9s ease-in;
+  animation: introBeamWrap var(--beam-duration) linear infinite;
+  will-change: background-position;
+}
+.intro-divider.lit .intro-glow { opacity: 1; }
+/* own keyframe (NOT the global beamWrap) — moves only the spot layer, keeps the
+   steady line at 0 0; two background-position values for the two layers. */
+@keyframes introBeamWrap {
+  from { background-position: calc(var(--beam-span) * -0.75) 0, 0 0; }
+  to   { background-position: calc(var(--beam-span) *  0.75) 0, 0 0; }
+}
+/* footer divider doesn't exist until completion */
+.intro-divider--foot { opacity: 0; transition: opacity 0.5s ease-in; }
+.intro-divider--foot.show { opacity: 1; }
+
+.intro-body { padding: 18px 18px 16px; min-height: 120px; }
+.intro-line {
+  font-size: 13px;
+  line-height: 2.0;
+  color: var(--green-dim);
+  text-shadow: 0 0 6px var(--green-glow-soft);
+  white-space: pre-wrap;
+  display: none;                                /* JS reveals each line in turn */
+}
+.intro-line.active { display: block; }
+.intro-line .intro-prompt { color: var(--green-mid); }
+.intro-line .intro-sep { color: var(--green-muted); }
+.intro-cursor { color: var(--green); font-weight: 400; animation: blink 1s step-end infinite; }
+
+.intro-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 18px;
+  opacity: 0;
+  pointer-events: none;                         /* invisible button isn't clickable mid-animation */
+  transition: opacity 0.5s ease-in;
+}
+.intro-foot.show { opacity: 1; pointer-events: auto; }
+.intro-role { font-size: 11px; letter-spacing: 0.04em; color: var(--green-muted); }
+
+/* reduced motion: no ignite, no typing, no sweep — fully formed, static glow.
+   The module skips the animated path; CSS neutralises every moving piece and the
+   fade-out (the module hides the overlay outright instead). */
+@media (prefers-reduced-motion: reduce) {
+  .intro-panel, .intro-panel.igniting, .intro-panel.lit { animation: none; opacity: 1; filter: none; }
+  .intro-divider .intro-glow { animation: none; transition: none; }
+  .intro-divider--foot, .intro-foot { transition: none; }
+  .intro-cursor { animation: none; }
+  #intro-screen.done { animation: none; }
+}

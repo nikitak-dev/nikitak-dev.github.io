@@ -1,8 +1,8 @@
 /* Cascade runtime — walks [data-cascade-item] elements in document order,
    assigns a staggered --cascade-delay, then activates the footer with a
    computed --footer-delay so it always appears after the last item. Fires on
-   DOMContentLoaded, except on pages with a boot-screen (hub): there, the
-   page's own endBoot() invokes window._runCascade() after the boot sequence. */
+   DOMContentLoaded, except on pages with an intro-screen (hub): there, the
+   page's own endIntro() invokes window._runCascade() after the intro sequence. */
 
 const rootStyle = getComputedStyle(document.documentElement);
 const STEP = parseFloat(rootStyle.getPropertyValue('--cascade-step')) || 0.4;
@@ -39,7 +39,7 @@ function runCascade(): void {
   }
 }
 
-if (document.getElementById('boot-screen')) {
+if (document.getElementById('intro-screen')) {
   window._runCascade = runCascade;
 } else if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', runCascade, { once: true });

@@ -2,22 +2,33 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import DocsModal from '../components/DocsModal.astro';
 import { PROJECTS, liveCount, totalCount, categoryCount, STATUS_LABEL } from '../data/projects';
+import '../styles/intro.css';
 
 const live = liveCount();
 const total = totalCount();
 const aiCount = categoryCount('ai');
 const autoCount = categoryCount('automation');
-const buildDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Berlin' });
 ---
 <BaseLayout procLive={live} procTotal={total}>
-  <div
-    id="boot-screen"
-    data-live={live}
-    data-total={total}
-    data-build-date={buildDate}
-  >
-    <div id="boot-lines"></div>
-    <div id="boot-skip">// click or press any key to skip</div>
+  <script is:inline>
+    try { if (localStorage.getItem('intro-seen')) document.documentElement.dataset.introSeen = '1'; } catch (e) {}
+  </script>
+
+  <div id="intro-screen" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+    <div class="intro-panel">
+      <div class="intro-header"><span id="intro-title" class="section-label">// INTRO</span></div>
+      <div class="intro-divider intro-divider--head"><span class="intro-glow"></span></div>
+      <div class="intro-body">
+        <p class="intro-line"><span class="intro-prompt">&gt;</span> <span class="intro-text">hi — this is the automation portfolio of Nikita Kurdybailo.</span></p>
+        <p class="intro-line"><span class="intro-prompt">&gt;</span> <span class="intro-text">each card below is a project. open one to read what it does — or, where it's live, try it yourself.</span></p>
+        <p class="intro-line" data-html="up top: github <span class='intro-sep'>|</span> linkedin <span class='intro-sep'>|</span> telegram — to reach me."><span class="intro-prompt">&gt;</span> <span class="intro-text">up top: github | linkedin | telegram — to reach me.</span></p>
+      </div>
+      <div class="intro-divider intro-divider--foot"><span class="intro-glow"></span></div>
+      <div class="intro-foot">
+        <span class="intro-role">// AI automation &amp; integration</span>
+        <button type="button" class="intro-enter btn-terminal">Enter hub</button>
+      </div>
+    </div>
   </div>
 
   <main id="hub">
