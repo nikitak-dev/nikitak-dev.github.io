@@ -200,7 +200,7 @@ body.no-global-scanlines::after { display: none; }
    Elements marked [data-cascade-item] start invisible and fade in sequentially
    on .cascade-ready. BaseLayout's runtime assigns per-item delays via the
    --cascade-delay custom property and adds .cascade-ready when the page is
-   ready (DOMContentLoaded on normal pages, endBoot on hub).
+   ready (DOMContentLoaded on normal pages, endIntro on hub).
 
    Items use opacity-only so transforms can't extend a scroll container's
    overflow and flash a scrollbar mid-animation. Slide is reserved for the

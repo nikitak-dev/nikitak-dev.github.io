@@ -37,7 +37,7 @@ DESIGN.md         # Design system reference — read before touching CSS
 | `tokens.css` | `:root` design tokens + `body[data-error]` remaps |
 | `base.css` | Reset, body, scanline overlay, vignette, shared keyframes (`#matrix-bg` positioning lives in `components/MatrixRain.astro` as scoped global) |
 | `utilities.css` | `.btn-terminal`, `.beam-line`, `.section-label`, scanline variants, shared scrollbar |
-| `hub.css` | Header, boot, sys-status, `#hub`, project cards (+amber theme), legend, footer |
+| `hub.css` | Header, sys-status, `#hub`, project cards (+amber theme), legend, footer |
 | `modal.css` | `dialog.docs-modal` transitions and internals |
 | `responsive.css` | Mobile `@media (max-width: 640px)` + reduced-motion |
 

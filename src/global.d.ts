@@ -10,7 +10,7 @@ declare global {
   interface Window {
     /** Set by TypeLogo.astro; invoked on the 404 glitch cadence and on logo-timer loop. */
     typeLogo?: () => void;
-    /** Set by cascade.ts; invoked by hub/intro.ts endBoot() after the boot sequence. */
+    /** Set by cascade.ts; invoked by hub/intro.ts endIntro() after the intro sequence. */
     _runCascade?: () => void;
     /** Set by logo-timer.ts; called by logo-back.ts to pause the retype loop during hover. */
     _logoTimerStop?: () => void;

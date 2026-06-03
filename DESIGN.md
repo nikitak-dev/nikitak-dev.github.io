@@ -154,7 +154,7 @@ Entry/exit animations across the site follow a unified rhythm driven by four tok
 
 | Token | Value | Applies to |
 |-------|-------|------------|
-| `--anim-content` | `0.5s` | Entry and exit of content: `[data-cascade-item]` fadeIn, `.msg--rehydrated` (session history = part of page cascade), `.typing` indicator, `#empty-state.hidden` (fadeOut), `#boot-screen.done` (fadeSlideOut) |
+| `--anim-content` | `0.5s` | Entry and exit of content: `[data-cascade-item]` fadeIn, `.msg--rehydrated` (session history = part of page cascade), `.typing` indicator, `#empty-state.hidden` (fadeOut), `#intro-screen.done` (fadeSlideOut) |
 | `--anim-shell` | `0.5s` | Slide of page shell: `<header>` fadeSlideDown, `.hub-footer` fadeSlideUp, `[data-cascade-item="slide"]` (used when a non-footer element plays the role of bottom shell, e.g. `#input-bar` on `/multimodal-rag`) |
 | `--anim-reveal` | `0.5s` | Content reveal on interaction: `.sources-tags` expand/collapse, `.sources-tags-inner` transform/opacity, `.score-fill` width growth. Separate from content/shell — their durations may drift in the future |
 | `--anim-message` | `0.3s` | Live chat message animations: `.msg` (new message arriving during conversation), `.msg--exit` (CLR). Faster than content — feels snappy in dialog |
@@ -181,7 +181,7 @@ Kept with their own intentional timing and not governed by the tokens above:
 - Hover/focus: `--transition` (`0.2s`)
 - Breathe animations: `docs-modal-breathe`/`-amber` (locked to beam cycle)
 - Content effects: 404 `rgbSplit`/`glitchTop`/`glitchBottom`, scramble frames
-- Typewriters: logo, boot, chat placeholder
+- Typewriters: logo, intro, chat placeholder
 
 ### Reduced motion
 
