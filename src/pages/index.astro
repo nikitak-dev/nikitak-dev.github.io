@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import DocsModal from '../components/DocsModal.astro';
 import { PROJECTS, liveCount, totalCount, categoryCount, STATUS_LABEL } from '../data/projects';
 import '../styles/intro.css';
 
@@ -44,14 +43,6 @@ const autoCount = categoryCount('automation');
         aria-haspopup="dialog"
         aria-controls="intro-screen"
       >INTRO</button>
-      <button
-        type="button"
-        id="shortcuts-trigger"
-        class="btn-terminal legend-help"
-        aria-haspopup="dialog"
-        aria-controls="shortcuts-modal"
-        aria-expanded="false"
-      >SHORTCUTS</button>
     </div>
     <div class="project-grid">
       {PROJECTS.map((p, i) => {
@@ -92,15 +83,6 @@ const autoCount = categoryCount('automation');
     </div>
    </div>
   </main>
-
-  <DocsModal id="shortcuts-modal" title="HUB :: KEYBOARD SHORTCUTS" sections={['overview']}>
-    <div slot="overview" class="shortcuts-list">
-      <div class="shortcut-row"><span class="shortcut-key">[ 1 ] [ 2 ] [ 3 ] [ 4 ]</span><span class="shortcut-desc">select project by number</span></div>
-      <div class="shortcut-row"><span class="shortcut-key">[ &lt;- ] [ -&gt; ] [ UP ] [ DN ]</span><span class="shortcut-desc">cycle selection</span></div>
-      <div class="shortcut-row"><span class="shortcut-key">[ Enter ]</span><span class="shortcut-desc">launch selected project</span></div>
-      <div class="shortcut-row"><span class="shortcut-key">[ Esc ]</span><span class="shortcut-desc">deselect</span></div>
-    </div>
-  </DocsModal>
 
   <script>import '../scripts/hub';</script>
 </BaseLayout>

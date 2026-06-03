@@ -1,5 +1,5 @@
 /* Hub-shell layout: header, intro overlay, sys status, hub main grid, project
-   cards (green + amber themes), legend, shortcuts, per-card pieces, and footer.
+   cards (green + amber themes), legend, per-card pieces, and footer.
    Applied to every page via BaseLayout; named "hub" after the index/hub page
    which drives the terminal aesthetic. */
 
@@ -223,28 +223,6 @@ header.cascade-ready { animation: fadeSlideDown var(--anim-shell) ease-out forwa
 .grid-legend .legend-help { margin-left: auto; }
 .grid-legend .section-label { text-shadow: none; }
 
-.shortcuts-list { display: flex; flex-direction: column; gap: 8px; }
-.shortcut-row {
-  display: flex;
-  align-items: baseline;
-  gap: 16px;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  background: var(--bg-input);
-}
-.shortcut-key {
-  flex-shrink: 0;
-  min-width: 220px;
-  color: var(--green-mid);
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  font-weight: 400;
-}
-.shortcut-desc {
-  color: var(--text-muted);
-  font-size: 12px;
-  letter-spacing: 0.04em;
-}
 .legend-item {
   display: inline-flex;
   align-items: center;
