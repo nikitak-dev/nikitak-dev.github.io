@@ -194,8 +194,11 @@ header.cascade-ready { animation: fadeSlideDown var(--anim-shell) ease-out forwa
   --green-dim: var(--amber-dim);
   --green-muted: var(--amber-muted);
   --green-ghost: var(--amber-ghost);
-  --green-glow: var(--amber-glow-soft);
-  --green-glow-strong: var(--amber-glow-mid);
+  --green-glow-weak: var(--amber-glow-weak);
+  --green-glow-soft: var(--amber-glow-soft);
+  --green-glow-mid: var(--amber-glow-mid);
+  --green-glow-strong: var(--amber-glow-strong);
+  --green-mid-glow: var(--amber-mid-glow);
   --text-muted: var(--amber-muted);
   --text-bright: var(--text-bright-amber);
   --bg-elevated: var(--bg-elevated-amber);
