@@ -183,29 +183,9 @@ header.cascade-ready { animation: fadeSlideDown var(--anim-shell) ease-out forwa
 }
 
 /* === AMBER THEME (automation cards) ===
-   Scoped palette remap: green-* → amber-*. Same pattern as body[data-theme="amber"]
-   but confined to the card. Base rules (.project-card, .btn-terminal, kbPulseRing,
-   .card-title, .card-status, .card-footer, etc.) auto-theme via var() substitution.
-   Intentional color deviations live as explicit overrides below. */
-.theme-amber {
-  --green: var(--amber);
-  --green-bright: var(--amber-bright);
-  --green-mid: var(--amber-mid);
-  --green-dim: var(--amber-dim);
-  --green-muted: var(--amber-muted);
-  --green-ghost: var(--amber-ghost);
-  --green-glow-weak: var(--amber-glow-weak);
-  --green-glow-soft: var(--amber-glow-soft);
-  --green-glow-mid: var(--amber-glow-mid);
-  --green-glow-strong: var(--amber-glow-strong);
-  --green-mid-glow: var(--amber-mid-glow);
-  --text-muted: var(--amber-muted);
-  --text-bright: var(--text-bright-amber);
-  --bg-elevated: var(--bg-elevated-amber);
-  --bg-input: var(--bg-input-amber);
-  --border: var(--amber-deep);
-  --user-border: var(--user-border-amber);
-}
+   The green-* → amber-* palette remap lives in tokens.css, shared with
+   body[data-theme="amber"] via a selector list so page-scope and card-scope
+   can't drift. Card-specific overrides only below. */
 
 /* Keep disabled label readable after .btn-terminal:disabled opacity 0.3 */
 .theme-amber .card-launch:disabled { color: var(--amber-mid); }

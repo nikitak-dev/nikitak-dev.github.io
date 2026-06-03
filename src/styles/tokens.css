@@ -1,6 +1,7 @@
 /* Design tokens — colors, surfaces, typography, layout.
    Error mode remaps green-* to error-* via body[data-error="true"].
-   Amber theme remaps green-* to amber-* via body[data-theme="amber"]. */
+   Amber theme remaps green-* to amber-* via body[data-theme="amber"] (whole page)
+   and .theme-amber (one automation card on the green hub) — both share one block. */
 
 :root {
   /* surfaces */
@@ -119,7 +120,8 @@ body[data-error="true"] {
   --gradient-edge-bottom: linear-gradient(to bottom, var(--error-ghost) 0%, transparent 100%);
 }
 
-body[data-theme="amber"] {
+body[data-theme="amber"],
+.theme-amber {
   --green: var(--amber);
   --green-bright: var(--amber-bright);
   --green-mid: var(--amber-mid);
