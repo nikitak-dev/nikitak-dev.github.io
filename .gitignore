@@ -23,6 +23,9 @@ desktop.ini
 # Superpowers dev-process artifacts (specs, plans) — scratch, not part of the project
 docs/superpowers/
 
+# Superpowers brainstorming visual-companion session files (mockups, state) — scratch
+.superpowers/
+
 # Per-project bulk artifacts — test corpora stay local-only.
 # README.md, plans/*.md and eval/ (small Python harness) are tracked.
 projects/**/test_data/
