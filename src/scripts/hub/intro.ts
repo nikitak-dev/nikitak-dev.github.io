@@ -132,6 +132,7 @@ if (screen) {
   }
 
   function play(): void {
+    if (introActive) return;   // already on screen — ignore re-entry (e.g. double-click)
     state = 'animating';
     setGating(true);
     screen!.classList.remove('done');
