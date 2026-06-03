@@ -1,11 +1,11 @@
 /* Project-card selection + keyboard navigation. Digits 1-9 jump to a card,
    arrows cycle selection, Enter launches, Escape deselects. Suppressed while
-   any modal is open, and while the boot screen is active (the caller passes
-   an isBootActive predicate so this module doesn't need to know about boot). */
+   any modal is open, and while the intro overlay is active (the caller passes
+   an isIntroActive predicate so this module doesn't need to know about intro). */
 
 type IsActive = () => boolean;
 
-export function initCardNav(isBootActive: IsActive): void {
+export function initCardNav(isIntroActive: IsActive): void {
   const cards = document.querySelectorAll<HTMLElement>('.project-card');
   if (!cards.length) return;
 
@@ -66,7 +66,7 @@ export function initCardNav(isBootActive: IsActive): void {
   });
 
   document.addEventListener('keydown', e => {
-    if (isBootActive()) return;
+    if (isIntroActive()) return;
     /* Suppress hub shortcuts while a modal is open — Esc/Enter/digits belong to the dialog */
     if (document.body.classList.contains('modal-open')) return;
     /* For arrow nav, use Tab-focused card as starting point if nothing is selected */

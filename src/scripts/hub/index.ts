@@ -1,8 +1,8 @@
-/* Hub page entry — wires boot sequence and card navigation. Boot owns its
-   own DOM setup (side-effectful import); cards need the boot-active predicate
-   so arrow/Enter shortcuts stay dormant until boot finishes. */
+/* Hub page entry — wires the intro overlay and card navigation. Intro owns its
+   own DOM setup (side-effectful import); cards need the intro-active predicate
+   so arrow/Enter shortcuts stay dormant until the intro is dismissed. */
 
-import { isBootActive } from './boot';
+import { isIntroActive } from './intro';
 import { initCardNav } from './cards';
 
-initCardNav(isBootActive);
+initCardNav(isIntroActive);

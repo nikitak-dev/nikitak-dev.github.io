@@ -98,5 +98,5 @@ if (!bootScreen || !bootLinesEl) {
   document.addEventListener('keydown', endBoot, { once: true });
 }
 
-export const isBootActive = (): boolean =>
+export const isIntroActive = (): boolean =>
   !!bootScreen && !bootScreen.classList.contains('done');
