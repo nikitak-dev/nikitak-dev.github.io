@@ -120,7 +120,8 @@ header::before,
 body[data-theme="amber"] header::before,
 body[data-theme="amber"] .hub-footer::before,
 body[data-theme="amber"] .docs-modal .modal-header::before,
-body[data-theme="amber"] #input-bar::before {
+body[data-theme="amber"] #input-bar::before,
+.docs-modal.theme-amber .modal-header::before {
   --snake-span: 100cqw;
   --flash-alpha: 0;
   background-color: var(--amber-deep);
@@ -142,7 +143,8 @@ body[data-theme="amber"] #input-bar::before {
 /* Modal-header's pseudo spans padding-box (content + 2×padding-inline) but cqw
    resolves to content-box. Use the existing --modal-beam-tile so the snake's
    traversal end matches the actual beam width. */
-body[data-theme="amber"] .docs-modal .modal-header::before {
+body[data-theme="amber"] .docs-modal .modal-header::before,
+.docs-modal.theme-amber .modal-header::before {
   --snake-span: var(--modal-beam-tile);
 }
 

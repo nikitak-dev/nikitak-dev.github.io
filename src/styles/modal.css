@@ -102,7 +102,8 @@ body.modal-open::after { display: none; }
    up as the head approaches the right edge (60 → 86%), peaks on the impact
    flash (87 → 89%), then decays through mid/dim/muted back to baseline, matching
    the amberFlash keyframe percentages. */
-body[data-theme="amber"] .docs-modal .modal-frame {
+body[data-theme="amber"] .docs-modal .modal-frame,
+.docs-modal.theme-amber .modal-frame {
   animation: docs-modal-breathe-amber 12.25s linear infinite;
 }
 @keyframes docs-modal-breathe-amber {
