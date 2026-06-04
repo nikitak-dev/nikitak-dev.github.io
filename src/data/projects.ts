@@ -1,5 +1,5 @@
-/** Drives card status colour (`.card-status.live/.private/.wip`) and the pulse animation on `live`. */
-type ProjectStatus = 'live' | 'private' | 'wip';
+/** Drives card status colour (`.card-status.public/.private/.wip`); `public` and `private` share one readiness pulse, `wip` stays static. */
+type ProjectStatus = 'public' | 'private' | 'wip';
 
 /** Drives card palette: `ai` keeps the green theme, `automation` remaps via `.theme-amber`. */
 type ProjectCategory = 'ai' | 'automation';
@@ -35,7 +35,7 @@ export const PROJECTS: readonly Project[] = [
   {
     id: '001',
     title: 'VOICE_AGENT',
-    status: 'wip',
+    status: 'private',
     category: 'ai',
     slug: 'voice-agent',
     action: 'about',
@@ -47,7 +47,7 @@ export const PROJECTS: readonly Project[] = [
   {
     id: '002',
     title: 'MULTIMODAL_RAG',
-    status: 'live',
+    status: 'public',
     category: 'ai',
     slug: 'multimodal-rag',
     action: 'page',
@@ -59,7 +59,7 @@ export const PROJECTS: readonly Project[] = [
   {
     id: '003',
     title: 'DB_MERGE',
-    status: 'wip',
+    status: 'private',
     category: 'automation',
     slug: 'db-merge',
     action: 'about',
@@ -71,7 +71,7 @@ export const PROJECTS: readonly Project[] = [
   {
     id: '004',
     title: 'FOLDER_CLONE',
-    status: 'wip',
+    status: 'private',
     category: 'automation',
     slug: 'folder-clone',
     action: 'about',
@@ -82,10 +82,10 @@ export const PROJECTS: readonly Project[] = [
   },
 ];
 
-/** Projects with status === 'live'. Feeds the `[ PROC: N/T LIVE ]` footer counter. */
-export const liveCount = (): number => PROJECTS.filter(p => p.status === 'live').length;
+/** Projects with status === 'public'. Feeds the `[ PROC: N/T PUBLIC ]` footer counter. */
+export const publicCount = (): number => PROJECTS.filter(p => p.status === 'public').length;
 
-/** Total number of projects. Feeds the `[ PROC: N/T LIVE ]` footer counter. */
+/** Total number of projects. Feeds the `[ PROC: N/T PUBLIC ]` footer counter. */
 export const totalCount = (): number => PROJECTS.length;
 
 /** Projects in a given category. Drives the legend counters on the hub. */
@@ -93,7 +93,7 @@ export const categoryCount = (c: ProjectCategory): number => PROJECTS.filter(p =
 
 /** Human-readable labels for the status tokens, rendered inside `.card-status`. */
 export const STATUS_LABEL: Record<ProjectStatus, string> = {
-  live: 'LIVE',
+  public: 'PUBLIC',
   private: 'PRIVATE',
   wip: 'WIP',
 };

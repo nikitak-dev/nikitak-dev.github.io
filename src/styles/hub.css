@@ -252,8 +252,10 @@ header.cascade-ready { animation: fadeSlideDown var(--anim-shell) ease-out forwa
 }
 
 .card-status            { font-size: 10px; letter-spacing: 0.06em; }
-.card-status.live       { color: var(--green); animation: connPulse 3s ease-in-out infinite; }
-.card-status.private    { color: var(--green-dim); }
+/* .public and .private share one pulse — the pulse signals project readiness;
+   public vs private is conveyed by the label text, not the animation. */
+.card-status.public,
+.card-status.private    { color: var(--green); animation: connPulse 3s ease-in-out infinite; }
 .card-status.wip        { color: var(--green-muted); }
 
 .card-body { display: flex; flex-direction: column; gap: 10px; flex: 1; }

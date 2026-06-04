@@ -51,7 +51,7 @@ See `DESIGN.md` for the full reference. Key rules:
 - CRT scanline effect: global `body::after` overlay (`z-index: 9999`). Exception: pages with images/video — disable global, apply per-section
 - Section labels: `// LABEL:` pattern, `letter-spacing: 0.10em`, uppercase, bold, `var(--green-mid)`
 - Card IDs: `[ 001 ]` pattern, `10px`, `var(--text-muted)`
-- Status labels: `.card-status.live / .private / .wip` — `10px`, color-coded (green / green-dim / green-muted), `.live` pulses via `connPulse`
+- Status labels: `.card-status.public / .private / .wip` — `10px`; `.public` and `.private` share `--green` + the `connPulse` readiness pulse, `.wip` is static `--green-muted`
 - Transitions: `0.2s` on hover for `background`, `border-color`, `color`, `box-shadow`, `text-shadow`
 - Grid: 4px grid for structure, 2px grid for content
 
@@ -61,7 +61,7 @@ Each project card has: `data-index`, optional `data-url`, `.card-id`, `.card-sta
 
 A card's `action` field decides its primary behaviour. `action: 'page'` renders an `<a>` card that navigates to `/${slug}/` (only MULTIMODAL_RAG today). `action: 'about'` renders a `<div>` card whose `.card-launch` is a real `<button aria-controls="${slug}-about">` that opens an in-place ABOUT modal on the hub — clicking anywhere on the card (or Enter while selected) relays to that button (see [src/scripts/hub/cards.ts](src/scripts/hub/cards.ts)). The modals are `<DocsModal>` instances rendered in [src/pages/index.astro](src/pages/index.astro) (`theme="amber"` for automation projects); the project's `.astro` page file is kept in the repo but is no longer linked from the hub.
 
-Status classes drive only the `.card-status` label colour (`green / green-dim / green-muted` for `live / private / wip` — see `src/styles/hub.css`). They do **not** change the card palette: the card's overall colour is determined exclusively by `category` (`ai` → green, `automation` → amber via `.theme-amber`). Red palette (`--error-*` tokens) is the project's error/failure idiom — page-level remap via `body[data-error="true"]` in `tokens.css` (used by 404), plus component-level uses in chat (`.bubble--error`, `.media-error`, connection-status indicators in `chat.css`) and matrix rain glitch mode. It marks something broken; do not borrow it for neutral states like "in progress".
+Status classes drive only the `.card-status` label (a shared green `connPulse` readiness pulse for `public`/`private`, static `green-muted` for `wip` — see `src/styles/hub.css`). They do **not** change the card palette: the card's overall colour is determined exclusively by `category` (`ai` → green, `automation` → amber via `.theme-amber`). Red palette (`--error-*` tokens) is the project's error/failure idiom — page-level remap via `body[data-error="true"]` in `tokens.css` (used by 404), plus component-level uses in chat (`.bubble--error`, `.media-error`, connection-status indicators in `chat.css`) and matrix rain glitch mode. It marks something broken; do not borrow it for neutral states like "in progress".
 
 Current project list lives in [src/data/projects.ts](src/data/projects.ts) — that file is the source of truth for IDs, statuses, slugs, actions, and button labels. Don't duplicate it here.
 
@@ -87,7 +87,7 @@ Update `src/data/projects.ts` — append an entry to the `PROJECTS` array with a
 
 - `id` — 3-digit string, e.g. `'005'`
 - `title` — `UPPER_SNAKE`, appears as card title
-- `status` — `'live' | 'private' | 'wip'`
+- `status` — `'public' | 'private' | 'wip'`
 - `category` — `'ai' | 'automation'` (drives green vs amber theme)
 - `slug` — kebab-case id; route is `/${slug}/`, ABOUT modal id is `${slug}-about`
 - `action` — `'page'` (card links to `/${slug}/`) or `'about'` (card opens the in-place `#${slug}-about` modal on the hub)
@@ -96,7 +96,7 @@ Update `src/data/projects.ts` — append an entry to the `PROJECTS` array with a
 - `meta` — short phrase, shown bottom-left of card
 - `button` — `{ label, disabled, ariaLabel? }`
 
-`liveCount()` and `totalCount()` derive from `PROJECTS`; footer counters update automatically.
+`publicCount()` and `totalCount()` derive from `PROJECTS`; footer counters update automatically.
 
 ## Adding a new project page
 

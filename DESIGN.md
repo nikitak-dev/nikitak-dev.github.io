@@ -195,7 +195,7 @@ Kept with their own intentional timing and not governed by the tokens above:
 - `// stack | comment` pattern for tech stack — same color as card title (`--green`), lighter weight (`400`), smaller scale, no uppercase, no glow
 - `[ KEY: VALUE ]` pattern for status blocks in ribbons/footers
 - `[ 001 ]` pattern for card IDs — `10px`, `color: var(--text-muted)`
-- Status labels: `.card-status.live / .private / .wip` — `10px`, `letter-spacing: 0.06em`, color-coded (`--green` / `--green-dim` / `--green-muted`); `.live` pulses via `connPulse` animation. Dot primitive intentionally omitted — availability is already conveyed by the card's launch button.
+- Status labels: `.card-status.public / .private / .wip` — `10px`, `letter-spacing: 0.06em`, color-coded (`--green` / `--green-dim` / `--green-muted`); `.public` and `.private` share the same `connPulse` readiness pulse, `.wip` stays static. Dot primitive intentionally omitted — availability is already conveyed by the card's launch button.
 - Border style: `border-left: 2px solid var(--green-dim)` for message blocks
 - All interactive elements: `transition` on `background`, `border-color`, `color`, `box-shadow`, `text-shadow` — use `var(--transition)` (`0.2s`)
 

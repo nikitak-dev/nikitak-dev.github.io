@@ -14,7 +14,7 @@ interface Props {
   brokenTyping?: boolean;
   backHref?: string | null;
   backHoverText?: string;
-  procLive?: number;
+  procPublic?: number;
   procTotal?: number;
   scanlineMode?: 'global' | 'per-section';
   theme?: 'green' | 'amber';
@@ -36,7 +36,7 @@ const {
   brokenTyping = false,
   backHref = null,
   backHoverText = 'ABSOLUTE_AUTOMATIONS',
-  procLive = 2,
+  procPublic = 1,
   procTotal = 4,
   scanlineMode = 'global',
   theme = 'green',
@@ -172,7 +172,7 @@ const structuredData = {
     <div class:list={['sys-status', errorMode && 'sys-status--end']}>
       <span>{errorMode ? '[ SYS: ERROR ]' : '[ SYS: NOMINAL ]'}</span>
       <span>[ UPTIME: <span id="uptime-val">{errorMode ? '--' : '0d 0h'}</span> ]</span>
-      <span>{errorMode ? '[ PROC: 0/? LIVE ]' : `[ PROC: ${procLive}/${procTotal} LIVE ]`}</span>
+      <span>{errorMode ? '[ PROC: 0/? PUBLIC ]' : `[ PROC: ${procPublic}/${procTotal} PUBLIC ]`}</span>
       {errorMode
         ? <span class="status-block-dead">[ CONN: LOST ]</span>
         : <span class="status-block-live">[ CONN: ESTABLISHED ]</span>
