@@ -141,11 +141,24 @@ header.cascade-ready { animation: fadeSlideDown var(--anim-shell) ease-out forwa
 }
 
 .project-card { outline: none; }
+/* `:has(:focus-visible)` lifts keyboard focus on an `about` card's inner ABOUT button
+   up to the whole card, so it glows identically to a `:focus-visible` page card or a
+   `.selected` one — keyboard nav, Tab, and click all read as one single card highlight. */
 .project-card:focus-visible,
+.project-card:has(:focus-visible),
 .project-card.selected,
 .project-card.kbd-press {
   border-color: var(--green);
   box-shadow: var(--shadow-inset-deep), 0 0 30px var(--green-glow-soft);
+}
+/* The card glow above is the focus indicator for an `about` card; suppress the inner
+   ABOUT button's own active-look so it doesn't surface as a second, competing highlight. */
+.project-card .card-launch:focus-visible {
+  --btn-bg: var(--bg-input);
+  --btn-border: var(--border);
+  --btn-color: var(--green);
+  --btn-box-shadow: none;
+  --btn-text-shadow: 0 0 6px var(--green-glow-mid);
 }
 .project-card.kbd-press {
   transform: scale(0.99);

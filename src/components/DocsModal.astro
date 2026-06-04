@@ -3,11 +3,13 @@ interface Props {
   id: string;
   title?: string;
   sections?: Array<'overview' | 'demo'>;
+  /** `amber` remaps the dialog's green-* tokens to amber-* via `.theme-amber` (automation projects). */
+  theme?: 'green' | 'amber';
 }
-const { id, title = 'PROJECT :: DOCUMENTATION', sections = ['overview', 'demo'] } = Astro.props;
+const { id, title = 'PROJECT :: DOCUMENTATION', sections = ['overview', 'demo'], theme = 'green' } = Astro.props;
 const titleId = `${id}-title`;
 ---
-<dialog id={id} class="docs-modal" aria-labelledby={titleId} closedby="any">
+<dialog id={id} class:list={['docs-modal', { 'theme-amber': theme === 'amber' }]} aria-labelledby={titleId} closedby="any">
   <div class="modal-frame">
     <div class="modal-header">
       <h2 id={titleId} class="modal-title">{title}</h2>
@@ -48,6 +50,9 @@ const titleId = `${id}-title`;
         modal.showModal();
         document.body.classList.add('modal-open');
         trigger.setAttribute('aria-expanded', 'true');
+        /* Land focus on CLOSE so a keyboard-opened modal can be dismissed with the
+           same key. :focus-visible only flares it when the open was keyboard-driven. */
+        closeBtn && closeBtn.focus();
       });
     });
 

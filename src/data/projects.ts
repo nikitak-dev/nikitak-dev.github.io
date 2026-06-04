@@ -4,6 +4,10 @@ type ProjectStatus = 'live' | 'private' | 'wip';
 /** Drives card palette: `ai` keeps the green theme, `automation` remaps via `.theme-amber`. */
 type ProjectCategory = 'ai' | 'automation';
 
+/** Card's primary action. `page` links to the dedicated route `/${slug}/`; `about` opens
+    the in-place ABOUT modal `#${slug}-about` on the hub (no navigation). */
+type CardAction = 'page' | 'about';
+
 /** Single project entry rendered as a card on the hub page. Array order in PROJECTS = card order.
     All fields are readonly — projects are static data, consumed by the hub renderer and never mutated. */
 interface Project {
@@ -13,8 +17,10 @@ interface Project {
   readonly title: string;
   readonly status: ProjectStatus;
   readonly category: ProjectCategory;
-  /** Route to the project's dedicated page. Omit until that page exists — the card then renders without a hyperlink. */
-  readonly url?: string;
+  /** Kebab-case identifier. Route is `/${slug}/`; ABOUT modal id is `${slug}-about`. */
+  readonly slug: string;
+  /** `page` → card links to `/${slug}/`; `about` → card opens the in-place ABOUT modal. */
+  readonly action: CardAction;
   /** 1–2 sentence problem-framed description. */
   readonly desc: string;
   /** `'A | B | C'` stack pipeline, appears under `//` comment. Empty string hides the stack line. */
@@ -31,18 +37,20 @@ export const PROJECTS: readonly Project[] = [
     title: 'VOICE_AGENT',
     status: 'wip',
     category: 'ai',
-    url: '/voice-agent/',
+    slug: 'voice-agent',
+    action: 'about',
     desc: 'A lead calls, no one picks up, and minutes later they are signing with the competitor who did — that is how fast a hot lead goes cold. An AI agent handles inbound calls 24/7 — qualifies prospects, schedules meetings, and logs key metrics to a database automatically.',
     stack: 'n8n | Vapi | Supabase | Google Calendar',
     meta: 'For local service businesses that book over the phone',
-    button: { label: 'PREVIEW', disabled: false, ariaLabel: 'Preview VOICE_AGENT page' },
+    button: { label: 'ABOUT', disabled: false, ariaLabel: 'About VOICE_AGENT' },
   },
   {
     id: '002',
     title: 'MULTIMODAL_RAG',
     status: 'live',
     category: 'ai',
-    url: '/multimodal-rag/',
+    slug: 'multimodal-rag',
+    action: 'page',
     desc: 'The answer is already in your files — but it is locked in a scanned PDF, a screenshot, or an hour-long recording that keyword search cannot read, so you waste half a day digging or redo work that was already done. This agent reads anything you upload — docs, images, audio, video, PDFs — and answers in plain language.',
     stack: 'n8n | Gemini | Pinecone | OpenRouter',
     meta: 'For legal, finance, and support teams',
@@ -53,22 +61,24 @@ export const PROJECTS: readonly Project[] = [
     title: 'DB_MERGE',
     status: 'wip',
     category: 'automation',
-    url: '/db-merge/',
+    slug: 'db-merge',
+    action: 'about',
     desc: 'Week after week, someone exports the same records from five systems, pastes them into one sheet, and hand-fixes the columns that never line up — and a single missed duplicate quietly corrupts the report leadership is about to trust. This pipeline pulls from systems with clashing schemas, reconciles them into one clean table, deduplicates, and syncs every destination on a schedule.',
     stack: 'n8n | Google Sheets | Airtable | Discord',
     meta: 'For ops and finance teams without a data engineer',
-    button: { label: 'PREVIEW', disabled: false, ariaLabel: 'Preview DB_MERGE page' },
+    button: { label: 'ABOUT', disabled: false, ariaLabel: 'About DB_MERGE' },
   },
   {
     id: '004',
     title: 'FOLDER_CLONE',
     status: 'wip',
     category: 'automation',
-    url: '/folder-clone/',
+    slug: 'folder-clone',
+    action: 'about',
     desc: 'Ever tried to copy a Google Drive folder and watched it leave the subfolders behind? Drive cannot clone a nested tree — this workflow does. It walks the entire hierarchy, recreates every subfolder, and batch-copies the contents into a fresh dated workspace, then reports exactly what it moved.',
     stack: 'n8n | Google Drive | Telegram',
     meta: 'For agencies onboarding clients in Google Drive',
-    button: { label: 'PREVIEW', disabled: false, ariaLabel: 'Preview FOLDER_CLONE page' },
+    button: { label: 'ABOUT', disabled: false, ariaLabel: 'About FOLDER_CLONE' },
   },
 ];
 

@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import DocsModal from '../components/DocsModal.astro';
+import VoiceAgentDocs from '../components/docs/VoiceAgentDocs.astro';
 import { PROJECTS, liveCount, totalCount, categoryCount, STATUS_LABEL } from '../data/projects';
 import '../styles/intro.css';
 
@@ -46,13 +48,15 @@ const autoCount = categoryCount('automation');
     </div>
     <div class="project-grid">
       {PROJECTS.map((p, i) => {
-        const CardTag = p.url ? 'a' : 'div';
+        const isPage = p.action === 'page';
+        const CardTag = isPage ? 'a' : 'div';
+        const route = `/${p.slug}/`;
         return (
           <CardTag
             class={`project-card${p.category === 'automation' ? ' theme-amber' : ''}`}
             data-index={i + 1}
-            data-url={p.url ?? '#'}
-            href={p.url}
+            data-url={isPage ? route : undefined}
+            href={isPage ? route : undefined}
           >
             <div class="card-header">
               <span class="card-id">[ {p.id} ]</span>
@@ -67,12 +71,15 @@ const autoCount = categoryCount('automation');
             </div>
             <div class="card-footer">
               <span class="card-meta">{p.meta}</span>
-              {p.url ? (
+              {isPage ? (
                 <span class="card-launch btn-terminal" aria-hidden="true">{p.button.label}</span>
               ) : (
                 <button
                   class="card-launch btn-terminal"
                   disabled={p.button.disabled}
+                  aria-haspopup="dialog"
+                  aria-controls={`${p.slug}-about`}
+                  aria-expanded="false"
                   aria-label={p.button.ariaLabel}
                 >{p.button.label}</button>
               )}
@@ -83,6 +90,14 @@ const autoCount = categoryCount('automation');
     </div>
    </div>
   </main>
+
+  {/* In-place ABOUT modals for projects without a dedicated page (action: 'about').
+      Opened from their card via aria-controls. MULTIMODAL_RAG keeps its page (action: 'page'). */}
+  <DocsModal id="voice-agent-about" title="VOICE_AGENT :: ABOUT" sections={['overview']}>
+    <VoiceAgentDocs slot="overview" />
+  </DocsModal>
+  <DocsModal id="db-merge-about" title="DB_MERGE :: ABOUT" sections={['overview']} theme="amber" />
+  <DocsModal id="folder-clone-about" title="FOLDER_CLONE :: ABOUT" sections={['overview']} theme="amber" />
 
   <script>import '../scripts/hub';</script>
 </BaseLayout>
