@@ -42,14 +42,17 @@ export function initCardNav(isIntroActive: IsActive): void {
 
   function kbPulse(card: HTMLElement | null): void {
     if (!card) return;
+    /* Restart the ::before ring on the next frame. A synchronous reflow (reading
+       offsetWidth) here flushes the just-deselected card's `.selected` removal
+       together with this card's change, which made the old card's glow snap off
+       instead of transitioning. requestAnimationFrame restarts the ring without
+       forcing layout, so each card's border transition runs on its own. */
     card.classList.remove('kb-pulse');
-    void card.offsetWidth;
-    card.classList.add('kb-pulse');
+    requestAnimationFrame(() => card.classList.add('kb-pulse'));
   }
 
-  /* Keyboard selection: mark the card selected AND move focus onto it, so the single
-     card glow (.selected / :focus-visible / :has(:focus-visible)) is the only highlight
-     and any prior focus ring is cleared by the focus move itself. */
+  /* Keyboard selection: mark the card selected (the `.selected` class is the sole glow
+     source) AND move focus onto it, so selection and DOM focus stay on the same card. */
   function focusCard(card: HTMLElement): void {
     selectCard(card);
     kbPulse(card);
@@ -87,6 +90,10 @@ export function initCardNav(isIntroActive: IsActive): void {
      Mouse focus (:focus-visible false) is left to the click handler. focusin (not
      focus) is used because it bubbles. */
   document.addEventListener('focusin', e => {
+    /* While a modal is open, focus moves into the dialog (and back to the opener card
+       on close). Leave the selection untouched so the opening card stays selected the
+       whole time — DocsModal returns focus to it, and we must not deselect it here. */
+    if (document.body.classList.contains('modal-open')) return;
     const el = e.target;
     if (!(el instanceof HTMLElement) || !el.matches(':focus-visible')) return;
     const card = el.closest<HTMLElement>('.project-card');
@@ -96,7 +103,10 @@ export function initCardNav(isIntroActive: IsActive): void {
 
   document.addEventListener('click', e => {
     const target = e.target as HTMLElement | null;
-    if (!target?.closest('.project-card')) selectCard(null);
+    /* A click inside an open dialog (notably its CLOSE button — keyboard activation
+       dispatches a real click that bubbles up to here) must not clear the selection:
+       the card that opened the modal stays selected so focus can return to it on close. */
+    if (!target?.closest('.project-card') && !target?.closest('dialog')) selectCard(null);
   });
 
   document.addEventListener('keydown', e => {

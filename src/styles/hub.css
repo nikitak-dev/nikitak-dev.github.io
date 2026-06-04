@@ -141,18 +141,20 @@ header.cascade-ready { animation: fadeSlideDown var(--anim-shell) ease-out forwa
 }
 
 .project-card { outline: none; }
-/* `:has(:focus-visible)` lifts keyboard focus on an `about` card's inner ABOUT button
-   up to the whole card, so it glows identically to a `:focus-visible` page card or a
-   `.selected` one — keyboard nav, Tab, and click all read as one single card highlight. */
-.project-card:focus-visible,
-.project-card:has(:focus-visible),
+/* The persistent card highlight is driven solely by the JS-managed `.selected` class
+   (set on click and on keyboard focus via the focusin handler in cards.ts). Routing the
+   glow through one class means every deselection — Esc, switching cards, or Tabbing out
+   of the grid — fades out through the same border/box-shadow transition, instead of the
+   focus-state variants vanishing the instant focus leaves. `.kbd-press` is the transient
+   key-press flash. */
 .project-card.selected,
 .project-card.kbd-press {
   border-color: var(--green);
   box-shadow: var(--shadow-inset-deep), 0 0 30px var(--green-glow-soft);
 }
-/* The card glow above is the focus indicator for an `about` card; suppress the inner
-   ABOUT button's own active-look so it doesn't surface as a second, competing highlight. */
+/* `.selected` is the focus indicator for an `about` card (its inner ABOUT button takes the
+   DOM focus); suppress the button's own active-look so it doesn't surface as a second,
+   competing highlight. */
 .project-card .card-launch:focus-visible {
   --btn-bg: var(--bg-input);
   --btn-border: var(--border);

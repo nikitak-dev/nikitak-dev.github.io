@@ -42,11 +42,18 @@ const titleId = `${id}-title`;
     const closeBtn = modal.querySelector('.modal-close');
     closeBtn && closeBtn.addEventListener('click', () => modal.close());
 
+    /* The trigger that opened the modal, so focus can be returned to it on close.
+       For a hub card this is the card's ABOUT button — restoring focus there puts the
+       user back on the card (re-selecting it) instead of dropping focus to <body>,
+       which native <dialog> does when the modal was opened by a relayed/mouse click. */
+    let opener = null;
+
     /* Auto-wire any element with aria-controls=<id> to open this modal, so
        page markup stays declarative — callers just add the a11y attribute. */
     document.querySelectorAll(`[aria-controls="${id}"]`).forEach(trigger => {
       trigger.addEventListener('click', () => {
         if (modal.open) return;
+        opener = trigger;
         modal.showModal();
         document.body.classList.add('modal-open');
         trigger.setAttribute('aria-expanded', 'true');
@@ -56,12 +63,11 @@ const titleId = `${id}-title`;
       });
     });
 
-    /* body.modal-open cleanup on close. Native <dialog> restores focus to the
-       opener on close; we leave it so keyboard users keep their place in the
-       tab order. */
     modal.addEventListener('close', () => {
       document.body.classList.remove('modal-open');
       document.querySelectorAll(`[aria-controls="${id}"]`).forEach(t => t.setAttribute('aria-expanded', 'false'));
+      /* Return focus to the opening trigger (the card), not wherever native restore lands. */
+      if (opener) { opener.focus({ preventScroll: true }); opener = null; }
     });
 
     /* Drag-close fix: only close on backdrop click if mousedown+mouseup both on dialog itself.
