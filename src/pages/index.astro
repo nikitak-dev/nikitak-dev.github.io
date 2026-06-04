@@ -2,6 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import DocsModal from '../components/DocsModal.astro';
 import VoiceAgentDocs from '../components/docs/VoiceAgentDocs.astro';
+import DbMergeDocs from '../components/docs/DbMergeDocs.astro';
+import FolderCloneDocs from '../components/docs/FolderCloneDocs.astro';
 import { PROJECTS, liveCount, totalCount, categoryCount, STATUS_LABEL } from '../data/projects';
 import '../styles/intro.css';
 
@@ -93,11 +95,15 @@ const autoCount = categoryCount('automation');
 
   {/* In-place ABOUT modals for projects without a dedicated page (action: 'about').
       Opened from their card via aria-controls. MULTIMODAL_RAG keeps its page (action: 'page'). */}
-  <DocsModal id="voice-agent-about" title="VOICE_AGENT :: ABOUT" sections={['overview']}>
+  <DocsModal id="voice-agent-about" title="VOICE_AGENT :: ABOUT">
     <VoiceAgentDocs slot="overview" />
   </DocsModal>
-  <DocsModal id="db-merge-about" title="DB_MERGE :: ABOUT" sections={['overview']} theme="amber" />
-  <DocsModal id="folder-clone-about" title="FOLDER_CLONE :: ABOUT" sections={['overview']} theme="amber" />
+  <DocsModal id="db-merge-about" title="DB_MERGE :: ABOUT" theme="amber">
+    <DbMergeDocs slot="overview" />
+  </DocsModal>
+  <DocsModal id="folder-clone-about" title="FOLDER_CLONE :: ABOUT" theme="amber">
+    <FolderCloneDocs slot="overview" />
+  </DocsModal>
 
   <script>import '../scripts/hub';</script>
 </BaseLayout>
