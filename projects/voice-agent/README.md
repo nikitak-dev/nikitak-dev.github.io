@@ -11,6 +11,7 @@ Voice AI receptionist (Sophie) on Vapi for a home-service business. MVP handles 
 | Path | Tracked? | Contents |
 |---|---|---|
 | [`adrs/`](adrs/) | ✓ | Architecture Decision Records, [Nygard format](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions). Files named `NNN-slug.md`; new ADRs start from [`_template.md`](adrs/_template.md). |
+| [`constraints.md`](constraints.md) | ✓ | Living register of standing model/platform limits — "why the agent behaves the way it does," cross-linked to ADRs. |
 | [`db/`](db/) | ✓ | Supabase Postgres schema — DDL migrations (`migrations/`) + generated TypeScript types (`types/database.ts`). |
 | [`eval/`](eval/) | ✓ | Regression suite. Legacy Vapi Test Suite (chat, 5 smoke scenarios) + 4 Vapi **Evals** for the mutating flows (book / reschedule / cancel / phone greet-by-name) + [`ownership-regression.sql`](eval/ownership-regression.sql) backend invariant. Scripts + per-run JSON in `results/`; full breakdown in [`eval/README.md`](eval/README.md). |
 | [`knowledge-base/`](knowledge-base/) | ✓ | Knowledge base for the test case (services, pricing, hours, FAQs). Loaded into Vapi Files; queried by Sophie via the `search_knowledge_base` tool. `.txt` extension required by Vapi. |
