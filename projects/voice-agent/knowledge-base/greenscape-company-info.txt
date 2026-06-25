@@ -16,48 +16,43 @@ Insurance: Fully insured, two million dollar general liability coverage
 
 SERVICES AND PRICING
 
-Lawn Maintenance
-Pricing model: fixed -- price is published below; state the range and proceed to booking, no on-site estimate needed
-Regular mowing, edging, trimming, fertilization, and weed control. Fixed per-visit pricing -- state the range and book, no on-site estimate.
-  - Weekly service: fifty to one hundred twenty dollars per visit (depends on lot size)
-  - Bi-weekly service: seventy to one hundred fifty dollars per visit
-  - One-time cleanup: one hundred to three hundred dollars
+Lawn Maintenance (fixed pricing)
+Regular lawn mowing, edging, trimming, fertilization, and weed control. No on-site estimate needed.
+  - Weekly lawn maintenance: fifty to one hundred twenty dollars per visit, depending on lot size
+  - Bi-weekly lawn maintenance: seventy to one hundred fifty dollars per visit
+  - One-time lawn cleanup: one hundred to three hundred dollars
 
-Landscape Design and Installation
-Pricing model: estimate -- wide range; give the approximate range below, exact price comes from a free on-site estimate
-Custom garden design, plant selection, flower beds, shrub installation, and outdoor lighting.
-  - Design consultation: free for projects over two thousand dollars
-  - Small projects (under one thousand square feet): one thousand to five thousand dollars
-  - Medium projects (one thousand to three thousand square feet): five thousand to fifteen thousand dollars
-  - Large projects (over three thousand square feet): fifteen thousand dollars and up, quoted individually
+Landscape Design and Installation (estimate pricing)
+Custom garden design, plant selection, flower beds, shrub installation, and outdoor lighting. Final price comes from a free on-site estimate; the ranges below are approximate.
+  - Landscape design consultation: free for projects over two thousand dollars
+  - Small landscape project, under one thousand square feet: one thousand to five thousand dollars
+  - Medium landscape project, one thousand to three thousand square feet: five thousand to fifteen thousand dollars
+  - Large landscape project, over three thousand square feet: fifteen thousand dollars and up, quoted individually
 
-Hardscaping
-Pricing model: estimate -- wide range; give the approximate range below, exact price comes from a free on-site estimate
-Patios, walkways, retaining walls, fire pits, and outdoor kitchens.
-  - Patio or walkway: three thousand to twelve thousand dollars
-  - Retaining wall: two thousand to eight thousand dollars
-  - Fire pit: one thousand five hundred to five thousand dollars
-  - Outdoor kitchen: ten thousand to twenty-five thousand dollars
+Hardscaping (estimate pricing)
+Patios, walkways, retaining walls, fire pits, and outdoor kitchens. Final price comes from a free on-site estimate; the ranges below are approximate.
+  - Hardscaping patio or walkway: three thousand to twelve thousand dollars
+  - Hardscaping retaining wall: two thousand to eight thousand dollars
+  - Hardscaping fire pit: one thousand five hundred to five thousand dollars
+  - Hardscaping outdoor kitchen: ten thousand to twenty-five thousand dollars
 
-Irrigation Systems
-Pricing model: estimate -- wide range; give the approximate range below, exact price comes from a free on-site estimate
-Sprinkler installation, drip irrigation, smart controller setup, and system repair.
-  - New sprinkler system: two thousand to five thousand dollars (typical residential lot)
-  - Drip irrigation: five hundred to two thousand dollars
-  - Smart controller upgrade: three hundred to six hundred dollars
-  - Repair and maintenance: one hundred to four hundred dollars per visit
+Irrigation Systems (estimate pricing)
+Sprinkler installation, drip irrigation, smart controller setup, and system repair. Final price comes from a free on-site estimate; the ranges below are approximate.
+  - New sprinkler system: two thousand to five thousand dollars for a typical residential lot
+  - Drip irrigation system: five hundred to two thousand dollars
+  - Smart irrigation controller upgrade: three hundred to six hundred dollars
+  - Irrigation repair and maintenance: one hundred to four hundred dollars per visit
 
-Seasonal Cleanup
-Pricing model: fixed -- price is published below; state the range and proceed to booking, no on-site estimate needed
-Spring and fall cleanup, leaf removal, mulching, and bed preparation. Fixed pricing -- state the range and book, no on-site estimate.
-  - Standard cleanup (quarter acre or less): two hundred to four hundred dollars
-  - Large property cleanup: four hundred to eight hundred dollars
-  - Mulch installation: seventy-five to one hundred twenty dollars per cubic yard (installed)
+Seasonal Cleanup (fixed pricing)
+Spring and fall cleanup, leaf removal, mulching, and bed preparation. No on-site estimate needed.
+  - Standard seasonal cleanup, quarter acre or less: two hundred to four hundred dollars
+  - Large property seasonal cleanup: four hundred to eight hundred dollars
+  - Mulch installation: seventy-five to one hundred twenty dollars per cubic yard, installed
 
 
 SERVICE AREA
 
-We serve the greater Tampa Bay area, including:
+GreenScape Landscaping serves the greater Tampa Bay area, including:
   - Saint Petersburg
   - Clearwater and Clearwater Beach
   - Tampa
@@ -80,6 +75,7 @@ Saturday: OPEN, nine a m to two p m
 Sunday: CLOSED -- no appointments available on Sundays
 
 Emergency tree or storm damage: Available twenty-four seven, call the main line and press two
+
 
 APPOINTMENT WINDOWS (for open days only)
 
