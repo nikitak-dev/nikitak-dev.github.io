@@ -33,6 +33,9 @@ projects/**/test_data/
 # Per-project deep technical docs — kept local-only for reverse-engineering, never published.
 projects/**/docs/
 
+# Per-project eval run outputs — local artifacts regenerated each run, not tracked.
+projects/**/eval/results/*.json
+
 # Obsidian local workspace (per-machine notes UI state, not part of the project)
 .obsidian/
 
